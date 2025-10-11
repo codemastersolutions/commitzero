@@ -14,7 +14,8 @@
     "clean": "rm -rf dist",
     "pretest": "npm run build",
     "test": "node --test",
-    "verify:readmes": "node scripts/verify-readmes.js"
+    "verify:readmes": "node scripts/verify-readmes.js",
+    "simulate:release": "node scripts/simulate-release.js"
   },
   "exports": {
     ".": {
@@ -28,6 +29,10 @@
   "types": "./dist/esm/index.d.ts",
   "bin": {
     "commitzero": "./dist/cjs/cli/index.js"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org",
+    "access": "public"
   },
   "files": [
     "dist/",
