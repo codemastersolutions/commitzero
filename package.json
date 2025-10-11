@@ -1,0 +1,42 @@
+{
+  "name": "@codemastersolutins/commitzero",
+  "version": "0.0.1",
+  "description": "Conventional Commits validator with a CLI, Git hooks, and an internal rule engine — zero runtime dependencies.",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=16"
+  },
+  "scripts": {
+    "build:esm": "tsc -p tsconfig.esm.json",
+    "build:cjs": "tsc -p tsconfig.cjs.json",
+    "build": "npm run build:esm && npm run build:cjs && node scripts/postbuild-cjs.js",
+    "clean": "rm -rf dist",
+    "pretest": "npm run build",
+    "test": "node --test",
+    "verify:readmes": "node scripts/verify-readmes.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/esm/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    }
+  },
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
+  "bin": {
+    "commitzero": "./dist/cjs/cli/index.js"
+  },
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "devDependencies": {
+    "@types/node": "^24.7.0",
+    "typescript": "^5.5.4"
+  }
+}
