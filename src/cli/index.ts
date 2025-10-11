@@ -1,14 +1,14 @@
 #!/usr/bin/env node
-import { parseMessage } from "../core/parser";
-import { lintCommit, defaultOptions } from "../core/rules";
-import { installHooks, uninstallHooks } from "../hooks/install";
-import { interactiveCommit } from "./commands/commit";
-import { initConfig } from "./commands/init";
-import { loadConfig } from "../config/load";
-import { t, DEFAULT_LANG } from "../i18n/index.js";
 import { readFileSync } from "node:fs";
 import { argv, exit } from "node:process";
+import { loadConfig } from "../config/load";
+import { parseMessage } from "../core/parser";
+import { defaultOptions, lintCommit } from "../core/rules";
+import { installHooks, uninstallHooks } from "../hooks/install";
+import { DEFAULT_LANG, t } from "../i18n/index.js";
 import { c } from "./colors";
+import { interactiveCommit } from "./commands/commit";
+import { initConfig } from "./commands/init";
 
 function printHelp(lang: import("../i18n").Lang) {
   console.log(t(lang, "cli.help"));
@@ -17,7 +17,8 @@ function printHelp(lang: import("../i18n").Lang) {
 function sanitizeInput(s: string): string {
   // Remover caracteres de controle, preservando tabs e quebras de linha
   // Não alterar espaços para manter estrutura header/body/footer
-  return s.replace(/[\u0000-\u0008\u000B-\u000C\u000E-\u001F\u007F]/g, "");
+  // eslint-disable-next-line no-control-regex
+  return s.replace(/[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F]/g, "");
 }
 
 async function main() {
@@ -60,22 +61,48 @@ async function main() {
     const optsUsed = { ...defaultOptions, ...userConfig, language: lang };
     const result = lintCommit(parsed, optsUsed);
     if (!result.valid) {
-      console.error(c.red(t(lang, "cli.invalid")) + "\n" + result.errors.map(e => `- ${e}`).join("\n"));
+      console.error(
+        c.red(t(lang, "cli.invalid")) +
+          "\n" +
+          result.errors.map((e) => `- ${e}`).join("\n")
+      );
       const allowed = (optsUsed.types || defaultOptions.types).join(", ");
-      const typeExample = (optsUsed.types && optsUsed.types.length ? optsUsed.types[0] : defaultOptions.types[0]);
-      const scopeExample = (optsUsed.requireScope || (optsUsed.scopes && optsUsed.scopes.length))
-        ? `(${(optsUsed.scopes && optsUsed.scopes.length ? optsUsed.scopes[0] : "core")})`
-        : "";
-      const example = `${typeExample}${scopeExample}: ${t(lang, "cli.exampleSubject")}`;
-      console.error("\n" + c.yellow(t(lang, "cli.allowedTypes", { types: allowed })));
+      const typeExample =
+        optsUsed.types && optsUsed.types.length
+          ? optsUsed.types[0]
+          : defaultOptions.types[0];
+      const scopeExample =
+        optsUsed.requireScope || (optsUsed.scopes && optsUsed.scopes.length)
+          ? `(${
+              optsUsed.scopes && optsUsed.scopes.length
+                ? optsUsed.scopes[0]
+                : "core"
+            })`
+          : "";
+      const example = `${typeExample}${scopeExample}: ${t(
+        lang,
+        "cli.exampleSubject"
+      )}`;
+      console.error(
+        "\n" + c.yellow(t(lang, "cli.allowedTypes", { types: allowed }))
+      );
       console.error(c.green(t(lang, "cli.exampleValid", { example })));
       if (result.warnings.length) {
-        console.error("\n" + c.yellow(t(lang, "cli.warnings")) + "\n" + result.warnings.map(w => `- ${w}`).join("\n"));
+        console.error(
+          "\n" +
+            c.yellow(t(lang, "cli.warnings")) +
+            "\n" +
+            result.warnings.map((w) => `- ${w}`).join("\n")
+        );
       }
       exit(1);
     } else {
       if (result.warnings.length) {
-        console.warn(result.warnings.map(w => t(lang, "cli.warning", { msg: w })).join("\n"));
+        console.warn(
+          result.warnings
+            .map((w) => t(lang, "cli.warning", { msg: w }))
+            .join("\n")
+        );
       }
       console.log(t(lang, "cli.valid"));
     }
@@ -90,14 +117,31 @@ async function main() {
       const optsUsed = { ...defaultOptions, ...userConfig, language: lang };
       const result = lintCommit(parsed, optsUsed);
       if (!result.valid) {
-        console.error(c.red(t(lang, "cli.invalid")) + "\n" + result.errors.map(e => `- ${e}`).join("\n"));
+        console.error(
+          c.red(t(lang, "cli.invalid")) +
+            "\n" +
+            result.errors.map((e) => `- ${e}`).join("\n")
+        );
         const allowed = (optsUsed.types || defaultOptions.types).join(", ");
-        const typeExample = (optsUsed.types && optsUsed.types.length ? optsUsed.types[0] : defaultOptions.types[0]);
-        const scopeExample = (optsUsed.requireScope || (optsUsed.scopes && optsUsed.scopes.length))
-          ? `(${(optsUsed.scopes && optsUsed.scopes.length ? optsUsed.scopes[0] : "core")})`
-          : "";
-        const example = `${typeExample}${scopeExample}: ${t(lang, "cli.exampleSubject")}`;
-        console.error("\n" + c.yellow(t(lang, "cli.allowedTypes", { types: allowed })));
+        const typeExample =
+          optsUsed.types && optsUsed.types.length
+            ? optsUsed.types[0]
+            : defaultOptions.types[0];
+        const scopeExample =
+          optsUsed.requireScope || (optsUsed.scopes && optsUsed.scopes.length)
+            ? `(${
+                optsUsed.scopes && optsUsed.scopes.length
+                  ? optsUsed.scopes[0]
+                  : "core"
+              })`
+            : "";
+        const example = `${typeExample}${scopeExample}: ${t(
+          lang,
+          "cli.exampleSubject"
+        )}`;
+        console.error(
+          "\n" + c.yellow(t(lang, "cli.allowedTypes", { types: allowed }))
+        );
         console.error(c.green(t(lang, "cli.exampleValid", { example })));
         exit(1);
       }
@@ -125,14 +169,16 @@ async function main() {
     // Parse flags: -a/--add and -p/--push
     const autoAdd = args.includes("-a") || args.includes("--add");
     const autoPush = args.includes("-p") || args.includes("--push");
-    interactiveCommit(lang, { ...cfg, autoAdd: autoAdd as any, autoPush: autoPush as any }).then(code => exit(code));
+    interactiveCommit(lang, { ...cfg, autoAdd, autoPush }).then((code) =>
+      exit(code)
+    );
     return;
   }
 
   printHelp(lang);
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error(err);
   exit(2);
 });

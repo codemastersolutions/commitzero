@@ -34,6 +34,9 @@ jobs:
       - name: Verificar READMEs
         run: npm run verify:readmes
 
+      - name: Lint
+        run: npm run lint
+
       - name: Executar testes
         run: npm test
 

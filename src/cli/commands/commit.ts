@@ -1,7 +1,7 @@
+import { execSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { stdin as input, stdout as output } from "node:process";
-import { execSync } from "node:child_process";
 import * as readline from "node:readline";
 import { formatMessage } from "../../core/formatter";
 import {
@@ -29,14 +29,21 @@ function ask(rl: readline.Interface, q: string): Promise<string> {
 
 export async function interactiveCommit(
   lang: Lang,
-  cfg?: Partial<typeof defaultOptions> & { autoAdd?: boolean; autoPush?: boolean }
+  cfg?: Partial<typeof defaultOptions> & {
+    autoAdd?: boolean;
+    autoPush?: boolean;
+  }
 ): Promise<number> {
   let rl: readline.Interface | null = null;
   try {
     // Pré-checagem do git: verificar se há arquivos staged
     function hasStaged(): boolean {
       try {
-        const out = execSync("git diff --cached --name-only", { stdio: ["ignore", "pipe", "ignore"] }).toString().trim();
+        const out = execSync("git diff --cached --name-only", {
+          stdio: ["ignore", "pipe", "ignore"],
+        })
+          .toString()
+          .trim();
         return out.length > 0;
       } catch {
         return false;
@@ -44,7 +51,11 @@ export async function interactiveCommit(
     }
     function hasChanges(): boolean {
       try {
-        const out = execSync("git status --porcelain", { stdio: ["ignore", "pipe", "ignore"] }).toString().trim();
+        const out = execSync("git status --porcelain", {
+          stdio: ["ignore", "pipe", "ignore"],
+        })
+          .toString()
+          .trim();
         return out.length > 0;
       } catch {
         return false;
@@ -119,7 +130,6 @@ export async function interactiveCommit(
       version = pkg1?.version ? ` v${pkg1.version}` : "";
     } catch {
       try {
-        // @ts-ignore - using require.resolve works in CJS (CLI runtime)
         const pkgPath2 = require.resolve(
           "@codemastersolutins/commitzero/package.json"
         );
@@ -155,10 +165,7 @@ export async function interactiveCommit(
       scope = await ask(rl, c.cyan(t(lang, "commit.prompt.scope")));
       subject = await ask(rl, c.cyan(t(lang, "commit.prompt.subject")));
       body = await ask(rl, c.cyan(t(lang, "commit.prompt.body")));
-      breakingAns = await ask(
-        rl,
-        c.cyan(t(lang, "commit.prompt.breaking"))
-      );
+      breakingAns = await ask(rl, c.cyan(t(lang, "commit.prompt.breaking")));
     } catch {
       // Cancelado via Ctrl+C durante os prompts: informar e encerrar
       console.log(c.yellow(t(lang, "commit.cancelled")));
