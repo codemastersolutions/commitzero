@@ -96,7 +96,10 @@ jobs:
 
       - name: Determinar versão
         id: pkg
-        run: echo "version=$(node -p \"require('./package.json').version\")" >> $GITHUB_OUTPUT
+        shell: bash
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Criar Release
         uses: ncipollo/release-action@v1
