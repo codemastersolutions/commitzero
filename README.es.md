@@ -7,9 +7,9 @@ Validador de Conventional Commits con una CLI amigable, hooks de Git y un motor 
 ## Instalación
 
 - Proyecto local (dependencia de desarrollo):
-  - `npm i -D @codemastersolutins/commitzero`
-  - `pnpm add -D @codemastersolutins/commitzero`
-  - `yarn add -D @codemastersolutins/commitzero`
+- `npm i -D @codemastersolutions/commitzero`
+- `pnpm add -D @codemastersolutions/commitzero`
+- `yarn add -D @codemastersolutions/commitzero`
 
 - Ejecución puntual (sin instalar):
   - `npx commitzero --help`
