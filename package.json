@@ -1,7 +1,7 @@
 {
   "name": "@codemastersolutions/commitzero",
-  "version": "0.0.5",
-  "description": "Conventional Commits validator with a friendly CLI, Git hooks, and an internal rule engine — zero runtime dependencies.",  
+  "version": "0.0.6",
+  "description": "Conventional Commits validator with a friendly CLI, Git hooks, and an internal rule engine — zero runtime dependencies.",
   "license": "MIT",
   "type": "module",
   "engines": {
