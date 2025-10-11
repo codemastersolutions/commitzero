@@ -7,9 +7,9 @@ Conventional Commits validator with a friendly CLI, Git hooks, and an internal r
 ## Installation
 
 - Local project (dev dependency):
-  - `npm i -D @codemastersolutins/commitzero`
-  - `pnpm add -D @codemastersolutins/commitzero`
-  - `yarn add -D @codemastersolutins/commitzero`
+- `npm i -D @codemastersolutions/commitzero`
+- `pnpm add -D @codemastersolutions/commitzero`
+- `yarn add -D @codemastersolutions/commitzero`
 
 - One-off run (no install):
   - `npx commitzero --help`
@@ -97,3 +97,11 @@ commitzero lint -m $'feat(core): change\n\nBody text\n\nRefs: 123'
 - Run `npm run build` and `npm test` if CLI examples or syntax changed.
 - Update integration tests when documented behavior changes.
 - Node version notes remain accurate.
+
+## Publishing (maintainers)
+
+- Package is scoped as `@codemastersolutions/commitzero`.
+- Scoped packages require an npm organization for the scope (`@codemastersolutions`). Ensure the org exists and your account has publish rights.
+- Set `publishConfig.access` to `public` (already configured).
+- In CI, provide `NPM_TOKEN` with publish permission to the package/org. The workflow uses `NODE_AUTH_TOKEN` from this secret.
+- Releases run only after a PR to `main` is merged; versioning and `npm publish` are handled in the GitHub Actions workflow.
