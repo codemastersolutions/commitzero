@@ -22,10 +22,6 @@ function exitAltScreen() {
   process.stdout.write("\x1b[?1049l");
 }
 
-function moveCursorUp(lines: number) {
-  if (lines > 0) process.stdout.write(`\x1b[${lines}A`);
-}
-
 function clearLine() {
   process.stdout.write("\x1b[2K\r");
 }
@@ -39,12 +35,10 @@ function cursorHome() {
 }
 
 function saveCursor() {
-  // ANSI save cursor position
   process.stdout.write("\x1b[s");
 }
 
 function restoreCursor() {
-  // ANSI restore cursor position
   process.stdout.write("\x1b[u");
 }
 
@@ -81,33 +75,27 @@ export async function select(
     const stdout = process.stdout;
     const isTTY = !!stdin.isTTY;
     if (!isTTY) {
-      // Fallback: return first
       return resolve(items[0]?.value);
     }
     let selected = 0;
-    // Ativar raw mode e listener ANTES de imprimir para evitar eco
     stdin.setRawMode?.(true);
     stdin.resume();
     stdin.on("data", onData);
-    // Use buffer alternativo apenas se explicitamente habilitado
     const useAlt = !!stdout.isTTY && process.env.USE_ALT_SCREEN === "1";
     if (useAlt) enterAltScreen();
     hideCursor();
-    // Render inicial no buffer alternativo
     if (useAlt) {
       cursorHome();
       clearScreen();
     }
-    // Save anchor at the start of our block (header/prompt/list)
     saveCursor();
     if (header) {
       clearLine();
       process.stdout.write(c.green(c.bold(header)) + "\n");
-      // blank line after header
       process.stdout.write("\n");
     }
     renderPrompt(prompt);
-    let itemLines = renderItems(items, selected);
+    renderItems(items, selected);
 
     function cleanup() {
       stdin.setRawMode?.(false);
@@ -118,7 +106,6 @@ export async function select(
 
     function onData(buf: Buffer) {
       const s = buf.toString("utf8");
-      // Up/Down arrows
       if (s === "\x1b[A") {
         selected = (selected - 1 + items.length) % items.length;
         if (useAlt) {
@@ -130,9 +117,8 @@ export async function select(
             process.stdout.write("\n");
           }
           renderPrompt(prompt);
-          itemLines = renderItems(items, selected);
+          renderItems(items, selected);
         } else {
-          // Non-alt buffer: restore to anchor, clear, and redraw full block
           restoreCursor();
           process.stdout.write("\x1b[J");
           if (header) {
@@ -141,7 +127,7 @@ export async function select(
             process.stdout.write("\n");
           }
           renderPrompt(prompt);
-          itemLines = renderItems(items, selected);
+          renderItems(items, selected);
         }
         return;
       }
@@ -156,9 +142,8 @@ export async function select(
             process.stdout.write("\n");
           }
           renderPrompt(prompt);
-          itemLines = renderItems(items, selected);
+          renderItems(items, selected);
         } else {
-          // Non-alt buffer: restore to anchor, clear, and redraw full block
           restoreCursor();
           process.stdout.write("\x1b[J");
           if (header) {
@@ -167,22 +152,18 @@ export async function select(
             process.stdout.write("\n");
           }
           renderPrompt(prompt);
-          itemLines = renderItems(items, selected);
+          renderItems(items, selected);
         }
         return;
       }
-      // Enter
       if (s === "\r" || s === "\n") {
         cleanup();
         return resolve(items[selected].value);
       }
-      // Ctrl+C
       if (s === "\x03") {
-        // Ctrl+C: limpar área renderizada e rejeitar para que caller encerre
         cleanup();
         return reject(new Error("cancelled"));
       }
-      // j/k shortcuts
       if (s === "j") {
         selected = (selected + 1) % items.length;
         if (useAlt) {
@@ -194,9 +175,8 @@ export async function select(
             process.stdout.write("\n");
           }
           renderPrompt(prompt);
-          itemLines = renderItems(items, selected);
+          renderItems(items, selected);
         } else {
-          // Non-alt buffer: restore to anchor, clear, and redraw full block
           restoreCursor();
           process.stdout.write("\x1b[J");
           if (header) {
@@ -205,7 +185,7 @@ export async function select(
             process.stdout.write("\n");
           }
           renderPrompt(prompt);
-          itemLines = renderItems(items, selected);
+          renderItems(items, selected);
         }
         return;
       }
@@ -220,9 +200,8 @@ export async function select(
             process.stdout.write("\n");
           }
           renderPrompt(prompt);
-          itemLines = renderItems(items, selected);
+          renderItems(items, selected);
         } else {
-          // Non-alt buffer: restore to anchor, clear, and redraw full block
           restoreCursor();
           process.stdout.write("\x1b[J");
           if (header) {
@@ -231,7 +210,7 @@ export async function select(
             process.stdout.write("\n");
           }
           renderPrompt(prompt);
-          itemLines = renderItems(items, selected);
+          renderItems(items, selected);
         }
         return;
       }

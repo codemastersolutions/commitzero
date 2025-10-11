@@ -14,7 +14,7 @@ Validador de Conventional Commits con una CLI amigable, hooks de Git y un motor 
 - Ejecución puntual (sin instalar):
   - `npx commitzero --help`
 
-## Uso de la CLI
+## Uso del CLI
 
 - Ayuda: `commitzero --help`
 - Inicializar configuración: `commitzero init`
@@ -36,7 +36,7 @@ ls -l .git/hooks/commit-msg
 # Debe ser ejecutable e incluir el bloque gestionado por CommitZero
 ```
 
-## Mensajes multilínea
+## Mensajes multi-línea
 
 - Prefiera `--file` para mensajes con body/footers:
 
@@ -78,7 +78,7 @@ commitzero lint -m $'feat(core): change\n\nBody text\n\nRefs: 123'
 
 - Node >= 16 (CLI/pruebas prefieren Node >= 18).
 
-## Contribuir
+## Contribuyendo
 
 - Mantén los READMEs de idiomas sincronizados:
   - Fuente: `README.md` (English)

@@ -14,7 +14,10 @@
     "clean": "rm -rf dist",
     "pretest": "npm run build",
     "test": "node --test",
-    "verify:readmes": "node scripts/verify-readmes.js"
+    "verify:readmes": "node scripts/verify-readmes.js",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix",
+    "simulate:release": "node scripts/simulate-release.js"
   },
   "exports": {
     ".": {
@@ -29,6 +32,10 @@
   "bin": {
     "commitzero": "./dist/cjs/cli/index.js"
   },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org",
+    "access": "public"
+  },
   "files": [
     "dist/",
     "README.md",
@@ -36,7 +43,10 @@
     "CHANGELOG.md"
   ],
   "devDependencies": {
+    "@eslint/js": "^9.37.0",
     "@types/node": "^24.7.0",
-    "typescript": "^5.5.4"
+    "eslint": "^9.37.0",
+    "typescript": "^5.5.4",
+    "typescript-eslint": "^8.46.0"
   }
 }
