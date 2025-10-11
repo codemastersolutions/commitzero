@@ -131,7 +131,7 @@ export async function interactiveCommit(
     } catch {
       try {
         const pkgPath2 = require.resolve(
-          "@codemastersolutins/commitzero/package.json"
+          "@codemastersolutions/commitzero/package.json"
         );
         const raw2 = readFileSync(pkgPath2, "utf8");
         const pkg2 = JSON.parse(raw2);
