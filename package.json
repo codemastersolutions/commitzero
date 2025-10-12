@@ -1,7 +1,7 @@
 {
   "name": "@codemastersolutions/commitzero",
-  "version": "0.0.5",
-  "description": "Conventional Commits validator with a friendly CLI, Git hooks, and an internal rule engine — zero runtime dependencies.",  
+  "version": "0.0.6",
+  "description": "Conventional Commits validator with a friendly CLI, Git hooks, and an internal rule engine — zero runtime dependencies.",
   "license": "MIT",
   "type": "module",
   "engines": {
@@ -17,7 +17,10 @@
     "verify:readmes": "node scripts/verify-readmes.js",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
-    "simulate:release": "node scripts/simulate-release.js"
+    "simulate:release": "node scripts/simulate-release.js",
+    "preuninstall": "node ./dist/cjs/hooks/cleanup.js || true",
+    "uninstall": "node ./dist/cjs/hooks/cleanup.js || true",
+    "postuninstall": "node ./dist/cjs/hooks/cleanup.js || true"
   },
   "exports": {
     ".": {

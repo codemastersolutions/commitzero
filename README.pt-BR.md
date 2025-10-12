@@ -97,3 +97,26 @@ commitzero lint -m $'feat(core): change\n\nBody text\n\nRefs: 123'
 - Execute `npm run build` e `npm test` se exemplos do CLI ou sintaxe mudaram.
 - Atualize testes de integração quando o comportamento documentado mudar.
 - Notas de versão do Node permanecem corretas.
+### Remoção de hooks
+
+- Ao desinstalar, o CommitZero tenta remover automaticamente o bloco gerenciado dos hooks do Git.
+- Se o gerenciador de pacotes não executar `postuninstall`, remova as linhas entre `# CommitZero managed block START` e `# CommitZero managed block END` em:
+  - `.git/hooks/commit-msg`
+  - `.git/hooks/prepare-commit-msg`
+- Ou execute manualmente:
+
+```
+node ./node_modules/@codemastersolutions/commitzero/dist/cjs/hooks/cleanup.js
+```
+### Idioma dos hooks
+
+- Os hooks imprimem mensagens de orientação no seu idioma quando o CommitZero está ausente.
+- Ordem de detecção:
+  - `language` em `commitzero.config.json`
+  - Variável de ambiente `COMMITZERO_LANG` (`en`, `pt`, `es`)
+  - Locale do SO (`LANG`), mapeando `pt_*` → `pt`, `es_*` → `es`, demais → `en`.
+- Exemplo de override por repositório:
+
+```
+export COMMITZERO_LANG=pt
+```

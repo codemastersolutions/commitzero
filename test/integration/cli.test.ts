@@ -1,16 +1,23 @@
-import test from "node:test";
 import assert from "node:assert";
 import { execSync } from "node:child_process";
-import { writeFileSync, mkdirSync, existsSync, readFileSync } from "node:fs";
-import { rmSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { join } from "node:path";
+import test from "node:test";
 const CLI = join(process.cwd(), "dist", "cjs", "cli", "index.js");
 
 test("lint valid message via CLI", () => {
   const msg = "feat: ok";
   writeFileSync("tmp-msg.txt", msg, "utf8");
   try {
-    const out = execSync(`node ${CLI} lint --file tmp-msg.txt`, { encoding: "utf8" });
+    const out = execSync(`node ${CLI} lint --file tmp-msg.txt`, {
+      encoding: "utf8",
+    });
     assert.match(out, /Valid commit/);
   } finally {
     rmSync("tmp-msg.txt");
@@ -39,7 +46,9 @@ test("lint valid: blank line before body via --file", () => {
   const file = "tmp-commit-with-blank.txt";
   writeFileSync(file, msg, "utf8");
   try {
-    const out = execSync(`node ${CLI} lint --file ${file}`, { encoding: "utf8" });
+    const out = execSync(`node ${CLI} lint --file ${file}`, {
+      encoding: "utf8",
+    });
     assert.match(out, /Valid commit/);
   } finally {
     rmSync(file);
@@ -48,9 +57,9 @@ test("lint valid: blank line before body via --file", () => {
 
 test("help output with --help and no args", () => {
   const out1 = execSync(`node ${CLI} --help`, { encoding: "utf8" });
-  assert.match(out1, /commitzero CLI/);
+  assert.match(out1, /CommitZero CLI/);
   const out2 = execSync(`node ${CLI}`, { encoding: "utf8" });
-  assert.match(out2, /commitzero CLI/);
+  assert.match(out2, /CommitZero CLI/);
 });
 
 test("lint without input shows guidance", () => {
@@ -59,15 +68,22 @@ test("lint without input shows guidance", () => {
     assert.fail("expected CLI to error without --file or -m");
   } catch (err: any) {
     const output = String((err.stdout || "") + (err.stderr || ""));
-    assert.match(output, /Provide --file <path> or -m <message>|Forneça --file <path> ou -m <message>|Proporciona --file <path> o -m <message>/);
+    assert.match(
+      output,
+      /Provide --file <path> or -m <message>|Forneça --file <path> ou -m <message>|Proporciona --file <path> o -m <message>/
+    );
   }
 });
 
 test("lint via -m valid and invalid", () => {
-  const ok = execSync(`node ${CLI} lint -m 'feat: add feature'`, { encoding: "utf8" });
+  const ok = execSync(`node ${CLI} lint -m 'feat: add feature'`, {
+    encoding: "utf8",
+  });
   assert.match(ok, /Valid commit/);
   try {
-    execSync(`node ${CLI} lint -m $'feat: bad\nno blank'`, { encoding: "utf8" });
+    execSync(`node ${CLI} lint -m $'feat: bad\nno blank'`, {
+      encoding: "utf8",
+    });
     assert.fail("expected CLI to exit with error for missing blank line");
   } catch (err: any) {
     const output = String((err.stdout || "") + (err.stderr || ""));
@@ -114,10 +130,15 @@ test("check without COMMIT_EDITMSG prints error", () => {
   try {
     try {
       execSync(`node ${CLI} check`, { encoding: "utf8", cwd: tmp });
-      assert.fail("expected check to exit with error when COMMIT_EDITMSG missing");
+      assert.fail(
+        "expected check to exit with error when COMMIT_EDITMSG missing"
+      );
     } catch (err: any) {
       const output = String((err.stdout || "") + (err.stderr || ""));
-      assert.match(output, /Could not read COMMIT_EDITMSG|Não foi possível ler COMMIT_EDITMSG|No se pudo leer COMMIT_EDITMSG/);
+      assert.match(
+        output,
+        /Could not read COMMIT_EDITMSG|Não foi possível ler COMMIT_EDITMSG|No se pudo leer COMMIT_EDITMSG/
+      );
     }
   } finally {
     rmSync(tmp, { recursive: true, force: true });
@@ -130,7 +151,10 @@ test("install-hooks and uninstall-hooks manage hooks content", () => {
   mkdirSync(hooksDir, { recursive: true });
   try {
     // install-hooks
-    const outInstall = execSync(`node ${CLI} install-hooks`, { encoding: "utf8", cwd: tmp });
+    const outInstall = execSync(`node ${CLI} install-hooks`, {
+      encoding: "utf8",
+      cwd: tmp,
+    });
     assert.match(outInstall, /Hooks installed/);
     const commitMsgPath = join(hooksDir, "commit-msg");
     const preparePath = join(hooksDir, "prepare-commit-msg");
@@ -142,7 +166,10 @@ test("install-hooks and uninstall-hooks manage hooks content", () => {
     assert.match(prepContent, /# CommitZero managed block/);
 
     // uninstall-hooks
-    const outUninstall = execSync(`node ${CLI} uninstall-hooks`, { encoding: "utf8", cwd: tmp });
+    const outUninstall = execSync(`node ${CLI} uninstall-hooks`, {
+      encoding: "utf8",
+      cwd: tmp,
+    });
     assert.match(outUninstall, /Managed blocks removed from hooks/);
     const cmAfter = readFileSync(commitMsgPath, "utf8");
     const prepAfter = readFileSync(preparePath, "utf8");
