@@ -1,5 +1,12 @@
 # CommitZero
 
+[![npm versión](https://img.shields.io/npm/v/@codemastersolutions/commitzero.svg?logo=npm&label=npm)](https://www.npmjs.com/package/@codemastersolutions/commitzero)
+[![descargas npm](https://img.shields.io/npm/dm/@codemastersolutions/commitzero.svg?logo=npm)](https://www.npmjs.com/package/@codemastersolutions/commitzero)
+[![licencia](https://img.shields.io/npm/l/@codemastersolutions/commitzero.svg)](https://opensource.org/licenses/MIT)
+![node >=16](https://img.shields.io/badge/node-%3E%3D16-339933?logo=node.js)
+[![CI](https://github.com/codemastersolutions/commitzero/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/codemastersolutions/commitzero/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/codemastersolutions/commitzero/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/codemastersolutions/commitzero/actions/workflows/codeql.yml)
+
 Idiomas: [English](./README.md) | [Português Brasil](./README.pt-BR.md) | Español
 
 Validador de Conventional Commits con una CLI amigable, hooks de Git y un motor de reglas interno — sin dependencias de runtime.
