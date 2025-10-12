@@ -17,7 +17,10 @@
     "verify:readmes": "node scripts/verify-readmes.js",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
-    "simulate:release": "node scripts/simulate-release.js"
+    "simulate:release": "node scripts/simulate-release.js",
+    "preuninstall": "node ./dist/cjs/hooks/cleanup.js || true",
+    "uninstall": "node ./dist/cjs/hooks/cleanup.js || true",
+    "postuninstall": "node ./dist/cjs/hooks/cleanup.js || true"
   },
   "exports": {
     ".": {

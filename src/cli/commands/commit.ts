@@ -161,17 +161,28 @@ export async function interactiveCommit(
     let subject: string;
     let body: string;
     let breakingAns: string;
+    let breakingDetails: string = "";
     try {
       scope = await ask(rl, c.cyan(t(lang, "commit.prompt.scope")));
       subject = await ask(rl, c.cyan(t(lang, "commit.prompt.subject")));
       body = await ask(rl, c.cyan(t(lang, "commit.prompt.body")));
       breakingAns = await ask(rl, c.cyan(t(lang, "commit.prompt.breaking")));
+      const isBreakingTmp = /^y(es)?$/i.test(breakingAns);
+      if (isBreakingTmp) {
+        breakingDetails = await ask(
+          rl,
+          c.cyan(t(lang, "commit.prompt.breakingDetails"))
+        );
+      }
     } catch {
       // Cancelado via Ctrl+C durante os prompts: informar e encerrar
       console.log(c.yellow(t(lang, "commit.cancelled")));
       return 130;
     }
     const isBreaking = /^y(es)?$/i.test(breakingAns);
+    const footers = isBreaking
+      ? [{ key: "BREAKING CHANGE", value: breakingDetails }]
+      : [];
 
     const commit: ParsedCommit = {
       type,
@@ -179,12 +190,13 @@ export async function interactiveCommit(
       subject,
       body: body || undefined,
       isBreaking,
+      footers,
       meta: {
-        header: `${type}${scope ? `(${scope})` : ""}:${
+        header: `${type}${scope ? `(${scope})` : ""}${
           isBreaking && !subject.includes("!") ? "!" : ""
-        } ${subject}`,
+        }: ${subject}`,
         hasBlankAfterHeader: body ? true : false,
-        hasBlankBeforeFooter: false,
+        hasBlankBeforeFooter: footers.length > 0,
       },
     };
 

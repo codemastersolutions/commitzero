@@ -4,12 +4,13 @@ export function parseMessage(message: string): ParsedCommit {
   const lines = message.split(/\r?\n/);
   const header = lines[0] || "";
   const headerMatch = header.match(
-    /^(?<type>[a-z]+)(\((?<scope>[^)]+)\))?:\s(?<subject>.+)$/
+    /^(?<type>[a-z]+)(\((?<scope>[^)]+)\))?(?<bang>!)?:\s(?<subject>.+)$/
   );
 
   const type = headerMatch?.groups?.["type"] ?? "";
   const scope = headerMatch?.groups?.["scope"] ?? undefined;
   const subject = headerMatch?.groups?.["subject"] ?? "";
+  const hasBang = Boolean(headerMatch?.groups?.["bang"]);
 
   const footers: { key: string; value: string }[] = [];
 
@@ -34,7 +35,7 @@ export function parseMessage(message: string): ParsedCommit {
   const body: string | undefined = bodyLines.join("\n").trim() || undefined;
 
   const isBreaking =
-    subject.includes("!") || footers.some((f) => f.key === "BREAKING CHANGE");
+    hasBang || footers.some((f) => f.key === "BREAKING CHANGE");
 
   const hasBlankBeforeFooter = (() => {
     if (footers.length === 0) return false;

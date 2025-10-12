@@ -105,3 +105,26 @@ commitzero lint -m $'feat(core): change\n\nBody text\n\nRefs: 123'
 - Set `publishConfig.access` to `public` (already configured).
 - In CI, provide `NPM_TOKEN` with publish permission to the package/org. The workflow uses `NODE_AUTH_TOKEN` from this secret.
 - Releases run only after a PR to `main` is merged; versioning and `npm publish` are handled in the GitHub Actions workflow.
+### Removing hooks
+
+- On uninstall, CommitZero attempts to remove its managed block from Git hooks automatically.
+- If your package manager does not run `postuninstall`, remove lines between `# CommitZero managed block START` and `# CommitZero managed block END` in:
+  - `.git/hooks/commit-msg`
+  - `.git/hooks/prepare-commit-msg`
+- Or run manually:
+
+```
+node ./node_modules/@codemastersolutions/commitzero/dist/cjs/hooks/cleanup.js
+```
+### Hook language
+
+- Hooks print guidance messages in your language when CommitZero is missing.
+- Detection order:
+  - `commitzero.config.json` `language`
+  - `COMMITZERO_LANG` environment variable (`en`, `pt`, `es`)
+  - OS locale (`LANG`), mapping `pt_*` → `pt`, `es_*` → `es`, others → `en`.
+- Example override per repo:
+
+```
+export COMMITZERO_LANG=es
+```
