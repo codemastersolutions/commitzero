@@ -13,9 +13,9 @@
     "build": "npm run build:esm && npm run build:cjs && node scripts/postbuild-cjs.js",
     "clean": "rm -rf dist",
     "pretest": "npm run build",
-    "test": "node --test test/unit/select.test.ts test/unit/formatter.test.ts test/unit/rules.test.ts test/unit/parser.test.ts test/integration/cleanup.test.ts test/integration/cli.test.ts test/integration/precommit.test.ts && COMMITSKIP_SELECT_PROMPT=1 node --test test/unit/commit.test.ts",
-    "coverage": "npm run build && COMMITSKIP_ADD_PROMPT=1 c8 -r text-summary node --test test/unit/select.test.ts test/unit/formatter.test.ts test/unit/rules.test.ts test/unit/parser.test.ts test/integration/cleanup.test.ts test/integration/cli.test.ts test/integration/precommit.test.ts",
-    "coverage:subset": "npm run build && c8 -r text-summary node --test test/unit/select.test.ts test/unit/formatter.test.ts test/unit/rules.test.ts test/integration/cleanup.test.ts test/integration/cli.test.ts test/integration/precommit.test.ts",
+    "test": "node --import tsx --test test/unit/select.test.ts test/unit/formatter.test.ts test/unit/rules.test.ts test/unit/parser.test.ts test/integration/cleanup.test.ts test/integration/cli.test.ts test/integration/precommit.test.ts && COMMITSKIP_SELECT_PROMPT=1 node --import tsx --test test/unit/commit.test.ts",
+    "coverage": "npm run build && COMMITSKIP_ADD_PROMPT=1 c8 -r text-summary node --import tsx --test test/unit/select.test.ts test/unit/formatter.test.ts test/unit/rules.test.ts test/unit/parser.test.ts test/integration/cleanup.test.ts test/integration/cli.test.ts test/integration/precommit.test.ts",
+    "coverage:subset": "npm run build && c8 -r text-summary node --import tsx --test test/unit/select.test.ts test/unit/formatter.test.ts test/integration/cleanup.test.ts test/integration/cli.test.ts test/integration/precommit.test.ts",
     "verify:readmes": "node scripts/verify-readmes.js",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
@@ -59,6 +59,7 @@
     "fast-glob": "^3.3.3",
     "prettier": "^3.6.2",
     "strip-comments": "^2.0.1",
+    "tsx": "^4.20.6",
     "typescript": "^5.5.4",
     "typescript-eslint": "^8.46.0"
   }
