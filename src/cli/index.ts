@@ -2,16 +2,37 @@
 import { readFileSync } from "node:fs";
 import { argv, exit } from "node:process";
 import { loadConfig } from "../config/load";
+import { join } from "node:path";
 import { parseMessage } from "../core/parser";
 import { defaultOptions, lintCommit } from "../core/rules";
 import { installHooks, uninstallHooks } from "../hooks/install";
+import { cleanupHooks } from "../hooks/cleanup";
 import { DEFAULT_LANG, t } from "../i18n/index.js";
 import { c } from "./colors";
 import { interactiveCommit } from "./commands/commit";
 import { initConfig } from "./commands/init";
 
 function printHelp(lang: import("../i18n").Lang) {
-  console.log(t(lang, "cli.help"));
+  let version = "";
+  try {
+    const pkgPath1 = join(__dirname, "../../../package.json");
+    const raw1 = readFileSync(pkgPath1, "utf8");
+    const pkg1 = JSON.parse(raw1);
+    version = pkg1?.version ? ` v${pkg1.version}` : "";
+  } catch {
+    try {
+      const pkgPath2 = require.resolve(
+        "@codemastersolutions/commitzero/package.json"
+      );
+      const raw2 = readFileSync(pkgPath2, "utf8");
+      const pkg2 = JSON.parse(raw2);
+      version = pkg2?.version ? ` v${pkg2.version}` : "";
+    } catch {
+      const envVersion = process.env.npm_package_version;
+      if (envVersion) version = ` v${envVersion}`;
+    }
+  }
+  console.log(t(lang, "cli.help", { version }));
 }
 
 function sanitizeInput(s: string): string {
@@ -160,6 +181,7 @@ async function main() {
 
   if (cmd === "uninstall-hooks") {
     uninstallHooks();
+    try { cleanupHooks(process.cwd()); } catch {}
     console.log(t(lang, "cli.hooksRemoved"));
     return;
   }
