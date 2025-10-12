@@ -7,7 +7,7 @@ export function formatMessage(commit: ParsedCommit): string {
   const parts = [header];
   if (commit.body) parts.push("", commit.body);
   if (commit.footers && commit.footers.length) {
-    parts.push("", ...commit.footers.map(f => `${f.key}: ${f.value}`));
+    parts.push("", ...commit.footers.map((f) => `${f.key}: ${f.value}`));
   }
   return parts.join("\n");
 }

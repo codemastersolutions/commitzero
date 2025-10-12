@@ -13,7 +13,15 @@ test("invalid type", () => {
 });
 
 test("require blank line between header and body", () => {
-  const res = lintCommit({ type: "feat", subject: "add x", body: "details", meta: { header: "feat: add x", hasBlankAfterHeader: false, hasBlankBeforeFooter: false } }, defaultOptions);
+  const res = lintCommit(
+    {
+      type: "feat",
+      subject: "add x",
+      body: "details",
+      meta: { header: "feat: add x", hasBlankAfterHeader: false, hasBlankBeforeFooter: false },
+    },
+    defaultOptions
+  );
   assert.equal(res.valid, false);
 });
 

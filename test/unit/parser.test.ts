@@ -16,5 +16,5 @@ test("parse header with type, scope and subject", () => {
 test("parse without blank lines", () => {
   const m = parseMessage("fix: bug\nBody\nRefs: 123");
   assert.equal(m.meta?.hasBlankAfterHeader, false);
-  assert.ok(!(m.meta?.hasBlankBeforeFooter));
+  assert.ok(!m.meta?.hasBlankBeforeFooter);
 });

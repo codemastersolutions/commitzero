@@ -62,7 +62,7 @@ const configs = {
       "## Documentation PR Checklist",
     ],
     patterns: [
-      /lint --file/, // multi-line via file
+      /lint --file/,
       /lint -m \$'feat\(core\): change\\n\\nBody text/, // argument with $'...'
       /install-hooks/, // hooks example
       /Node >= 16/, // node version note

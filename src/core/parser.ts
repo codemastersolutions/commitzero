@@ -14,10 +14,8 @@ export function parseMessage(message: string): ParsedCommit {
 
   const footers: { key: string; value: string }[] = [];
 
-  // Parse body and footers separated by blank line
   const rest = lines.slice(1);
-  const hasBlankAfterHeader =
-    rest.length > 0 ? rest[0].trim().length === 0 : false;
+  const hasBlankAfterHeader = rest.length > 0 ? rest[0].trim().length === 0 : false;
   const footerRegex = /^(?<key>[A-Za-z\- ]+):\s(?<value>.+)$/;
   const bodyLines: string[] = [];
   let footerStartIdx: number | null = null;
@@ -25,7 +23,7 @@ export function parseMessage(message: string): ParsedCommit {
   for (const line of rest) {
     const m = line.match(footerRegex);
     if (m && m.groups) {
-      if (footerStartIdx === null) footerStartIdx = bodyLines.length; // index within rest before footers
+      if (footerStartIdx === null) footerStartIdx = bodyLines.length;
       footers.push({ key: m.groups["key"], value: m.groups["value"] });
     } else {
       bodyLines.push(line);
@@ -34,12 +32,10 @@ export function parseMessage(message: string): ParsedCommit {
 
   const body: string | undefined = bodyLines.join("\n").trim() || undefined;
 
-  const isBreaking =
-    hasBang || footers.some((f) => f.key === "BREAKING CHANGE");
+  const isBreaking = hasBang || footers.some((f) => f.key === "BREAKING CHANGE");
 
   const hasBlankBeforeFooter = (() => {
     if (footers.length === 0) return false;
-    // Determine position of first footer in original rest
     const firstFooterIdx = rest.findIndex((l) => footerRegex.test(l));
     if (firstFooterIdx <= 0) return false;
     return rest[firstFooterIdx - 1].trim().length === 0;
