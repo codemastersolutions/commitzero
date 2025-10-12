@@ -49,9 +49,7 @@ function renderPrompt(prompt: string) {
 
 function renderItems(items: Item[], selected: number): number {
   let lines = 0;
-  const maxLabelLen = Math.max(
-    ...items.map((it) => (it.label ?? it.value).length)
-  );
+  const maxLabelLen = Math.max(...items.map((it) => (it.label ?? it.value).length));
   for (let i = 0; i < items.length; i++) {
     const it = items[i];
     const pointer = i === selected ? c.cyan("❯") : " ";
@@ -65,19 +63,23 @@ function renderItems(items: Item[], selected: number): number {
   return lines;
 }
 
-export async function select(
-  prompt: string,
-  items: Item[],
-  header?: string
-): Promise<string> {
+export async function select(prompt: string, items: Item[], header?: string): Promise<string> {
   return new Promise((resolve, reject) => {
     const stdin = process.stdin;
     const stdout = process.stdout;
     const isTTY = !!stdin.isTTY;
-    if (!isTTY) {
+    // In coverage/CI runs we may want to force non-interactive behavior to avoid
+    // leaving stdin listeners or raw mode on, which can keep the event loop alive.
+    // Use a dedicated env guard so unit tests that simulate TTY continue to work.
+    const forceNonInteractive = process.env.COMMITSKIP_SELECT_PROMPT === "1";
+    if (!isTTY || forceNonInteractive) {
+      try {
+        stdin.pause?.();
+      } catch {}
       return resolve(items[0]?.value);
     }
     let selected = 0;
+    let cleaned = false;
     stdin.setRawMode?.(true);
     stdin.resume();
     stdin.on("data", onData);
@@ -98,10 +100,29 @@ export async function select(
     renderItems(items, selected);
 
     function cleanup() {
-      stdin.setRawMode?.(false);
-      stdin.off("data", onData);
-      if (useAlt) exitAltScreen();
-      showCursor();
+      if (cleaned) return;
+      cleaned = true;
+      try {
+        stdin.setRawMode?.(false);
+      } catch {}
+      try {
+        stdin.off("data", onData);
+      } catch {}
+      try {
+        stdin.pause?.();
+      } catch {}
+      try {
+        const listeners = stdin.listeners("data");
+        for (const l of listeners) {
+          stdin.removeListener("data", l as (...args: unknown[]) => void);
+        }
+      } catch {}
+      try {
+        if (useAlt) exitAltScreen();
+      } catch {}
+      try {
+        showCursor();
+      } catch {}
     }
 
     function onData(buf: Buffer) {

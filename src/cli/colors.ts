@@ -1,6 +1,3 @@
-// Simple ANSI color utilities without external dependencies
-// Honors NO_COLOR and FORCE_COLOR environment variables
-
 const RESET = "\x1b[0m";
 
 function enabled(): boolean {
@@ -24,5 +21,5 @@ export const c = {
   blue: (s: string) => wrap("34", s),
   magenta: (s: string) => wrap("35", s),
   cyan: (s: string) => wrap("36", s),
-  gray: (s: string) => wrap("90", s)
+  gray: (s: string) => wrap("90", s),
 };
