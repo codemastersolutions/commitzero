@@ -28,10 +28,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: ${{ env.NODE_VERSION }}
 
@@ -53,13 +53,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
+          fetch-tags: true
           ref: main
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: "${{ env.NODE_VERSION }}"
           registry-url: "${{ env.NPM_REGISTRY }}"
@@ -84,9 +85,30 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Incrementar versão
+      - name: Incrementar versão sem tag e evitar conflito
+        shell: bash
         run: |
-          npm version "${{ env.BUMP }}" -m "chore(release): v%s"
+          # Garantir que tags estão disponíveis localmente
+          git fetch --tags --prune --quiet
+
+          # Ler versão atual e preparar incremento progressivo
+          CURRENT=$(node -p "require('./package.json').version")
+          echo "Versão atual em package.json: $CURRENT"
+          NEXT="$CURRENT"
+          # Incrementa até achar uma tag livre
+          while git rev-parse -q --verify "refs/tags/v$NEXT" >/dev/null; do
+            echo "Tag v$NEXT já existe. Incrementando ${{ env.BUMP }}..."
+            npm version "${{ env.BUMP }}" --no-git-tag-version
+            NEXT=$(node -p "require('./package.json').version")
+            echo "Nova versão candidata: $NEXT"
+          done
+
+          # Commit das mudanças de versão
+          git add package.json package-lock.json || true
+          git commit -m "chore(release): v$NEXT"
+
+          # Criar tag anotada para a nova versão
+          git tag -a "v$NEXT" -m "chore(release): v$NEXT"
 
       - name: Push e tags
         env:
