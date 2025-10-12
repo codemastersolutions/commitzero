@@ -1,12 +1,12 @@
 #!/usr/bin/env node
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 import { argv, exit } from "node:process";
 import { loadConfig } from "../config/load";
-import { join } from "node:path";
 import { parseMessage } from "../core/parser";
 import { defaultOptions, lintCommit } from "../core/rules";
-import { installHooks, uninstallHooks } from "../hooks/install";
 import { cleanupHooks } from "../hooks/cleanup";
+import { installHooks, uninstallHooks } from "../hooks/install";
 import { DEFAULT_LANG, t } from "../i18n/index.js";
 import { c } from "./colors";
 import { interactiveCommit } from "./commands/commit";
@@ -181,14 +181,18 @@ async function main() {
 
   if (cmd === "uninstall-hooks") {
     uninstallHooks();
-    try { cleanupHooks(process.cwd()); } catch {}
+    try {
+      cleanupHooks(process.cwd());
+    } catch {}
     console.log(t(lang, "cli.hooksRemoved"));
     return;
   }
 
   if (cmd === "cleanup") {
     // Manually remove CommitZero managed blocks from Git hooks
-    try { cleanupHooks(process.cwd()); } catch {}
+    try {
+      cleanupHooks(process.cwd());
+    } catch {}
     console.log(t(lang, "cli.hooksRemoved"));
     return;
   }
@@ -233,7 +237,11 @@ async function main() {
         }
         arr.push(cmdStr);
         const nextCfg = { ...current, preCommitCommands: arr };
-        writeFileSync(jsonPath, JSON.stringify(nextCfg, null, 2) + "\n", "utf8");
+        writeFileSync(
+          jsonPath,
+          JSON.stringify(nextCfg, null, 2) + "\n",
+          "utf8"
+        );
         console.log(t(lang, "cli.preCommitAdded", { cmd: cmdStr }));
         return;
       } else {
@@ -245,13 +253,17 @@ async function main() {
         }
         arr.splice(idx, 1);
         const nextCfg = { ...current, preCommitCommands: arr };
-        writeFileSync(jsonPath, JSON.stringify(nextCfg, null, 2) + "\n", "utf8");
+        writeFileSync(
+          jsonPath,
+          JSON.stringify(nextCfg, null, 2) + "\n",
+          "utf8"
+        );
         console.log(t(lang, "cli.preCommitRemoved", { cmd: cmdStr }));
         return;
       }
     }
     // Execute configured pre-commit commands sequentially; stop on first failure
-    const cfg = { ...defaultOptions, ...userConfig, language: lang } as any;
+    const cfg = { ...defaultOptions, ...userConfig, language: lang };
     const commands: string[] = Array.isArray(cfg.preCommitCommands)
       ? cfg.preCommitCommands
       : [];
@@ -269,8 +281,8 @@ async function main() {
           cwd: process.cwd(),
         });
         if (out) process.stdout.write(out);
-      } catch (err: any) {
-        const errOut = err && err.stderr ? String(err.stderr) : "";
+      } catch (err: unknown) {
+        const errOut = err && err instanceof Error ? err.message : "";
         if (errOut) process.stderr.write(errOut);
         console.error(t(lang, "cli.preCommitFail", { cmd: command }));
         exit(1);
@@ -289,5 +301,7 @@ main()
     exit(2);
   })
   .finally(() => {
-    try { (process.stdin as any).pause?.(); } catch {}
+    try {
+      (process.stdin as unknown as NodeJS.ReadableStream).pause?.();
+    } catch {}
   });

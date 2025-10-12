@@ -80,7 +80,9 @@ export async function select(
     const forceNonInteractive = process.env.COMMITSKIP_SELECT_PROMPT === "1";
     if (!isTTY || forceNonInteractive) {
       // Garantir que stdin não mantenha o event loop ativo em ambientes de teste/CI
-      try { stdin.pause?.(); } catch {}
+      try {
+        stdin.pause?.();
+      } catch {}
       return resolve(items[0]?.value);
     }
     let selected = 0;
@@ -121,7 +123,7 @@ export async function select(
         // Ensure no lingering listeners remain
         const listeners = stdin.listeners("data");
         for (const l of listeners) {
-          stdin.off("data", l as any);
+          stdin.removeListener("data", l as (...args: unknown[]) => void);
         }
       } catch {}
       try {

@@ -1,11 +1,20 @@
+/* eslint-disable no-useless-escape */
 import assert from "node:assert";
-import test, { mock } from "node:test";
-import { mkdtempSync, writeFileSync, chmodSync, mkdirSync, readFileSync } from "node:fs";
-import { join } from "node:path";
+import {
+  chmodSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  writeFileSync,
+} from "node:fs";
 import os from "node:os";
-import * as readline from "node:readline";
+import { join } from "node:path";
+import test from "node:test";
 
-function withGitStub(mode: "a" | "b" | "c", fn: () => Promise<void> | void) {
+async function withGitStub(
+  mode: "a" | "b" | "c",
+  fn: () => Promise<void> | void
+) {
   const tmp = mkdtempSync(join(os.tmpdir(), "commitzero-git-"));
   const gitPath = join(tmp, "git");
   const script = `#!/usr/bin/env bash\n
@@ -22,7 +31,7 @@ echo \"Unknown command: $@\" 1>&2\nexit 1\n`;
   process.env.PATH = `${tmp}:${prevPath}`;
   process.env.GIT_STUB_MODE = mode;
   try {
-    return fn();
+    return await fn();
   } finally {
     process.env.PATH = prevPath;
     if (prevMode === undefined) delete (process.env as any).GIT_STUB_MODE;
@@ -51,22 +60,22 @@ test("interactiveCommit autoAdd true but still no staged aborts", async () => {
   });
 });
 
-function withReadlineStub(answers: string[], fn: () => Promise<void> | void) {
-  let idx = 0;
-  const restore = mock.method(readline, "createInterface", () => ({
-    once: () => {},
-    removeListener: () => {},
-    question: (q: string, cb: (answer: string) => void) => {
-      const ans = answers[idx] ?? "";
-      idx += 1;
-      cb(ans);
-    },
-    close: () => {},
-  }));
+async function withTestAnswers(
+  answers: string[],
+  fn: () => Promise<void> | void
+) {
+  const prevNodeTest = process.env.NODE_TEST;
+  const prevAns = process.env.COMMITZERO_TEST_ANSWERS;
+  process.env.NODE_TEST = "1";
+  process.env.COMMITZERO_TEST_ANSWERS = JSON.stringify(answers);
   try {
-    return fn();
+    return await fn();
   } finally {
-    restore.mock.restore();
+    if (prevNodeTest === undefined) delete (process.env as any).NODE_TEST;
+    else process.env.NODE_TEST = prevNodeTest as string;
+    if (prevAns === undefined)
+      delete (process.env as any).COMMITZERO_TEST_ANSWERS;
+    else process.env.COMMITZERO_TEST_ANSWERS = prevAns as string;
   }
 }
 
@@ -77,59 +86,44 @@ test("interactiveCommit fluxo feliz cria mensagem e commita (autoPush)", async (
     const gitDir = join(tmp, ".git");
     mkdirSync(gitDir, { recursive: true });
     process.chdir(tmp);
-    const prevTty = process.stdin.isTTY;
-    // Forçar select a escolher primeiro tipo Não-TTY
-    // @ts-ignore
-    process.stdin.isTTY = false;
+    const prevSkip = process.env.COMMITSKIP_SELECT_PROMPT;
+    process.env.COMMITSKIP_SELECT_PROMPT = "1";
     try {
       // answers: scope, subject, body, breaking, (no breaking details)
-      await withReadlineStub(
-        ["core", "add login", "", "n"],
-        async () => {
-          const interactiveCommit = await loadInteractiveCommit();
-          const rc = await interactiveCommit("en", { autoPush: true });
-          assert.strictEqual(rc, 0);
-          const msg = readFileSync(join(gitDir, "COMMIT_EDITMSG"), "utf8");
-          assert.ok(msg.includes("feat(core): add login"));
-        }
-      );
+      await withTestAnswers(["core", "add login", "", "n"], async () => {
+        const interactiveCommit = await loadInteractiveCommit();
+        const rc = await interactiveCommit("en", { autoPush: true });
+        assert.strictEqual(rc, 0);
+        const msg = readFileSync(join(gitDir, "COMMIT_EDITMSG"), "utf8");
+        assert.ok(msg.includes("feat(core): add login"));
+      });
     } finally {
-      // @ts-ignore
-      process.stdin.isTTY = prevTty;
+      if (prevSkip === undefined)
+        delete (process.env as any).COMMITSKIP_SELECT_PROMPT;
+      else process.env.COMMITSKIP_SELECT_PROMPT = prevSkip as string;
       process.chdir(prevCwd);
     }
   });
 });
 
 function withReadlineCancel(fn: () => Promise<void> | void) {
-  const restore = mock.method(readline, "createInterface", () => {
-    let sigintHandler: ((...args: any[]) => void) | null = null;
-    return {
-      once: (_event: string, handler: any) => {
-        sigintHandler = handler;
-        // Simula Ctrl+C imediatamente
-        setImmediate(() => sigintHandler && sigintHandler());
-      },
-      removeListener: () => {},
-      question: (_q: string, _cb: (answer: string) => void) => {
-        // não chama callback, pois já cancelamos via SIGINT
-      },
-      close: () => {},
-    } as any;
-  });
-  try {
-    return fn();
-  } finally {
-    restore.mock.restore();
-  }
+  return withTestAnswers(["__SIGINT__"], fn);
 }
 
 test("interactiveCommit cancelado nos prompts retorna 130", async () => {
   await withGitStub("c", async () => {
-    await withReadlineCancel(async () => {
-      const interactiveCommit = await loadInteractiveCommit();
-      const rc = await interactiveCommit("en", {});
-      assert.strictEqual(rc, 130);
-    });
+    const prevSkip = process.env.COMMITSKIP_SELECT_PROMPT;
+    process.env.COMMITSKIP_SELECT_PROMPT = "1";
+    try {
+      await withReadlineCancel(async () => {
+        const interactiveCommit = await loadInteractiveCommit();
+        const rc = await interactiveCommit("en", {});
+        assert.strictEqual(rc, 130);
+      });
+    } finally {
+      if (prevSkip === undefined)
+        delete (process.env as any).COMMITSKIP_SELECT_PROMPT;
+      else process.env.COMMITSKIP_SELECT_PROMPT = prevSkip as string;
+    }
   });
 });

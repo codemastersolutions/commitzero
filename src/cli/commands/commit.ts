@@ -1,4 +1,4 @@
-import { execSync } from "node:child_process";
+import { execSync, execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { stdin as input, stdout as output } from "node:process";
@@ -13,8 +13,44 @@ import { t, type Lang } from "../../i18n/index.js";
 import { c } from "../colors";
 import { select } from "./select";
 
-function ask(rl: readline.Interface, q: string): Promise<string> {
+// Test-mode support: allow providing answers via environment to avoid interactive I/O
+type TestAnswerCtx = { answers: string[] | null; index: number; raw: string | null };
+function initTestAnswerCtx(): TestAnswerCtx {
+  try {
+    const raw = process.env.COMMITZERO_TEST_ANSWERS ?? null;
+    if (raw) {
+      const arr = JSON.parse(raw);
+      if (process.env.NODE_TEST === "1") {
+        console.log(c.yellow(`[TEST] Loaded COMMITZERO_TEST_ANSWERS: ${raw}`));
+      }
+      return { answers: Array.isArray(arr) ? arr : null, index: 0, raw };
+    }
+    return { answers: null, index: 0, raw: null };
+  } catch {
+    return { answers: null, index: 0, raw: null };
+  }
+}
+
+function ask(rl: readline.Interface, q: string, ctx?: TestAnswerCtx): Promise<string> {
   return new Promise((resolve, reject) => {
+    // Prefer per-invocation test answers context when provided
+    if (ctx && ctx.answers) {
+      const ans = (ctx.answers[ctx.index++] ?? "").trim();
+      if (process.env.NODE_TEST === "1") {
+        console.log(c.yellow(`[TEST] ask -> using test answer: "${ans}" for question: ${q.replace(/\n/g, " ")}`));
+      }
+      if (ans === "__SIGINT__") {
+        return reject(new Error("cancelled"));
+      }
+      return resolve(ans);
+    }
+    // Fallback to environment-driven non-interactive guard
+    // If stdin/stdout are not TTY, avoid interactive question and resolve empty
+    const isInteractive = !!input.isTTY && !!output.isTTY;
+    if (!isInteractive) {
+      try { input.pause?.(); } catch {}
+      return resolve("");
+    }
     const onSigint = () => {
       rl.removeListener("SIGINT", onSigint);
       reject(new Error("cancelled"));
@@ -22,6 +58,9 @@ function ask(rl: readline.Interface, q: string): Promise<string> {
     rl.once("SIGINT", onSigint);
     rl.question(q, (answer: string) => {
       rl.removeListener("SIGINT", onSigint);
+      if (process.env.NODE_TEST === "1") {
+        console.log(c.yellow(`[TEST] ask -> readline answer: "${answer.trim()}" for question: ${q.replace(/\n/g, " ")}`));
+      }
       resolve(answer.trim());
     });
   });
@@ -34,45 +73,76 @@ export async function interactiveCommit(
     autoPush?: boolean;
   }
 ): Promise<number> {
+  // Initialize per-run test answers to avoid cross-test interference
+  const testCtx = initTestAnswerCtx();
   let rl: readline.Interface | null = null;
+  if (process.env.NODE_TEST === "1") {
+    console.log(c.yellow(`[TEST] PATH=${process.env.PATH}`));
+    console.log(c.yellow(`[TEST] GIT_STUB_MODE=${process.env.GIT_STUB_MODE}`));
+    try {
+      const whichGit = execSync("which git", { stdio: ["ignore", "pipe", "ignore"] })
+        .toString()
+        .trim();
+      console.log(c.yellow(`[TEST] which git -> ${whichGit}`));
+    } catch {}
+  }
   try {
     // Pré-checagem do git: verificar se há arquivos staged
     function hasStaged(): boolean {
       try {
-        const out = execSync("git diff --cached --name-only", {
+        const out = execFileSync("git", ["diff", "--cached", "--name-only"], {
           stdio: ["ignore", "pipe", "ignore"],
         })
           .toString()
           .trim();
+        if (process.env.NODE_TEST === "1") {
+          console.log(c.yellow(`[TEST] hasStaged -> output: "${out}"`));
+        }
         return out.length > 0;
       } catch {
+        if (process.env.NODE_TEST === "1") {
+          console.log(c.yellow(`[TEST] hasStaged -> error executing git diff --cached --name-only`));
+        }
         return false;
       }
     }
     function hasChanges(): boolean {
       try {
-        const out = execSync("git status --porcelain", {
+        const out = execFileSync("git", ["status", "--porcelain"], {
           stdio: ["ignore", "pipe", "ignore"],
         })
           .toString()
           .trim();
+        if (process.env.NODE_TEST === "1") {
+          console.log(c.yellow(`[TEST] hasChanges -> output: "${out}"`));
+        }
         return out.length > 0;
       } catch {
+        if (process.env.NODE_TEST === "1") {
+          console.log(c.yellow(`[TEST] hasChanges -> error executing git status --porcelain`));
+        }
         return false;
       }
+    }
+    if (process.env.NODE_TEST === "1") {
+      console.log(
+        c.yellow(
+          `[TEST] initial state -> hasStaged=${hasStaged()} hasChanges=${hasChanges()}`
+        )
+      );
     }
     if (!hasStaged()) {
       const autoAdd = cfg?.autoAdd === true;
       if (autoAdd) {
         if (hasChanges()) {
           try {
-            const out = execSync("git add -A", {
+            const out = execFileSync("git", ["add", "-A"], {
               stdio: ["ignore", "pipe", "pipe"],
               encoding: "utf8",
             });
             if (out) process.stdout.write(out);
-          } catch (err: any) {
-            const errOut = err && err.stderr ? String(err.stderr) : "";
+          } catch (err: unknown) {
+            const errOut = err && err instanceof Error ? err.message : "";
             if (errOut) process.stderr.write(errOut);
             console.error(c.red(String(err)));
             return 1;
@@ -104,26 +174,28 @@ export async function interactiveCommit(
           rl = readline.createInterface({ input, output });
           let addAns: string;
           try {
-            addAns = await ask(rl, c.cyan(t(lang, "commit.git.askAdd")));
+            addAns = await ask(rl, c.cyan(t(lang, "commit.git.askAdd")), testCtx);
           } catch {
             // Cancelado via Ctrl+C na pergunta do git add
             console.log(c.yellow(t(lang, "commit.cancelled")));
             return 130;
           } finally {
             rl.close();
-            try { input.pause?.(); } catch {}
+            try {
+              input.pause?.();
+            } catch {}
             rl = null;
           }
           const wantsAdd = /^y(es)?$/i.test(addAns);
           if (wantsAdd) {
             try {
-              const out = execSync("git add -A", {
+              const out = execFileSync("git", ["add", "-A"], {
                 stdio: ["ignore", "pipe", "pipe"],
                 encoding: "utf8",
               });
               if (out) process.stdout.write(out);
-            } catch (err: any) {
-              const errOut = err && err.stderr ? String(err.stderr) : "";
+            } catch (err: unknown) {
+              const errOut = err && err instanceof Error ? err.message : "";
               if (errOut) process.stderr.write(errOut);
               console.error(c.red(String(err)));
               return 1;
@@ -191,21 +263,28 @@ export async function interactiveCommit(
     let breakingAns: string;
     let breakingDetails: string = "";
     try {
-      scope = await ask(rl, c.cyan(t(lang, "commit.prompt.scope")));
-      subject = await ask(rl, c.cyan(t(lang, "commit.prompt.subject")));
-      body = await ask(rl, c.cyan(t(lang, "commit.prompt.body")));
-      breakingAns = await ask(rl, c.cyan(t(lang, "commit.prompt.breaking")));
+      scope = await ask(rl, c.cyan(t(lang, "commit.prompt.scope")), testCtx);
+      subject = await ask(rl, c.cyan(t(lang, "commit.prompt.subject")), testCtx);
+      body = await ask(rl, c.cyan(t(lang, "commit.prompt.body")), testCtx);
+      breakingAns = await ask(rl, c.cyan(t(lang, "commit.prompt.breaking")), testCtx);
       const isBreakingTmp = /^y(es)?$/i.test(breakingAns);
       if (isBreakingTmp) {
         breakingDetails = await ask(
           rl,
-          c.cyan(t(lang, "commit.prompt.breakingDetails"))
+          c.cyan(t(lang, "commit.prompt.breakingDetails")),
+          testCtx
         );
       }
     } catch {
       // Cancelado via Ctrl+C durante os prompts: informar e encerrar
       console.log(c.yellow(t(lang, "commit.cancelled")));
       return 130;
+    } finally {
+      if (rl) {
+        rl.close();
+        try { input.pause?.(); } catch {}
+        rl = null;
+      }
     }
     const isBreaking = /^y(es)?$/i.test(breakingAns);
     const footers = isBreaking
@@ -234,6 +313,9 @@ export async function interactiveCommit(
       language: lang,
     });
     if (!result.valid) {
+      if (process.env.NODE_TEST === "1") {
+        console.log(c.yellow(`[TEST] lint invalid. Subject="${commit.subject}", Scope="${commit.scope ?? ""}", Body length=${commit.body?.length ?? 0}`));
+      }
       console.error(
         c.red(t(lang, "cli.invalid")) +
           "\n" +
@@ -257,7 +339,7 @@ export async function interactiveCommit(
     console.log("\n" + msg);
     // Execute the actual git commit using the generated message
     try {
-      const commitOut = execSync("git commit -F .git/COMMIT_EDITMSG", {
+      const commitOut = execFileSync("git", ["commit", "-F", ".git/COMMIT_EDITMSG"], {
         stdio: ["ignore", "pipe", "pipe"],
         encoding: "utf8",
       });
@@ -265,27 +347,29 @@ export async function interactiveCommit(
       // Auto push if requested
       if (cfg?.autoPush) {
         try {
-          const pushOut = execSync("git push", {
+          const pushOut = execFileSync("git", ["push"], {
             stdio: ["ignore", "pipe", "pipe"],
             encoding: "utf8",
           });
           if (pushOut) process.stdout.write(pushOut);
-        } catch (err: any) {
-          const errOut = err && err.stderr ? String(err.stderr) : "";
+        } catch (err: unknown) {
+          const errOut = err && err instanceof Error ? err.message : "";
           if (errOut) process.stderr.write(errOut);
           console.error(c.red(String(err)));
           return 1;
         }
       }
       return 0;
-    } catch (err: any) {
-      const errOut = err && err.stderr ? String(err.stderr) : "";
+    } catch (err: unknown) {
+      const errOut = err && err instanceof Error ? err.message : "";
       if (errOut) process.stderr.write(errOut);
       console.error(c.red(String(err)));
       return 1;
     }
   } finally {
     rl?.close();
-    try { input.pause?.(); } catch {}
+    try {
+      input.pause?.();
+    } catch {}
   }
 }
