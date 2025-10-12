@@ -26,9 +26,7 @@ export function loadConfig(cwd: string = process.cwd()): UserConfig {
     }
   }
   if (existsSync(jsPath)) {
-    // Cuidado com require/import; evitar execuções externas
     try {
-      // Usar import dinâmico sob responsabilidade do usuário; sem deps externas
       const mod = require(jsPath);
       return mod?.default ?? mod ?? {};
     } catch {

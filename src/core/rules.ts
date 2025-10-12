@@ -1,4 +1,4 @@
-import { t, DEFAULT_LANG } from "../i18n/index.js";
+import { DEFAULT_LANG, t } from "../i18n/index.js";
 export type CommitType =
   | "feat"
   | "fix"
@@ -40,14 +40,14 @@ export const defaultOptions: Required<LintOptions> = {
     "build",
     "ci",
     "chore",
-    "revert"
+    "revert",
   ],
   scopes: [],
   requireScope: false,
   maxSubjectLength: 72,
   allowBreaking: true,
   footerKeywords: ["BREAKING CHANGE", "Closes", "Refs"],
-  language: DEFAULT_LANG
+  language: DEFAULT_LANG,
 };
 
 export interface ParsedCommit {
@@ -64,7 +64,6 @@ export interface ParsedCommit {
   };
 }
 
-
 export function lintCommit(commit: ParsedCommit, opts: LintOptions = {}): LintResult {
   const options: Required<LintOptions> = { ...defaultOptions, ...opts } as Required<LintOptions>;
   const errors: string[] = [];
@@ -75,7 +74,6 @@ export function lintCommit(commit: ParsedCommit, opts: LintOptions = {}): LintRe
     errors.push(t(lang, "rules.typeInvalid", { type: commit.type }));
   }
 
-  // type-case: lower-case
   if (commit.type !== commit.type.toLowerCase()) {
     errors.push(t(lang, "rules.typeLower"));
   }
@@ -88,7 +86,6 @@ export function lintCommit(commit: ParsedCommit, opts: LintOptions = {}): LintRe
     errors.push(t(lang, "rules.scopeInvalid", { scope: commit.scope }));
   }
 
-  // scope-case and pattern
   if (commit.scope) {
     const scopeValid = /^[a-z0-9\- ]+$/.test(commit.scope);
     if (!scopeValid) {
@@ -107,22 +104,23 @@ export function lintCommit(commit: ParsedCommit, opts: LintOptions = {}): LintRe
     warnings.push(t(lang, "rules.subjectTooLong", { max: options.maxSubjectLength }));
   }
 
-  // subject-full-stop: never '.'
   if (commit.subject.trim().endsWith(".")) {
     errors.push(t(lang, "rules.subjectPeriod"));
   }
 
-  // body-leading-blank: require blank line before body if body exists
   if (commit.body && !(commit.meta && commit.meta.hasBlankAfterHeader)) {
     errors.push(t(lang, "rules.blankHeaderBody"));
   }
 
-  // footer-leading-blank: require blank line before footers if any footer exists
-  if ((commit.footers && commit.footers.length > 0) && !(commit.meta && commit.meta.hasBlankBeforeFooter)) {
+  if (
+    commit.footers &&
+    commit.footers.length > 0 &&
+    !(commit.meta && commit.meta.hasBlankBeforeFooter)
+  ) {
     errors.push(t(lang, "rules.blankBeforeFooters"));
   }
 
-  const hasBreakingFooter = (commit.footers || []).some(f => f.key === "BREAKING CHANGE");
+  const hasBreakingFooter = (commit.footers || []).some((f) => f.key === "BREAKING CHANGE");
   if (commit.isBreaking && !options.allowBreaking) {
     errors.push(t(lang, "rules.breakingNotAllowed"));
   }
@@ -131,7 +129,6 @@ export function lintCommit(commit: ParsedCommit, opts: LintOptions = {}): LintRe
     errors.push(t(lang, "rules.breakingRequiresFooter"));
   }
 
-  // footer keywords validation (warn if unknown)
   for (const f of commit.footers || []) {
     if (!options.footerKeywords.includes(f.key)) {
       warnings.push(t(lang, "rules.footerUnknown", { key: f.key }));

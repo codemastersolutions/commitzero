@@ -1,20 +1,10 @@
-/* eslint-disable no-useless-escape */
 import assert from "node:assert";
-import {
-  chmodSync,
-  mkdirSync,
-  mkdtempSync,
-  readFileSync,
-  writeFileSync,
-} from "node:fs";
+import { chmodSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 
-async function withGitStub(
-  mode: "a" | "b" | "c",
-  fn: () => Promise<void> | void
-) {
+async function withGitStub(mode: "a" | "b" | "c", fn: () => Promise<void> | void) {
   const tmp = mkdtempSync(join(os.tmpdir(), "commitzero-git-"));
   const gitPath = join(tmp, "git");
   const script = `#!/usr/bin/env bash\n
@@ -60,10 +50,7 @@ test("interactiveCommit autoAdd true but still no staged aborts", async () => {
   });
 });
 
-async function withTestAnswers(
-  answers: string[],
-  fn: () => Promise<void> | void
-) {
+async function withTestAnswers(answers: string[], fn: () => Promise<void> | void) {
   const prevNodeTest = process.env.NODE_TEST;
   const prevAns = process.env.COMMITZERO_TEST_ANSWERS;
   process.env.NODE_TEST = "1";
@@ -73,8 +60,7 @@ async function withTestAnswers(
   } finally {
     if (prevNodeTest === undefined) delete (process.env as any).NODE_TEST;
     else process.env.NODE_TEST = prevNodeTest as string;
-    if (prevAns === undefined)
-      delete (process.env as any).COMMITZERO_TEST_ANSWERS;
+    if (prevAns === undefined) delete (process.env as any).COMMITZERO_TEST_ANSWERS;
     else process.env.COMMITZERO_TEST_ANSWERS = prevAns as string;
   }
 }
@@ -89,7 +75,6 @@ test("interactiveCommit fluxo feliz cria mensagem e commita (autoPush)", async (
     const prevSkip = process.env.COMMITSKIP_SELECT_PROMPT;
     process.env.COMMITSKIP_SELECT_PROMPT = "1";
     try {
-      // answers: scope, subject, body, breaking, (no breaking details)
       await withTestAnswers(["core", "add login", "", "n"], async () => {
         const interactiveCommit = await loadInteractiveCommit();
         const rc = await interactiveCommit("en", { autoPush: true });
@@ -98,8 +83,7 @@ test("interactiveCommit fluxo feliz cria mensagem e commita (autoPush)", async (
         assert.ok(msg.includes("feat(core): add login"));
       });
     } finally {
-      if (prevSkip === undefined)
-        delete (process.env as any).COMMITSKIP_SELECT_PROMPT;
+      if (prevSkip === undefined) delete (process.env as any).COMMITSKIP_SELECT_PROMPT;
       else process.env.COMMITSKIP_SELECT_PROMPT = prevSkip as string;
       process.chdir(prevCwd);
     }
@@ -121,8 +105,7 @@ test("interactiveCommit cancelado nos prompts retorna 130", async () => {
         assert.strictEqual(rc, 130);
       });
     } finally {
-      if (prevSkip === undefined)
-        delete (process.env as any).COMMITSKIP_SELECT_PROMPT;
+      if (prevSkip === undefined) delete (process.env as any).COMMITSKIP_SELECT_PROMPT;
       else process.env.COMMITSKIP_SELECT_PROMPT = prevSkip as string;
     }
   });

@@ -49,9 +49,7 @@ function renderPrompt(prompt: string) {
 
 function renderItems(items: Item[], selected: number): number {
   let lines = 0;
-  const maxLabelLen = Math.max(
-    ...items.map((it) => (it.label ?? it.value).length)
-  );
+  const maxLabelLen = Math.max(...items.map((it) => (it.label ?? it.value).length));
   for (let i = 0; i < items.length; i++) {
     const it = items[i];
     const pointer = i === selected ? c.cyan("❯") : " ";
@@ -65,11 +63,7 @@ function renderItems(items: Item[], selected: number): number {
   return lines;
 }
 
-export async function select(
-  prompt: string,
-  items: Item[],
-  header?: string
-): Promise<string> {
+export async function select(prompt: string, items: Item[], header?: string): Promise<string> {
   return new Promise((resolve, reject) => {
     const stdin = process.stdin;
     const stdout = process.stdout;
@@ -79,7 +73,6 @@ export async function select(
     // Use a dedicated env guard so unit tests that simulate TTY continue to work.
     const forceNonInteractive = process.env.COMMITSKIP_SELECT_PROMPT === "1";
     if (!isTTY || forceNonInteractive) {
-      // Garantir que stdin não mantenha o event loop ativo em ambientes de teste/CI
       try {
         stdin.pause?.();
       } catch {}
@@ -116,11 +109,9 @@ export async function select(
         stdin.off("data", onData);
       } catch {}
       try {
-        // Pause stdin to release the event loop and avoid hanging processes
         stdin.pause?.();
       } catch {}
       try {
-        // Ensure no lingering listeners remain
         const listeners = stdin.listeners("data");
         for (const l of listeners) {
           stdin.removeListener("data", l as (...args: unknown[]) => void);

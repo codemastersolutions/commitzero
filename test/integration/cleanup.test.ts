@@ -26,10 +26,7 @@ test("cleanup removes managed blocks in hooks directory", () => {
       /Managed blocks removed from hooks|Blocos gerenciados removidos dos hooks|Bloques administrados removidos de los hooks/
     );
     const content = readFileSync(hookPath, "utf8");
-    assert.ok(
-      !content.includes(HOOK_HEADER),
-      "managed block header should be removed"
-    );
+    assert.ok(!content.includes(HOOK_HEADER), "managed block header should be removed");
     assert.match(content, /echo custom/);
   } finally {
     rmSync(tmp, { recursive: true, force: true });

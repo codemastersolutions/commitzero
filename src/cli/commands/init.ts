@@ -18,9 +18,7 @@ function ask(rl: readline.Interface, q: string): Promise<string> {
   });
 }
 
-export async function initConfig(
-  lang: import("../../i18n").Lang = DEFAULT_LANG
-) {
+export async function initConfig(lang: import("../../i18n").Lang = DEFAULT_LANG) {
   const path = "commitzero.config.json";
   const existed = existsSync(path);
   if (existed) {
@@ -45,14 +43,15 @@ export async function initConfig(
         console.log(c.yellow(t(lang, "init.cancelled")));
         return;
       }
-      // proceed to overwrite with defaults below
-  } catch {
+    } catch {
       console.log(c.yellow(t(lang, "init.cancelled")));
       return;
-  } finally {
+    } finally {
       rl?.close();
-      try { input.pause?.(); } catch {}
-  }
+      try {
+        input.pause?.();
+      } catch {}
+    }
   }
   const tpl = {
     types: [
@@ -66,7 +65,7 @@ export async function initConfig(
       "build",
       "ci",
       "chore",
-      "revert"
+      "revert",
     ],
     scopes: [],
     requireScope: false,
@@ -75,8 +74,8 @@ export async function initConfig(
     footerKeywords: ["BREAKING CHANGE", "Closes", "Refs"],
     preCommitCommands: [],
     hookInstallPath: ".git/hooks",
-    // When overwriting with defaults, set language to 'en' by default
-    language: existed ? DEFAULT_LANG : lang
+
+    language: existed ? DEFAULT_LANG : lang,
   };
   writeFileSync(path, JSON.stringify(tpl, null, 2) + "\n", "utf8");
   if (existed) {

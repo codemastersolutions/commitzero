@@ -1,12 +1,6 @@
 import assert from "node:assert";
 import { execSync } from "node:child_process";
-import {
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  rmSync,
-  writeFileSync,
-} from "node:fs";
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import test from "node:test";
 const CLI = join(process.cwd(), "dist", "cjs", "cli", "index.js");
@@ -116,7 +110,7 @@ test("check command reads .git/COMMIT_EDITMSG", () => {
   try {
     writeFileSync(editPath, "feat: ok", "utf8");
     const out = execSync(`node ${CLI} check`, { encoding: "utf8", cwd: tmp });
-    // No output on valid check; ensure it doesn't throw
+
     assert.ok(typeof out === "string");
   } finally {
     rmSync(tmp, { recursive: true, force: true });
@@ -130,9 +124,7 @@ test("check without COMMIT_EDITMSG prints error", () => {
   try {
     try {
       execSync(`node ${CLI} check`, { encoding: "utf8", cwd: tmp });
-      assert.fail(
-        "expected check to exit with error when COMMIT_EDITMSG missing"
-      );
+      assert.fail("expected check to exit with error when COMMIT_EDITMSG missing");
     } catch (err: any) {
       const output = String((err.stdout || "") + (err.stderr || ""));
       assert.match(
@@ -150,7 +142,6 @@ test("install-hooks and uninstall-hooks manage hooks content", () => {
   const hooksDir = join(tmp, ".git", "hooks");
   mkdirSync(hooksDir, { recursive: true });
   try {
-    // install-hooks
     const outInstall = execSync(`node ${CLI} install-hooks`, {
       encoding: "utf8",
       cwd: tmp,
@@ -165,7 +156,6 @@ test("install-hooks and uninstall-hooks manage hooks content", () => {
     assert.match(cmContent, /# CommitZero managed block/);
     assert.match(prepContent, /# CommitZero managed block/);
 
-    // uninstall-hooks
     const outUninstall = execSync(`node ${CLI} uninstall-hooks`, {
       encoding: "utf8",
       cwd: tmp,
@@ -188,7 +178,7 @@ test("init creates commitzero.config.json", () => {
     assert.match(out1, /created/i);
     const cfgPath = join(tmp, "commitzero.config.json");
     assert.ok(existsSync(cfgPath));
-    // second run should report exists
+
     const out2 = execSync(`node ${CLI} init`, { encoding: "utf8", cwd: tmp });
     assert.match(out2.toLowerCase(), /already exists|já existe|ya existe/);
   } finally {

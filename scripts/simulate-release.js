@@ -50,9 +50,7 @@ async function main() {
     try {
       run("npm run verify:readmes");
     } catch {
-      console.error(
-        "\nFalha na verificação dos READMEs — simulação interrompida."
-      );
+      console.error("\nFalha na verificação dos READMEs — simulação interrompida.");
       process.exit(1);
     }
   } else {
@@ -77,15 +75,11 @@ async function main() {
   console.log(`Simulação: criar release para tag v${next}`);
 
   log(`Simulando publicação no npm (${dryPublish ? "dry-run" : "real"})`);
-  const publishCmd = `npm publish --access public ${
-    dryPublish ? "--dry-run" : ""
-  }`.trim();
+  const publishCmd = `npm publish --access public ${dryPublish ? "--dry-run" : ""}`.trim();
   try {
     run(publishCmd);
   } catch {
-    console.error(
-      "\nPublicação (simulada) falhou. Verifique o conteúdo que será publicado."
-    );
+    console.error("\nPublicação (simulada) falhou. Verifique o conteúdo que será publicado.");
     process.exit(1);
   }
 

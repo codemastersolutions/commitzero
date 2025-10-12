@@ -4,7 +4,7 @@ import { commitMsgScript, prepareCommitMsgScript, preCommitScript, HOOK_HEADER }
 import { execSync } from "node:child_process";
 
 export interface HookOptions {
-  hookDir?: string; // default .git/hooks
+  hookDir?: string;
 }
 
 function ensureDir(dir: string) {
@@ -38,7 +38,6 @@ function removeManagedBlock(original: string): string {
 }
 
 export function installHooks(opts: HookOptions = {}) {
-  // Determine hooks directory: prefer Git's core.hooksPath if configured
   let hookDir = opts.hookDir;
   if (!hookDir) {
     try {
@@ -63,7 +62,6 @@ export function installHooks(opts: HookOptions = {}) {
 }
 
 export function uninstallHooks(opts: HookOptions = {}) {
-  // Determine hooks directory: prefer Git's core.hooksPath if configured
   let hookDir = opts.hookDir;
   if (!hookDir) {
     try {

@@ -24,9 +24,7 @@ function removeManagedBlock(original: string): string {
 
 function findProjectRoot(start: string): string {
   let dir = start;
-  // Walk up until filesystem root to find a directory with .git/hooks
-  // Works with pnpm's nested node_modules/.pnpm structure and symlinks
-  // Stops at the first directory containing .git/hooks
+
   while (true) {
     const hooksDir = join(dir, ".git", "hooks");
     if (existsSync(hooksDir)) return dir;
@@ -70,7 +68,6 @@ export function cleanupHooks(cwd?: string) {
   } catch {}
 }
 
-// Allow running directly: node dist/cjs/hooks/cleanup.js
 if (require.main === module) {
   cleanupHooks();
 }
