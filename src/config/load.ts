@@ -9,6 +9,7 @@ export interface UserConfig {
   maxSubjectLength?: number;
   allowBreaking?: boolean;
   footerKeywords?: string[];
+  preCommitCommands?: string[];
   hookInstallPath?: string;
   language?: Lang;
 }

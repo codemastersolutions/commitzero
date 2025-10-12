@@ -43,6 +43,7 @@ export function cleanupHooks(cwd?: string) {
   const hookDir = join(root, ".git", "hooks");
   const commitMsgPath = join(hookDir, "commit-msg");
   const prepareMsgPath = join(hookDir, "prepare-commit-msg");
+  const preCommitPath = join(hookDir, "pre-commit");
 
   try {
     if (existsSync(commitMsgPath)) {
@@ -57,6 +58,14 @@ export function cleanupHooks(cwd?: string) {
       const p = readFileSync(prepareMsgPath, "utf8");
       const cleaned = removeManagedBlock(p);
       writeFileSync(prepareMsgPath, cleaned, { encoding: "utf8", mode: 0o755 });
+    }
+  } catch {}
+
+  try {
+    if (existsSync(preCommitPath)) {
+      const pc = readFileSync(preCommitPath, "utf8");
+      const cleaned = removeManagedBlock(pc);
+      writeFileSync(preCommitPath, cleaned, { encoding: "utf8", mode: 0o755 });
     }
   } catch {}
 }

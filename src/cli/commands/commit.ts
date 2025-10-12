@@ -66,8 +66,14 @@ export async function interactiveCommit(
       if (autoAdd) {
         if (hasChanges()) {
           try {
-            execSync("git add -A", { stdio: "inherit" });
-          } catch (err) {
+            const out = execSync("git add -A", {
+              stdio: ["ignore", "pipe", "pipe"],
+              encoding: "utf8",
+            });
+            if (out) process.stdout.write(out);
+          } catch (err: any) {
+            const errOut = err && err.stderr ? String(err.stderr) : "";
+            if (errOut) process.stderr.write(errOut);
             console.error(c.red(String(err)));
             return 1;
           }
@@ -80,6 +86,21 @@ export async function interactiveCommit(
         }
       } else {
         if (hasChanges()) {
+          // In CI/coverage/test environments, skip interactive add prompt
+          const skipAddPrompt =
+            process.env.COMMITSKIP_ADD_PROMPT === "1" ||
+            process.env.CI === "true" ||
+            process.env.NODE_TEST === "1";
+          if (skipAddPrompt) {
+            console.error(c.red(t(lang, "commit.git.abort")));
+            return 1;
+          }
+          // Only prompt when both stdin and stdout are TTY
+          const isInteractive = !!input.isTTY && !!output.isTTY;
+          if (!isInteractive) {
+            console.error(c.red(t(lang, "commit.git.abort")));
+            return 1;
+          }
           rl = readline.createInterface({ input, output });
           let addAns: string;
           try {
@@ -90,13 +111,20 @@ export async function interactiveCommit(
             return 130;
           } finally {
             rl.close();
+            try { input.pause?.(); } catch {}
             rl = null;
           }
           const wantsAdd = /^y(es)?$/i.test(addAns);
           if (wantsAdd) {
             try {
-              execSync("git add -A", { stdio: "inherit" });
-            } catch (err) {
+              const out = execSync("git add -A", {
+                stdio: ["ignore", "pipe", "pipe"],
+                encoding: "utf8",
+              });
+              if (out) process.stdout.write(out);
+            } catch (err: any) {
+              const errOut = err && err.stderr ? String(err.stderr) : "";
+              if (errOut) process.stderr.write(errOut);
               console.error(c.red(String(err)));
               return 1;
             }
@@ -229,22 +257,35 @@ export async function interactiveCommit(
     console.log("\n" + msg);
     // Execute the actual git commit using the generated message
     try {
-      execSync("git commit -F .git/COMMIT_EDITMSG", { stdio: "inherit" });
+      const commitOut = execSync("git commit -F .git/COMMIT_EDITMSG", {
+        stdio: ["ignore", "pipe", "pipe"],
+        encoding: "utf8",
+      });
+      if (commitOut) process.stdout.write(commitOut);
       // Auto push if requested
       if (cfg?.autoPush) {
         try {
-          execSync("git push", { stdio: "inherit" });
-        } catch (err) {
+          const pushOut = execSync("git push", {
+            stdio: ["ignore", "pipe", "pipe"],
+            encoding: "utf8",
+          });
+          if (pushOut) process.stdout.write(pushOut);
+        } catch (err: any) {
+          const errOut = err && err.stderr ? String(err.stderr) : "";
+          if (errOut) process.stderr.write(errOut);
           console.error(c.red(String(err)));
           return 1;
         }
       }
       return 0;
-    } catch (err) {
+    } catch (err: any) {
+      const errOut = err && err.stderr ? String(err.stderr) : "";
+      if (errOut) process.stderr.write(errOut);
       console.error(c.red(String(err)));
       return 1;
     }
   } finally {
     rl?.close();
+    try { input.pause?.(); } catch {}
   }
 }

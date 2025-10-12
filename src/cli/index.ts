@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { argv, exit } from "node:process";
 import { loadConfig } from "../config/load";
 import { join } from "node:path";
@@ -62,7 +62,7 @@ async function main() {
   // userConfig already loaded
 
   if (cmd === "init") {
-    initConfig(lang);
+    await initConfig(lang);
     return;
   }
   if (cmd === "lint") {
@@ -186,6 +186,13 @@ async function main() {
     return;
   }
 
+  if (cmd === "cleanup") {
+    // Manually remove CommitZero managed blocks from Git hooks
+    try { cleanupHooks(process.cwd()); } catch {}
+    console.log(t(lang, "cli.hooksRemoved"));
+    return;
+  }
+
   if (cmd === "commit") {
     const cfg = { ...defaultOptions, ...userConfig, language: lang };
     // Parse flags: -a/--add and -p/--push
@@ -197,10 +204,90 @@ async function main() {
     return;
   }
 
+  if (cmd === "pre-commit") {
+    // Manage or run pre-commit commands
+    const sub = args[1];
+    if (sub === "add" || sub === "remove") {
+      const cmdStr = args.slice(2).join(" ");
+      if (!cmdStr.trim()) {
+        console.error(t(lang, "cli.preCommitProvideCmd"));
+        exit(2);
+        return;
+      }
+      const cwd = process.cwd();
+      const jsonPath = join(cwd, "commitzero.config.json");
+      const jsPath = join(cwd, "commitzero.config.js");
+      if (!existsSync(jsonPath) && existsSync(jsPath)) {
+        console.error(t(lang, "cli.preCommitJsConfigUnsupported"));
+        exit(2);
+        return;
+      }
+      const current = loadConfig(cwd);
+      const arr: string[] = Array.isArray(current.preCommitCommands)
+        ? [...current.preCommitCommands]
+        : [];
+      if (sub === "add") {
+        if (arr.includes(cmdStr)) {
+          console.log(t(lang, "cli.preCommitAlreadyExists", { cmd: cmdStr }));
+          return;
+        }
+        arr.push(cmdStr);
+        const nextCfg = { ...current, preCommitCommands: arr };
+        writeFileSync(jsonPath, JSON.stringify(nextCfg, null, 2) + "\n", "utf8");
+        console.log(t(lang, "cli.preCommitAdded", { cmd: cmdStr }));
+        return;
+      } else {
+        const idx = arr.indexOf(cmdStr);
+        if (idx === -1) {
+          console.log(t(lang, "cli.preCommitNotFound", { cmd: cmdStr }));
+          exit(1);
+          return;
+        }
+        arr.splice(idx, 1);
+        const nextCfg = { ...current, preCommitCommands: arr };
+        writeFileSync(jsonPath, JSON.stringify(nextCfg, null, 2) + "\n", "utf8");
+        console.log(t(lang, "cli.preCommitRemoved", { cmd: cmdStr }));
+        return;
+      }
+    }
+    // Execute configured pre-commit commands sequentially; stop on first failure
+    const cfg = { ...defaultOptions, ...userConfig, language: lang } as any;
+    const commands: string[] = Array.isArray(cfg.preCommitCommands)
+      ? cfg.preCommitCommands
+      : [];
+    if (!commands.length) {
+      console.log(t(lang, "cli.preCommitNone"));
+      return;
+    }
+    for (const command of commands) {
+      try {
+        console.log(t(lang, "cli.preCommitRun", { cmd: command }));
+        // Capture output to avoid leaking inherited stdio into parent test runner
+        const out = require("node:child_process").execSync(command, {
+          stdio: ["ignore", "pipe", "pipe"],
+          encoding: "utf8",
+          cwd: process.cwd(),
+        });
+        if (out) process.stdout.write(out);
+      } catch (err: any) {
+        const errOut = err && err.stderr ? String(err.stderr) : "";
+        if (errOut) process.stderr.write(errOut);
+        console.error(t(lang, "cli.preCommitFail", { cmd: command }));
+        exit(1);
+      }
+    }
+    console.log(t(lang, "cli.preCommitOk"));
+    return;
+  }
+
   printHelp(lang);
 }
 
-main().catch((err) => {
-  console.error(err);
-  exit(2);
-});
+main()
+  .catch((err) => {
+    console.error(err);
+    exit(2);
+  })
+  .finally(() => {
+    try { (process.stdin as any).pause?.(); } catch {}
+  });

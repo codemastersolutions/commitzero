@@ -23,6 +23,9 @@ Validador de Conventional Commits con una CLI amigable, hooks de Git y un motor 
   - Vía argumento: `commitzero lint -m "feat(core): add x"`
 - Validar el commit actual (hook): `commitzero check`
 - Hooks: `commitzero install-hooks` / `commitzero uninstall-hooks`
+- Gestión de comandos de pre-commit:
+  - Agregar: `commitzero pre-commit add "npm run lint"`
+  - Quitar: `commitzero pre-commit remove "npm run lint"`
 - Commit interactivo: `commitzero commit`
   - Agregar cambios automáticamente: `commitzero commit -a` o `commitzero commit --add`
   - Commit y push: `commitzero commit -p` o `commitzero commit --push`
@@ -63,16 +66,47 @@ commitzero lint -m $'feat(core): change\n\nBody text\n\nRefs: 123'
 ## Configuración
 
 - `commitzero.config.json|js` (opcional):
-  - `types`, `scopes`, `maxSubjectLength`, `requireScope`, `allowBreaking`, `footerKeywords`, `hookInstallPath`, `language`.
+  - Define reglas, idioma, hooks y comandos de pre-commit usados por la CLI.
 
-- `language` define el idioma de salida de la CLI y de las reglas. Valores aceptados: `en`, `pt`, `es`. Por defecto: `en`.
-- Ejemplo:
+### Ejemplo completo
 
 ```
 {
-  "language": "es"
+  "types": [
+    "feat", "fix", "docs", "style", "refactor", "perf",
+    "test", "build", "ci", "chore", "revert"
+  ],
+  "scopes": [],
+  "requireScope": false,
+  "maxSubjectLength": 72,
+  "allowBreaking": true,
+  "footerKeywords": ["BREAKING CHANGE", "Closes", "Refs"],
+  "preCommitCommands": [],
+  "hookInstallPath": ".git/hooks",
+  "language": "en"
 }
 ```
+
+### Propiedades
+
+- `types`: Tipos de commit permitidos siguiendo Conventional Commits.
+- `scopes`: Scopes permitidos. Un array vacío significa que cualquier scope en minúsculas es aceptado.
+- `requireScope`: Cuando `true`, se debe proporcionar un scope.
+- `maxSubjectLength`: Máximo de caracteres permitidos en el asunto del commit.
+- `allowBreaking`: Cuando `false`, no permite `feat!` y exige el footer `BREAKING CHANGE` cuando hay cambios rompientes.
+- `footerKeywords`: Palabras clave reconocidas como footers del commit (por ejemplo, referencias, cambios rompientes).
+- `preCommitCommands`: Array de comandos de shell para ejecutar antes del commit.
+- `hookInstallPath`: Dónde se instalan los hooks de Git. Por defecto: `.git/hooks`.
+- `language`: Idioma de salida de la CLI y de las reglas. Valores aceptados: `en`, `pt`, `es`. Por defecto: `en`.
+
+### Comandos que alimentan `preCommitCommands`
+
+- Agregar un comando:
+  - `commitzero pre-commit add "npm run lint"`
+- Quitar un comando:
+  - `commitzero pre-commit remove "npm run lint"`
+
+Consejo: mantén `preCommitCommands` como un array vacío si no necesitas chequeos de pre-commit.
 
 ## Compatibilidad
 
@@ -97,6 +131,7 @@ commitzero lint -m $'feat(core): change\n\nBody text\n\nRefs: 123'
 - Ejecuta `npm run build` y `npm test` si cambiaron ejemplos de CLI o sintaxis.
 - Actualiza pruebas de integración cuando cambie el comportamiento documentado.
 - Las notas de versión de Node siguen siendo correctas.
+
 ### Eliminación de hooks
 
 - Al desinstalar, CommitZero intenta eliminar automáticamente su bloque gestionado de los hooks de Git.
@@ -106,8 +141,9 @@ commitzero lint -m $'feat(core): change\n\nBody text\n\nRefs: 123'
 - O ejecuta manualmente:
 
 ```
-node ./node_modules/@codemastersolutions/commitzero/dist/cjs/hooks/cleanup.js
+commitzero cleanup
 ```
+
 ### Idioma de los hooks
 
 - Los hooks imprimen mensajes de guía en tu idioma cuando CommitZero no está instalado.

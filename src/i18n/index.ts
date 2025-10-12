@@ -8,7 +8,7 @@ const dicts: Record<Lang, Dict> = {
   en: {
     // CLI
     "cli.help":
-      "CommitZero CLI{version}\n\nCommands:\n  init\n  lint --file <path> | -m <message>\n  check\n  install-hooks\n  uninstall-hooks\n  commit [-a|--add] [-p|--push]\n\nOptions:\n  --help",
+      "CommitZero CLI{version}\n\nCommands:\n  init\n  lint --file <path> | -m <message>\n  check\n  install-hooks\n  uninstall-hooks\n  cleanup\n  commit [-a|--add] [-p|--push]\n  pre-commit [add|remove] <command>\n\nOptions:\n  --help",
     "cli.provideInput": "Provide --file <path> or -m <message>",
     "cli.invalid": "Invalid commit:",
     "cli.warnings": "Warnings:",
@@ -22,6 +22,16 @@ const dicts: Record<Lang, Dict> = {
     "cli.exampleSubject": "add feature",
     "cli.flagsOnlyWithCommit":
       "Flags -a/--add and -p/--push are only valid with the 'commit' subcommand.",
+    "cli.preCommitNone": "No pre-commit commands configured.",
+    "cli.preCommitRun": "Running pre-commit: {cmd}",
+    "cli.preCommitFail": "Pre-commit failed on: {cmd}",
+    "cli.preCommitOk": "Pre-commit commands completed successfully.",
+    "cli.preCommitProvideCmd": "Provide a command to add/remove.",
+    "cli.preCommitAdded": "Added pre-commit command: {cmd}",
+    "cli.preCommitRemoved": "Removed pre-commit command: {cmd}",
+    "cli.preCommitAlreadyExists": "Command already present: {cmd}",
+    "cli.preCommitNotFound": "Command not found: {cmd}",
+    "cli.preCommitJsConfigUnsupported": "Editing requires JSON config. Use commitzero init to create JSON.",
 
     // commit interactive
     "commit.select.type": "Select commit type:",
@@ -58,6 +68,11 @@ const dicts: Record<Lang, Dict> = {
     // init
     "init.exists": "commitzero.config.json already exists, nothing to do.",
     "init.created": "File commitzero.config.json created with defaults.",
+    "init.askOverwrite": "commitzero.config.json exists. Overwrite with defaults? (y/N): ",
+    "init.willOverwrite": "The file will be overwritten with default values.",
+    "init.confirmOverwrite": "Are you sure you want to overwrite? (y/N): ",
+    "init.overwritten": "File commitzero.config.json overwritten with defaults.",
+    "init.cancelled": "Operation cancelled by user.",
 
     // Rules
     "rules.typeInvalid": "invalid type: {type}",
@@ -79,7 +94,7 @@ const dicts: Record<Lang, Dict> = {
   pt: {
     // CLI
     "cli.help":
-      "CommitZero CLI{version}\n\nComandos:\n  init\n  lint --file <path> | -m <message>\n  check\n  install-hooks\n  uninstall-hooks\n  commit [-a|--add] [-p|--push]\n\nOpções:\n  --help",
+      "CommitZero CLI{version}\n\nComandos:\n  init\n  lint --file <path> | -m <message>\n  check\n  install-hooks\n  uninstall-hooks\n  cleanup\n  commit [-a|--add] [-p|--push]\n  pre-commit [add|remove] <comando>\n\nOpções:\n  --help",
     "cli.provideInput": "Forneça --file <path> ou -m <message>",
     "cli.invalid": "Commit inválido:",
     "cli.warnings": "Avisos:",
@@ -93,6 +108,16 @@ const dicts: Record<Lang, Dict> = {
     "cli.exampleSubject": "adicionar recurso",
     "cli.flagsOnlyWithCommit":
       "As flags -a/--add e -p/--push são válidas apenas com o subcomando 'commit'.",
+    "cli.preCommitNone": "Nenhum comando de pre-commit configurado.",
+    "cli.preCommitRun": "Executando pre-commit: {cmd}",
+    "cli.preCommitFail": "Pre-commit falhou em: {cmd}",
+    "cli.preCommitOk": "Comandos de pre-commit concluídos com sucesso.",
+    "cli.preCommitProvideCmd": "Forneça um comando para adicionar/remover.",
+    "cli.preCommitAdded": "Comando de pre-commit adicionado: {cmd}",
+    "cli.preCommitRemoved": "Comando de pre-commit removido: {cmd}",
+    "cli.preCommitAlreadyExists": "Comando já presente: {cmd}",
+    "cli.preCommitNotFound": "Comando não encontrado: {cmd}",
+    "cli.preCommitJsConfigUnsupported": "Edição requer config JSON. Use commitzero init para criar JSON.",
 
     // commit interactive
     "commit.select.type": "Selecione o tipo de commit:",
@@ -132,6 +157,11 @@ const dicts: Record<Lang, Dict> = {
     // init
     "init.exists": "commitzero.config.json já existe, nada a fazer.",
     "init.created": "Arquivo commitzero.config.json criado com defaults.",
+    "init.askOverwrite": "commitzero.config.json existe. Sobrescrever com valores padrões? (y/N): ",
+    "init.willOverwrite": "O arquivo será sobrescrito com os valores padrões.",
+    "init.confirmOverwrite": "Tem certeza que deseja sobrescrever? (y/N): ",
+    "init.overwritten": "Arquivo commitzero.config.json sobrescrito com valores padrões.",
+    "init.cancelled": "Operação cancelada pelo usuário.",
 
     // Rules
     "rules.typeInvalid": "type inválido: {type}",
@@ -154,7 +184,7 @@ const dicts: Record<Lang, Dict> = {
   es: {
     // CLI
     "cli.help":
-      "CommitZero CLI{version}\n\nComandos:\n  init\n  lint --file <path> | -m <message>\n  check\n  install-hooks\n  uninstall-hooks\n  commit [-a|--add] [-p|--push]\n\nOpciones:\n  --help",
+      "CommitZero CLI{version}\n\nComandos:\n  init\n  lint --file <path> | -m <message>\n  check\n  install-hooks\n  uninstall-hooks\n  cleanup\n  commit [-a|--add] [-p|--push]\n  pre-commit [add|remove] <comando>\n\nOpciones:\n  --help",
     "cli.provideInput": "Proporciona --file <path> o -m <message>",
     "cli.invalid": "Commit inválido:",
     "cli.warnings": "Advertencias:",
@@ -168,6 +198,16 @@ const dicts: Record<Lang, Dict> = {
     "cli.exampleSubject": "agregar funcionalidad",
     "cli.flagsOnlyWithCommit":
       "Las opciones -a/--add y -p/--push solo son válidas con el subcomando 'commit'.",
+    "cli.preCommitNone": "No hay comandos de pre-commit configurados.",
+    "cli.preCommitRun": "Ejecutando pre-commit: {cmd}",
+    "cli.preCommitFail": "Pre-commit falló en: {cmd}",
+    "cli.preCommitOk": "Comandos de pre-commit completados con éxito.",
+    "cli.preCommitProvideCmd": "Proporciona un comando para agregar/quitar.",
+    "cli.preCommitAdded": "Comando de pre-commit agregado: {cmd}",
+    "cli.preCommitRemoved": "Comando de pre-commit quitado: {cmd}",
+    "cli.preCommitAlreadyExists": "Comando ya presente: {cmd}",
+    "cli.preCommitNotFound": "Comando no encontrado: {cmd}",
+    "cli.preCommitJsConfigUnsupported": "La edición requiere configuración JSON. Usa commitzero init para crear JSON.",
 
     // commit interactive
     "commit.select.type": "Selecciona el tipo de commit:",
@@ -208,6 +248,11 @@ const dicts: Record<Lang, Dict> = {
     "init.exists": "commitzero.config.json ya existe, nada que hacer.",
     "init.created":
       "Archivo commitzero.config.json creado con valores por defecto.",
+    "init.askOverwrite": "commitzero.config.json existe. ¿Sobrescribir con valores por defecto? (y/N): ",
+    "init.willOverwrite": "El archivo será sobrescrito con los valores por defecto.",
+    "init.confirmOverwrite": "¿Seguro que quieres sobrescribir? (y/N): ",
+    "init.overwritten": "Archivo commitzero.config.json sobrescrito con valores por defecto.",
+    "init.cancelled": "Operación cancelada por el usuario.",
 
     // Rules
     "rules.typeInvalid": "tipo inválido: {type}",
