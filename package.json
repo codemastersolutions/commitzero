@@ -23,9 +23,11 @@
     "format:check": "prettier --check \"**/*.{ts,js,json,md}\"",
     "comments:strip": "node scripts/strip-comments.js && npm run format",
     "simulate:release": "node scripts/simulate-release.js",
+    "postinstall": "node ./dist/cjs/hooks/postinstall.js",
     "preuninstall": "node ./dist/cjs/hooks/cleanup.js || true",
     "uninstall": "node ./dist/cjs/hooks/cleanup.js || true",
-    "postuninstall": "node ./dist/cjs/hooks/cleanup.js || true"
+    "postuninstall": "node ./dist/cjs/hooks/cleanup.js || true",
+    "commitzero": "commitzero"
   },
   "exports": {
     ".": {
@@ -51,7 +53,6 @@
     "CHANGELOG.md"
   ],
   "devDependencies": {
-    "@codemastersolutions/commitzero": "^0.0.13",
     "@eslint/js": "^9.37.0",
     "@types/node": "^24.7.2",
     "c8": "^10.1.3",
