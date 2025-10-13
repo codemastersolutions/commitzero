@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Changelog - CommitZero</title>
+    <meta name="description" content="Historial completo de versiones y cambios de CommitZero. Mantente actualizado con las últimas características, correcciones de errores y mejoras.">
+    <meta name="keywords" content="CommitZero, changelog, versiones, actualizaciones, historial, conventional commits">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="Changelog - CommitZero">
+    <meta property="og:description" content="Historial completo de versiones y cambios de CommitZero">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://commitzero.github.io/commitzero/es/changelog.html">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/commitzero/assets/favicon.ico">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="/commitzero/assets/css/main.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            200: '#bfdbfe',
+                            300: '#93c5fd',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+    <!-- Navigation -->
+    <nav class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <div class="flex items-center space-x-4">
+                    <a href="/commitzero/es/" class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                        <span class="text-xl font-bold text-gray-900 dark:text-white">CommitZero</span>
+                    </a>
+                </div>
+
+                <!-- Navigation Links -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="/commitzero/es/" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Inicio</a>
+                    <a href="/commitzero/es/installation.html" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Instalación</a>
+                    <a href="/commitzero/es/configuration.html" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Configuración</a>
+                    <a href="/commitzero/es/usage.html" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Uso</a>
+                    <a href="/commitzero/es/api.html" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">API</a>
+                    <a href="/commitzero/es/examples.html" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Ejemplos</a>
+                </div>
+
+                <!-- Right side buttons -->
+                <div class="flex items-center space-x-4">
+                    <!-- Language Selector -->
+                    <div class="relative">
+                        <select onchange="window.location.href=this.value" class="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-1 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500">
+                            <option value="/commitzero/changelog.html">English</option>
+                            <option value="/commitzero/pt-br/changelog.html">Português</option>
+                            <option value="/commitzero/es/changelog.html" selected>Español</option>
+                        </select>
+                    </div>
+
+                    <!-- Theme Toggle -->
+                    <button id="theme-toggle" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                        <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                        </svg>
+                        <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path>
+                        </svg>
+                    </button>
+
+                    <!-- GitHub Link -->
+                    <a href="https://github.com/commitzero/commitzero" target="_blank" rel="noopener noreferrer" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-1">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="flex flex-col lg:flex-row gap-8">
+                <!-- Sidebar -->
+                <aside class="lg:w-64 flex-shrink-0">
+                    <div class="sticky top-24 space-y-6">
+                        <!-- Version Filter -->
+                        <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+                            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">Filtrar por Tipo</h3>
+                            <select id="version-filter" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500">
+                                <option value="all">Todas las Versiones</option>
+                                <option value="major">Versiones Principales</option>
+                                <option value="minor">Nuevas Características</option>
+                                <option value="patch">Correcciones</option>
+                            </select>
+                        </div>
+
+                        <!-- Quick Navigation -->
+                        <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+                            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">Navegación Rápida</h3>
+                            <nav class="space-y-2">
+                                <a href="#v2-0-0" class="block text-sm text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">v2.0.0</a>
+                                <a href="#v1-5-0" class="block text-sm text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">v1.5.0</a>
+                                <a href="#v1-4-2" class="block text-sm text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">v1.4.2</a>
+                                <a href="#v1-4-0" class="block text-sm text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">v1.4.0</a>
+                                <a href="#v1-3-1" class="block text-sm text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">v1.3.1</a>
+                                <a href="#v1-2-0" class="block text-sm text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">v1.2.0</a>
+                                <a href="#v1-1-0" class="block text-sm text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">v1.1.0</a>
+                                <a href="#v1-0-0" class="block text-sm text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">v1.0.0</a>
+                            </nav>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Content -->
+                <div class="flex-1 min-w-0">
+                    <!-- Header -->
+                    <div class="mb-8">
+                        <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-4">Changelog</h1>
+                        <p class="text-xl text-gray-600 dark:text-gray-300">
+                            Mantente actualizado con las últimas características, correcciones de errores y mejoras de CommitZero.
+                        </p>
+                    </div>
+
+                    <!-- Version 2.0.0 -->
+                    <section id="v2-0-0" class="mb-12 version-entry" data-version="major">
+                        <div class="flex items-center space-x-4 mb-6">
+                            <h2 class="text-3xl font-bold text-gray-900 dark:text-white">v2.0.0</h2>
+                            <span class="px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 text-sm font-medium rounded-full">Cambios Importantes</span>
+                            <span class="text-gray-500 dark:text-gray-400">15 de noviembre, 2024</span>
+                        </div>
+                        
+                        <div class="space-y-6">
+                            <!-- Breaking Changes -->
+                            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <h3 class="text-lg font-semibold text-red-600 dark:text-red-400 mb-3 flex items-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                    </svg>
+                                    Cambios Importantes
+                                </h3>
+                                <div class="space-y-4">
+                                    <div>
+                                        <h4 class="font-medium text-gray-900 dark:text-white mb-2">Requisitos de Node.js actualizados</h4>
+                                        <p class="text-gray-600 dark:text-gray-300 mb-2">Ahora requiere Node.js 18 o superior.</p>
+                                        <div class="bg-gray-50 dark:bg-gray-700 rounded-md p-3">
+                                            <code class="text-sm text-gray-800 dark:text-gray-200">
+                                                # Antes: Node.js 14+<br>
+                                                # Ahora: Node.js 18+
+                                            </code>
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <h4 class="font-medium text-gray-900 dark:text-white mb-2">Formato de configuración actualizado</h4>
+                                        <p class="text-gray-600 dark:text-gray-300 mb-2">Los archivos de configuración ahora deben usar formato JavaScript en lugar de JSON.</p>
+                                        <div class="bg-gray-50 dark:bg-gray-700 rounded-md p-3">
+                                            <code class="text-sm text-gray-800 dark:text-gray-200">
+                                                // Antes: commitzero.json<br>
+                                                // Ahora: commitzero.config.js
+                                            </code>
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <h4 class="font-medium text-gray-900 dark:text-white mb-2">Bandera --legacy eliminada</h4>
+                                        <p class="text-gray-600 dark:text-gray-300">La bandera <code class="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">--legacy</code> ha sido eliminada. Usa el nuevo formato de configuración.</p>
+                                    </div>
+                                    
+                                    <div>
+                                        <h4 class="font-medium text-gray-900 dark:text-white mb-2">API validate() ahora es asíncrona</h4>
+                                        <p class="text-gray-600 dark:text-gray-300 mb-2">La función <code class="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">validate()</code> ahora devuelve una Promise.</p>
+                                        <div class="bg-gray-50 dark:bg-gray-700 rounded-md p-3">
+                                            <code class="text-sm text-gray-800 dark:text-gray-200">
+                                                // Antes<br>
+                                                const result = validate(message);<br><br>
+                                                // Ahora<br>
+                                                const result = await validate(message);
+                                            </code>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- New Features -->
+                            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <h3 class="text-lg font-semibold text-green-600 dark:text-green-400 mb-3 flex items-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                    Nuevas Características
+                                </h3>
+                                <div class="space-y-4">
+                                    <div>
+                                        <h4 class="font-medium text-gray-900 dark:text-white mb-2">Tipos de commit personalizados</h4>
+                                        <p class="text-gray-600 dark:text-gray-300 mb-2">Define tus propios tipos de commit con descripciones personalizadas.</p>
+                                        <div class="bg-gray-50 dark:bg-gray-700 rounded-md p-3">
+                                            <code class="text-sm text-gray-800 dark:text-gray-200">
+                                                module.exports = {<br>
+                                                &nbsp;&nbsp;types: {<br>
+                                                &nbsp;&nbsp;&nbsp;&nbsp;custom: { description: 'Cambio personalizado' }<br>
+                                                &nbsp;&nbsp;}<br>
+                                                };
+                                            </code>
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <h4 class="font-medium text-gray-900 dark:text-white mb-2">Scopes personalizados</h4>
+                                        <p class="text-gray-600 dark:text-gray-300">Define scopes específicos para tu proyecto con validación automática.</p>
+                                    </div>
+                                    
+                                    <div>
+                                        <h4 class="font-medium text-gray-900 dark:text-white mb-2">Modo interactivo mejorado</h4>
+                                        <p class="text-gray-600 dark:text-gray-300">Nueva interfaz interactiva con autocompletado y sugerencias inteligentes.</p>
+                                    </div>
+                                    
+                                    <div>
+                                        <h4 class="font-medium text-gray-900 dark:text-white mb-2">Git hooks mejorados</h4>
+                                        <p class="text-gray-600 dark:text-gray-300">Instalación automática y gestión mejorada de Git hooks.</p>
+                                    </div>
+                                    
+                                    <div>
+                                        <h4 class="font-medium text-gray-900 dark:text-white mb-2">Definiciones TypeScript</h4>
+                                        <p class="text-gray-600 dark:text-gray-300">Soporte completo de TypeScript con definiciones de tipos incluidas.</p>
+                                    </div>
+                                    
+                                    <div>
+                                        <h4 class="font-medium text-gray-900 dark:text-white mb-2">Bandera --config</h4>
+                                        <p class="text-gray-600 dark:text-gray-300">Especifica archivos de configuración personalizados con <code class="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">--config</code>.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Improvements -->
+                            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <div>
+                                    <h3 class="text-lg font-semibold text-blue-600 dark:text-blue-400 mb-3 flex items-center">
+                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                        </svg>
+                                        Mejoras
+                                    </h3>
+                                    <ul class="list-disc list-inside text-gray-600 dark:text-gray-300 space-y-2">
+                                        <li>Mejoras significativas de rendimiento (hasta 3x más rápido)</li>
+                                        <li>Mensajes de error más claros y útiles</li>
+                                        <li>Salida CLI mejorada con colores y formato</li>
+                                        <li>Documentación mejorada con más ejemplos</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Version 1.5.0 -->
+                    <section id="v1-5-0" class="mb-12 version-entry" data-version="minor">
+                        <div class="flex items-center space-x-4 mb-6">
+                            <h2 class="text-3xl font-bold text-gray-900 dark:text-white">v1.5.0</h2>
+                            <span class="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 text-sm font-medium rounded-full">Nuevas Características</span>
+                            <span class="text-gray-500 dark:text-gray-400">28 de octubre, 2024</span>
+                        </div>
+                        
+                        <div class="space-y-6">
+                            <!-- New Features -->
+                            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <h3 class="text-lg font-semibold text-green-600 dark:text-green-400 mb-3 flex items-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                    Nuevas Características
+                                </h3>
+                                <ul class="list-disc list-inside text-gray-600 dark:text-gray-300 space-y-2">
+                                    <li>Soporte para monorepos con configuración por paquete</li>
+                                    <li>Nueva bandera <code class="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">--dry-run</code> para validación sin efectos secundarios</li>
+                                    <li>Configuración específica por entorno (desarrollo, producción, etc.)</li>
+                                    <li>Nueva API <code class="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">createConfig()</code> para configuración programática</li>
+                                </ul>
+                            </div>
+
+                            <!-- Bug Fixes -->
+                            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <div>
+                                    <h3 class="text-lg font-semibold text-orange-600 dark:text-orange-400 mb-3 flex items-center">
+                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                        </svg>
+                                        Correcciones de Errores
+                                    </h3>
+                                    <ul class="list-disc list-inside text-gray-600 dark:text-gray-300 space-y-2">
+                                        <li>Corregido problema con rutas de Windows</li>
+                                        <li>Corregida carga de configuración en directorios anidados</li>
+                                        <li>Corregidos Git hooks en macOS</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Version 1.4.2 -->
+                    <section id="v1-4-2" class="mb-12 version-entry" data-version="patch">
+                        <div class="flex items-center space-x-4 mb-6">
+                            <h2 class="text-3xl font-bold text-gray-900 dark:text-white">v1.4.2</h2>
+                            <span class="px-3 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300 text-sm font-medium rounded-full">Correcciones Críticas</span>
+                            <span class="text-gray-500 dark:text-gray-400">12 de octubre, 2024</span>
+                        </div>
+                        
+                        <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                            <div>
+                                <h3 class="text-lg font-semibold text-orange-600 dark:text-orange-400 mb-3 flex items-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                    </svg>
+                                    Correcciones Críticas
+                                </h3>
+                                <ul class="list-disc list-inside text-gray-600 dark:text-gray-300 space-y-2">
+                                    <li>Corregido análisis crítico de mensajes de commit</li>
+                                    <li>Corregida fuga de memoria en validación de lotes</li>
+                                    <li>Corregidos códigos de salida CLI</li>
+                                    <li>Corregida validación de scope con caracteres especiales</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Version 1.4.0 -->
+                    <section id="v1-4-0" class="mb-12 version-entry" data-version="minor">
+                        <div class="flex items-center space-x-4 mb-6">
+                            <h2 class="text-3xl font-bold text-gray-900 dark:text-white">v1.4.0</h2>
+                            <span class="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 text-sm font-medium rounded-full">Nuevas Características</span>
+                            <span class="text-gray-500 dark:text-gray-400">25 de septiembre, 2024</span>
+                        </div>
+                        
+                        <div class="space-y-6">
+                            <!-- New Features -->
+                            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <h3 class="text-lg font-semibold text-green-600 dark:text-green-400 mb-3 flex items-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                    Nuevas Características
+                                </h3>
+                                <ul class="list-disc list-inside text-gray-600 dark:text-gray-300 space-y-2">
+                                    <li>Reglas de validación personalizadas</li>
+                                    <li>Nueva bandera <code class="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">--verbose</code> para salida detallada</li>
+                                    <li>Validación de configuración al inicio</li>
+                                    <li>Plantillas de mensajes de commit</li>
+                                    <li>Reporte de errores mejorado</li>
+                                    <li>Descubrimiento mejorado de archivos de configuración</li>
+                                    <li>Análisis mejorado de commits</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Version 1.3.1 -->
+                    <section id="v1-3-1" class="mb-12 version-entry" data-version="patch">
+                        <div class="flex items-center space-x-4 mb-6">
+                            <h2 class="text-3xl font-bold text-gray-900 dark:text-white">v1.3.1</h2>
+                            <span class="px-3 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300 text-sm font-medium rounded-full">Correcciones</span>
+                            <span class="text-gray-500 dark:text-gray-400">8 de septiembre, 2024</span>
+                        </div>
+                        
+                        <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                            <div>
+                                <h3 class="text-lg font-semibold text-orange-600 dark:text-orange-400 mb-3 flex items-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                    </svg>
+                                    Correcciones de Errores
+                                </h3>
+                                <ul class="list-disc list-inside text-gray-600 dark:text-gray-300 space-y-2">
+                                    <li>Corregido manejo de mensajes de commit multilínea</li>
+                                    <li>Corregido manejo de caracteres Unicode</li>
+                                    <li>Corregida fusión de configuración de objetos anidados</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Version 1.3.0 -->
+                    <section id="v1-3-0" class="mb-12 version-entry" data-version="minor">
+                        <div class="flex items-center space-x-4 mb-6">
+                            <h2 class="text-3xl font-bold text-gray-900 dark:text-white">v1.3.0</h2>
+                            <span class="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 text-sm font-medium rounded-full">Nuevas Características</span>
+                            <span class="text-gray-500 dark:text-gray-400">22 de agosto, 2024</span>
+                        </div>
+                        
+                        <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                            <div>
+                                <h3 class="text-lg font-semibold text-blue-600 dark:text-blue-400 mb-3 flex items-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                    </svg>
+                                    Mejoras
+                                </h3>
+                                <ul class="list-disc list-inside text-gray-600 dark:text-gray-300 space-y-2">
+                                    <li>Documentación CLI de ayuda mejorada</li>
+                                    <li>Mejores mensajes de error para configuraciones inválidas</li>
+                                    <li>Rendimiento mejorado para repositorios grandes</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Version 1.2.0 -->
+                    <section id="v1-2-0" class="mb-12 version-entry" data-version="minor">
+                        <div class="flex items-center space-x-4 mb-6">
+                            <h2 class="text-3xl font-bold text-gray-900 dark:text-white">v1.2.0</h2>
+                            <span class="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 text-sm font-medium rounded-full">Nuevas Características</span>
+                            <span class="text-gray-500 dark:text-gray-400">20 de septiembre, 2024</span>
+                        </div>
+                        
+                        <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                            <div>
+                                <h3 class="text-lg font-semibold text-green-600 dark:text-green-400 mb-3 flex items-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                    Nuevas Características
+                                </h3>
+                                <ul class="list-disc list-inside text-gray-600 dark:text-gray-300 space-y-2">
+                                    <li>Agregado soporte para archivos de configuración</li>
+                                    <li>Nuevo comando <code class="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">init</code> para crear archivos de configuración</li>
+                                    <li>Soporte para tipos de commit personalizados</li>
+                                    <li>Agregada API para uso programático</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Version 1.1.0 -->
+                    <section id="v1-1-0" class="mb-12 version-entry" data-version="minor">
+                        <div class="flex items-center space-x-4 mb-6">
+                            <h2 class="text-3xl font-bold text-gray-900 dark:text-white">v1.1.0</h2>
+                            <span class="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 text-sm font-medium rounded-full">Nuevas Características</span>
+                            <span class="text-gray-500 dark:text-gray-400">5 de septiembre, 2024</span>
+                        </div>
+                        
+                        <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                            <div>
+                                <h3 class="text-lg font-semibold text-green-600 dark:text-green-400 mb-3 flex items-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                    Nuevas Características
+                                </h3>
+                                <ul class="list-disc list-inside text-gray-600 dark:text-gray-300 space-y-2">
+                                    <li>Agregado soporte para scopes de mensajes de commit</li>
+                                    <li>Nuevo comando <code class="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">--help</code> con uso detallado</li>
+                                    <li>Mensajes de error de validación mejorados</li>
+                                    <li>Agregado soporte para indicadores de cambios importantes</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Version 1.0.0 -->
+                    <section id="v1-0-0" class="mb-12 version-entry" data-version="major">
+                        <div class="flex items-center space-x-4 mb-6">
+                            <h2 class="text-3xl font-bold text-gray-900 dark:text-white">v1.0.0</h2>
+                            <span class="px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 text-sm font-medium rounded-full">Lanzamiento Inicial</span>
+                            <span class="text-gray-500 dark:text-gray-400">20 de agosto, 2024</span>
+                        </div>
+                        
+                        <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                            <div>
+                                <h3 class="text-lg font-semibold text-purple-600 dark:text-purple-400 mb-3 flex items-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+                                    </svg>
+                                    Lanzamiento Inicial
+                                </h3>
+                                <ul class="list-disc list-inside text-gray-600 dark:text-gray-300 space-y-2">
+                                    <li>Validación básica de mensajes de commit</li>
+                                    <li>Soporte para especificación de Conventional Commits</li>
+                                    <li>Interfaz CLI con comando <code class="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">validate</code></li>
+                                    <li>Tipos de commit estándar: feat, fix, docs, style, refactor, perf, test, chore</li>
+                                    <li>Soporte multiplataforma (Windows, macOS, Linux)</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Release Notes -->
+                    <section class="bg-gradient-to-r from-primary-50 to-primary-100 dark:from-primary-900/20 dark:to-primary-800/20 rounded-lg p-8">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Mantente Actualizado</h2>
+                        <p class="text-gray-600 dark:text-gray-300 mb-6">
+                            Recibe notificaciones sobre nuevos lanzamientos y actualizaciones importantes.
+                        </p>
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <a href="https://github.com/commitzero/commitzero/releases" target="_blank" rel="noopener noreferrer" class="btn-primary">
+                                Ver en GitHub
+                                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                </svg>
+                            </a>
+                            <a href="https://www.npmjs.com/package/commitzero" target="_blank" rel="noopener noreferrer" class="btn-secondary">
+                                Ver en npm
+                            </a>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <!-- Logo and Description -->
+                <div class="md:col-span-2">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                        <span class="text-xl font-bold">CommitZero</span>
+                    </div>
+                    <p class="text-gray-400 mb-4 max-w-md">
+                        Una poderosa herramienta CLI para validar y hacer cumplir los estándares de Conventional Commits en tu flujo de trabajo Git.
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="https://github.com/commitzero/commitzero" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                            </svg>
+                        </a>
+                        <a href="https://www.npmjs.com/package/commitzero" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M1.763 0C.786 0 0 .786 0 1.763v20.474C0 23.214.786 24 1.763 24h20.474c.977 0 1.763-.786 1.763-1.763V1.763C24 .786 23.214 0 22.237 0H1.763zM5.13 5.323l13.837.019-.009 13.836h-3.464l.01-10.382h-3.456L12.04 19.17H5.113L5.13 5.323z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Documentation -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Documentación</h3>
+                    <ul class="space-y-2">
+                        <li><a href="/commitzero/es/installation.html" class="text-gray-400 hover:text-white transition-colors">Instalación</a></li>
+                        <li><a href="/commitzero/es/configuration.html" class="text-gray-400 hover:text-white transition-colors">Configuración</a></li>
+                        <li><a href="/commitzero/es/usage.html" class="text-gray-400 hover:text-white transition-colors">Uso</a></li>
+                        <li><a href="/commitzero/es/api.html" class="text-gray-400 hover:text-white transition-colors">Referencia de API</a></li>
+                        <li><a href="/commitzero/es/examples.html" class="text-gray-400 hover:text-white transition-colors">Ejemplos</a></li>
+                    </ul>
+                </div>
+
+                <!-- Community -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Comunidad</h3>
+                    <ul class="space-y-2">
+                        <li><a href="/commitzero/es/contributing.html" class="text-gray-400 hover:text-white transition-colors">Contribuir</a></li>
+                        <li><a href="/commitzero/es/faq.html" class="text-gray-400 hover:text-white transition-colors">FAQ</a></li>
+                        <li><a href="/commitzero/es/changelog.html" class="text-gray-400 hover:text-white transition-colors">Changelog</a></li>
+                        <li><a href="https://github.com/commitzero/commitzero/issues" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors">Issues</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-gray-400 text-sm">
+                    © 2024 CommitZero. Licenciado bajo Licencia MIT.
+                </p>
+                <div class="flex space-x-6 mt-4 md:mt-0">
+                    <a href="/commitzero/pt-br/changelog.html" class="text-gray-400 hover:text-white transition-colors text-sm">Português</a>
+                    <a href="/commitzero/changelog.html" class="text-gray-400 hover:text-white transition-colors text-sm">English</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="/commitzero/assets/js/main.js"></script>
+    <script>
+        // Version Filter Functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const versionFilter = document.getElementById('version-filter');
+            const versionEntries = document.querySelectorAll('.version-entry');
+            
+            versionFilter.addEventListener('change', function() {
+                const filterValue = this.value;
+                
+                versionEntries.forEach(entry => {
+                    if (filterValue === 'all') {
+                        entry.style.display = 'block';
+                    } else {
+                        const versionType = entry.getAttribute('data-version');
+                        if (versionType === filterValue) {
+                            entry.style.display = 'block';
+                        } else {
+                            entry.style.display = 'none';
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
