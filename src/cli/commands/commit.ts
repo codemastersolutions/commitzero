@@ -43,7 +43,7 @@ function ask(rl: readline.Interface, q: string, ctx?: TestAnswerCtx): Promise<st
       return resolve(ans);
     }
 
-    const isInteractive = !!input.isTTY && !!output.isTTY;
+    const isInteractive = !!input.isTTY;
     if (!isInteractive) {
       try {
         input.pause?.();

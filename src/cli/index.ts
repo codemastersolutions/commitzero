@@ -165,7 +165,8 @@ async function main() {
 
     const autoAdd = args.includes("-a") || args.includes("--add");
     const autoPush = args.includes("-p") || args.includes("--push");
-    interactiveCommit(lang, { ...cfg, autoAdd, autoPush }).then((code) => exit(code));
+    const code = await interactiveCommit(lang, { ...cfg, autoAdd, autoPush });
+    exit(code);
     return;
   }
 
@@ -251,7 +252,6 @@ main()
     exit(2);
   })
   .finally(() => {
-    try {
-      (process.stdin as unknown as NodeJS.ReadableStream).pause?.();
-    } catch {}
+    // Removido pause global em stdin: cada comando interativo faz seu próprio cleanup.
+    // Manter vazio para não encerrar sessões interativas antes da conclusão.
   });
