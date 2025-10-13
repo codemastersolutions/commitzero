@@ -1,4 +1,4 @@
-import { execSync, execFileSync } from "node:child_process";
+import { execFileSync, execSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { stdin as input, stdout as output } from "node:process";
@@ -43,7 +43,7 @@ function ask(rl: readline.Interface, q: string, ctx?: TestAnswerCtx): Promise<st
       return resolve(ans);
     }
 
-    const isInteractive = !!input.isTTY && !!output.isTTY;
+    const isInteractive = !!input.isTTY;
     if (!isInteractive) {
       try {
         input.pause?.();
@@ -152,7 +152,6 @@ export async function interactiveCommit(
             console.error(c.red(t(lang, "commit.git.abort")));
             return 1;
           }
-        } else {
         }
       } else {
         if (hasChanges()) {
