@@ -48,6 +48,7 @@
   },
   "files": [
     "dist/",
+    "scripts/",
     "README.md",
     "LICENSE",
     "CHANGELOG.md"
