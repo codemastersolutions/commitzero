@@ -1,0 +1,3 @@
+name: CommitZero CodeQL Config
+paths-ignore:
+  - docs/**
