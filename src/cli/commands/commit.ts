@@ -1,4 +1,4 @@
-import { execSync, execFileSync } from "node:child_process";
+import { execFileSync, execSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { stdin as input, stdout as output } from "node:process";
@@ -152,7 +152,6 @@ export async function interactiveCommit(
             console.error(c.red(t(lang, "commit.git.abort")));
             return 1;
           }
-        } else {
         }
       } else {
         if (hasChanges()) {

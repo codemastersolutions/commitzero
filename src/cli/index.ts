@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable no-control-regex */
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { argv, exit } from "node:process";

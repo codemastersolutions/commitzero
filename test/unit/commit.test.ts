@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-escape */
 import assert from "node:assert";
 import { chmodSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import os from "node:os";
