@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contribuir - CommitZero</title>
+    <meta name="description" content="Aprende cómo contribuir a CommitZero - guías para reportar problemas, enviar pull requests y ayudar a mejorar el proyecto.">
+    <meta name="keywords" content="CommitZero, contribuir, código abierto, pull requests, issues, desarrollo, comunidad">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="Contribuir - CommitZero">
+    <meta property="og:description" content="Aprende cómo contribuir a CommitZero - guías para reportar problemas, enviar pull requests y ayudar a mejorar el proyecto.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://commitzero.github.io/commitzero/es/contributing.html">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Contribuir - CommitZero">
+    <meta name="twitter:description" content="Aprende cómo contribuir a CommitZero - guías para reportar problemas, enviar pull requests y ayudar a mejorar el proyecto.">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/commitzero/assets/images/favicon.svg">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="/commitzero/assets/css/main.css">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Source+Code+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Prism.js for syntax highlighting -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+    <!-- Navigation -->
+    <nav class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <div class="flex items-center space-x-3">
+                    <a href="/commitzero/es/" class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                        <span class="text-xl font-bold text-gray-900 dark:text-white">CommitZero</span>
+                    </a>
+                </div>
+
+                <!-- Desktop Navigation -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="/commitzero/es/installation.html" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Instalación</a>
+                    <a href="/commitzero/es/configuration.html" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Configuración</a>
+                    <a href="/commitzero/es/usage.html" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Uso</a>
+                    <a href="/commitzero/es/api.html" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Referencia API</a>
+                    <a href="/commitzero/es/examples.html" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Ejemplos</a>
+                </div>
+
+                <!-- Right side buttons -->
+                <div class="flex items-center space-x-4">
+                    <!-- Language Selector -->
+                    <div class="relative">
+                        <button id="language-selector" class="flex items-center space-x-1 text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path>
+                            </svg>
+                            <span class="text-sm">ES</span>
+                        </button>
+                        <div id="language-dropdown" class="absolute right-0 mt-2 w-32 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 hidden">
+                            <a href="/commitzero/contributing.html" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">English</a>
+                            <a href="/commitzero/pt-br/contributing.html" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Português</a>
+                            <a href="/commitzero/es/contributing.html" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Español</a>
+                        </div>
+                    </div>
+
+                    <!-- Theme Toggle -->
+                    <button id="theme-toggle" class="p-2 text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+                        <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                        </svg>
+                        <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path>
+                        </svg>
+                    </button>
+
+                    <!-- GitHub Link -->
+                    <a href="https://github.com/commitzero/commitzero" target="_blank" rel="noopener noreferrer" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                        </svg>
+                    </a>
+
+                    <!-- Mobile menu button -->
+                    <button id="mobile-menu-button" class="md:hidden p-2 text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile Navigation -->
+            <div id="mobile-menu" class="md:hidden hidden border-t border-gray-200 dark:border-gray-700 py-4">
+                <div class="flex flex-col space-y-4">
+                    <a href="/commitzero/es/installation.html" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Instalación</a>
+                    <a href="/commitzero/es/configuration.html" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Configuración</a>
+                    <a href="/commitzero/es/usage.html" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Uso</a>
+                    <a href="/commitzero/es/api.html" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Referencia API</a>
+                    <a href="/commitzero/es/examples.html" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Ejemplos</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-1">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="flex flex-col lg:flex-row gap-8">
+                <!-- Sidebar -->
+                <aside class="lg:w-64 flex-shrink-0">
+                    <div class="sticky top-24 space-y-6">
+                        <!-- Search -->
+                        <div class="relative">
+                            <input type="text" id="contributing-search" placeholder="Buscar..." class="search-input w-full">
+                            <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </div>
+
+                        <!-- Table of Contents -->
+                        <nav class="space-y-2">
+                            <h3 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wide">Contenido</h3>
+                            <ul class="space-y-1 text-sm">
+                                <li><a href="#getting-started" class="block py-1 text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Primeros Pasos</a></li>
+                                <li><a href="#ways-to-contribute" class="block py-1 text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Formas de Contribuir</a></li>
+                                <li><a href="#reporting-issues" class="block py-1 text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Reportar Problemas</a></li>
+                                <li><a href="#submitting-prs" class="block py-1 text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Enviar PRs</a></li>
+                                <li><a href="#development-setup" class="block py-1 text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Configuración de Desarrollo</a></li>
+                                <li><a href="#coding-standards" class="block py-1 text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Estándares de Código</a></li>
+                                <li><a href="#testing" class="block py-1 text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Pruebas</a></li>
+                                <li><a href="#documentation" class="block py-1 text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Documentación</a></li>
+                                <li><a href="#community" class="block py-1 text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Comunidad</a></li>
+                            </ul>
+                        </nav>
+                    </div>
+                </aside>
+
+                <!-- Content -->
+                <div class="flex-1 min-w-0">
+                    <!-- Header -->
+                    <div class="mb-8">
+                        <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-4">Contribuir a CommitZero</h1>
+                        <p class="text-xl text-gray-600 dark:text-gray-300">
+                            ¡Damos la bienvenida a las contribuciones de la comunidad! Esta guía te ayudará a comenzar a contribuir a CommitZero.
+                        </p>
+                    </div>
+
+                    <!-- Getting Started -->
+                    <section id="getting-started" class="mb-12">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Primeros Pasos</h2>
+                        
+                        <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6 mb-6">
+                            <div class="flex items-start">
+                                <svg class="w-6 h-6 text-blue-600 dark:text-blue-400 mt-0.5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <div>
+                                    <h3 class="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-2">¿Primera vez contribuyendo?</h3>
+                                    <p class="text-blue-800 dark:text-blue-200">
+                                        Echa un vistazo a nuestros <a href="https://github.com/commitzero/commitzero/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22" class="underline hover:no-underline" target="_blank" rel="noopener noreferrer">issues para principiantes</a> para comenzar con tu primera contribución.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="prose prose-gray dark:prose-invert max-w-none">
+                            <p>
+                                CommitZero es un proyecto de código abierto, y apreciamos todas las contribuciones, ya sean reportes de errores, 
+                                solicitudes de características, mejoras en la documentación o contribuciones de código.
+                            </p>
+                            
+                            <p>Antes de contribuir, por favor:</p>
+                            <ul>
+                                <li>Lee nuestro <a href="https://github.com/commitzero/commitzero/blob/main/CODE_OF_CONDUCT.md" target="_blank" rel="noopener noreferrer">Código de Conducta</a></li>
+                                <li>Revisa los <a href="https://github.com/commitzero/commitzero/issues" target="_blank" rel="noopener noreferrer">issues</a> y <a href="https://github.com/commitzero/commitzero/pulls" target="_blank" rel="noopener noreferrer">pull requests</a> existentes</li>
+                                <li>Únete a nuestra <a href="https://discord.gg/commitzero" target="_blank" rel="noopener noreferrer">comunidad de Discord</a> para discusiones</li>
+                            </ul>
+                        </div>
+                    </section>
+
+                    <!-- Ways to Contribute -->
+                    <section id="ways-to-contribute" class="mb-12">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Formas de Contribuir</h2>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <div class="flex items-center mb-4">
+                                    <svg class="w-6 h-6 text-red-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                    </svg>
+                                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Reportar Errores</h3>
+                                </div>
+                                <p class="text-gray-600 dark:text-gray-300">
+                                    ¿Encontraste un error? Ayúdanos a mejorar reportándolo con información detallada y pasos de reproducción.
+                                </p>
+                            </div>
+
+                            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <div class="flex items-center mb-4">
+                                    <svg class="w-6 h-6 text-blue-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                                    </svg>
+                                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Sugerir Características</h3>
+                                </div>
+                                <p class="text-gray-600 dark:text-gray-300">
+                                    ¿Tienes una idea para una nueva característica? Compártela con nosotros a través de solicitudes de características y discusiones.
+                                </p>
+                            </div>
+
+                            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <div class="flex items-center mb-4">
+                                    <svg class="w-6 h-6 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+                                    </svg>
+                                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Contribuir Código</h3>
+                                </div>
+                                <p class="text-gray-600 dark:text-gray-300">
+                                    Envía pull requests para corregir errores, agregar características o mejorar la funcionalidad existente.
+                                </p>
+                            </div>
+
+                            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <div class="flex items-center mb-4">
+                                    <svg class="w-6 h-6 text-purple-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                                    </svg>
+                                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Mejorar Documentación</h3>
+                                </div>
+                                <p class="text-gray-600 dark:text-gray-300">
+                                    Ayuda a hacer nuestra documentación más clara y completa para todos los usuarios.
+                                </p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Reporting Issues -->
+                    <section id="reporting-issues" class="mb-12">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Reportar Problemas</h2>
+                        
+                        <div class="prose prose-gray dark:prose-invert max-w-none mb-6">
+                            <p>
+                                Al reportar problemas, por favor proporciona tanto detalle como sea posible para ayudarnos a entender y reproducir el problema.
+                            </p>
+                        </div>
+
+                        <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Plantilla de Issue</h3>
+                            <div class="code-block">
+                                <div class="code-header">
+                                    <span class="code-title">Plantilla de Reporte de Error</span>
+                                    <button class="copy-button" data-copy="## Descripción del Error&#10;Una descripción clara y concisa de cuál es el error.&#10;&#10;## Pasos para Reproducir&#10;1. Ve a '...'&#10;2. Haz clic en '....'&#10;3. Desplázate hacia abajo a '....'&#10;4. Ver error&#10;&#10;## Comportamiento Esperado&#10;Una descripción clara y concisa de lo que esperabas que pasara.&#10;&#10;## Comportamiento Actual&#10;Una descripción clara y concisa de lo que realmente pasó.&#10;&#10;## Entorno&#10;- SO: [ej. macOS 12.0, Ubuntu 20.04, Windows 11]&#10;- Versión de Node.js: [ej. 18.17.0]&#10;- Versión de CommitZero: [ej. 1.2.3]&#10;- Gestor de paquetes: [ej. npm 9.6.7, yarn 1.22.19]&#10;&#10;## Contexto Adicional&#10;Agrega cualquier otro contexto sobre el problema aquí, incluyendo:&#10;- Archivos de configuración&#10;- Mensajes de error o logs&#10;- Capturas de pantalla (si aplica)">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <pre><code class="language-markdown">## Descripción del Error
+Una descripción clara y concisa de cuál es el error.
+
+## Pasos para Reproducir
+1. Ve a '...'
+2. Haz clic en '....'
+3. Desplázate hacia abajo a '....'
+4. Ver error
+
+## Comportamiento Esperado
+Una descripción clara y concisa de lo que esperabas que pasara.
+
+## Comportamiento Actual
+Una descripción clara y concisa de lo que realmente pasó.
+
+## Entorno
+- SO: [ej. macOS 12.0, Ubuntu 20.04, Windows 11]
+- Versión de Node.js: [ej. 18.17.0]
+- Versión de CommitZero: [ej. 1.2.3]
+- Gestor de paquetes: [ej. npm 9.6.7, yarn 1.22.19]
+
+## Contexto Adicional
+Agrega cualquier otro contexto sobre el problema aquí, incluyendo:
+- Archivos de configuración
+- Mensajes de error o logs
+- Capturas de pantalla (si aplica)</code></pre>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Development Setup -->
+                    <section id="development-setup" class="mb-12">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Configuración de Desarrollo</h2>
+                        
+                        <div class="space-y-6">
+                            <div class="prose prose-gray dark:prose-invert max-w-none">
+                                <p>Sigue estos pasos para configurar tu entorno de desarrollo:</p>
+                            </div>
+
+                            <div class="space-y-4">
+                                <div class="code-block">
+                                    <div class="code-header">
+                                        <span class="code-title">1. Fork y Clonar</span>
+                                        <button class="copy-button" data-copy="# Haz fork del repositorio en GitHub, luego clona tu fork&#10;git clone https://github.com/TU_USUARIO/commitzero.git&#10;cd commitzero&#10;&#10;# Agrega el repositorio original como upstream&#10;git remote add upstream https://github.com/commitzero/commitzero.git">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <pre><code class="language-bash"># Haz fork del repositorio en GitHub, luego clona tu fork
+git clone https://github.com/TU_USUARIO/commitzero.git
+cd commitzero
+
+# Agrega el repositorio original como upstream
+git remote add upstream https://github.com/commitzero/commitzero.git</code></pre>
+                                </div>
+
+                                <div class="code-block">
+                                    <div class="code-header">
+                                        <span class="code-title">2. Instalar Dependencias</span>
+                                        <button class="copy-button" data-copy="# Instalar dependencias&#10;npm install&#10;&#10;# O si prefieres yarn&#10;yarn install">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <pre><code class="language-bash"># Instalar dependencias
+npm install
+
+# O si prefieres yarn
+yarn install</code></pre>
+                                </div>
+
+                                <div class="code-block">
+                                    <div class="code-header">
+                                        <span class="code-title">3. Ejecutar Pruebas</span>
+                                        <button class="copy-button" data-copy="# Ejecutar la suite de pruebas&#10;npm test&#10;&#10;# Ejecutar pruebas en modo watch&#10;npm run test:watch&#10;&#10;# Ejecutar pruebas con cobertura&#10;npm run test:coverage">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <pre><code class="language-bash"># Ejecutar la suite de pruebas
+npm test
+
+# Ejecutar pruebas en modo watch
+npm run test:watch
+
+# Ejecutar pruebas con cobertura
+npm run test:coverage</code></pre>
+                                </div>
+
+                                <div class="code-block">
+                                    <div class="code-header">
+                                        <span class="code-title">4. Construir y Probar Localmente</span>
+                                        <button class="copy-button" data-copy="# Construir el proyecto&#10;npm run build&#10;&#10;# Enlazar para pruebas locales&#10;npm link&#10;&#10;# Probar el CLI globalmente&#10;commitzero --help">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <pre><code class="language-bash"># Construir el proyecto
+npm run build
+
+# Enlazar para pruebas locales
+npm link
+
+# Probar el CLI globalmente
+commitzero --help</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Coding Standards -->
+                    <section id="coding-standards" class="mb-12">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Estándares de Código</h2>
+                        
+                        <div class="space-y-6">
+                            <div class="prose prose-gray dark:prose-invert max-w-none">
+                                <p>Seguimos estos estándares de código para mantener la calidad y consistencia del código:</p>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Estilo de Código</h3>
+                                    <ul class="space-y-2 text-gray-600 dark:text-gray-300">
+                                        <li>• Usar TypeScript para todo código nuevo</li>
+                                        <li>• Seguir la configuración de ESLint</li>
+                                        <li>• Usar Prettier para formateo</li>
+                                        <li>• Escribir nombres de variables significativos</li>
+                                        <li>• Agregar comentarios JSDoc para funciones</li>
+                                    </ul>
+                                </div>
+
+                                <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Commits de Git</h3>
+                                    <ul class="space-y-2 text-gray-600 dark:text-gray-300">
+                                        <li>• Seguir Conventional Commits</li>
+                                        <li>• Usar tiempo presente ("add" no "added")</li>
+                                        <li>• Usar modo imperativo ("move" no "moves")</li>
+                                        <li>• Limitar primera línea a 72 caracteres</li>
+                                        <li>• Referenciar issues cuando aplique</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="code-block">
+                                <div class="code-header">
+                                    <span class="code-title">Verificaciones Pre-commit</span>
+                                    <button class="copy-button" data-copy="# Ejecutar linting&#10;npm run lint&#10;&#10;# Corregir problemas de linting&#10;npm run lint:fix&#10;&#10;# Formatear código&#10;npm run format&#10;&#10;# Verificación de tipos&#10;npm run type-check">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <pre><code class="language-bash"># Ejecutar linting
+npm run lint
+
+# Corregir problemas de linting
+npm run lint:fix
+
+# Formatear código
+npm run format
+
+# Verificación de tipos
+npm run type-check</code></pre>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Call to Action -->
+                    <section class="bg-gradient-to-r from-primary-50 to-primary-100 dark:from-primary-900/20 dark:to-primary-800/20 rounded-lg p-8">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">¿Listo para Contribuir?</h2>
+                        <p class="text-gray-600 dark:text-gray-300 mb-6">
+                            Únete a nuestra comunidad y ayuda a hacer CommitZero aún mejor para desarrolladores de todo el mundo.
+                        </p>
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <a href="https://github.com/commitzero/commitzero" target="_blank" rel="noopener noreferrer" class="btn-primary">
+                                Ver en GitHub
+                                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                </svg>
+                            </a>
+                            <a href="https://discord.gg/commitzero" target="_blank" rel="noopener noreferrer" class="btn-secondary">
+                                Únete a Discord
+                            </a>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <!-- Logo and Description -->
+                <div class="md:col-span-2">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                        <span class="text-xl font-bold">CommitZero</span>
+                    </div>
+                    <p class="text-gray-400 mb-4 max-w-md">
+                        Una poderosa herramienta CLI para validar y hacer cumplir los estándares de Conventional Commits en tu flujo de trabajo de Git.
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="https://github.com/commitzero/commitzero" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                            </svg>
+                        </a>
+                        <a href="https://www.npmjs.com/package/commitzero" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M1.763 0C.786 0 0 .786 0 1.763v20.474C0 23.214.786 24 1.763 24h20.474c.977 0 1.763-.786 1.763-1.763V1.763C24 .786 23.214 0 22.237 0H1.763zM5.13 5.323l13.837.019-.009 13.836h-3.464l.01-10.382h-3.456L12.04 19.17H5.113L5.13 5.323z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Documentation -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Documentación</h3>
+                    <ul class="space-y-2">
+                        <li><a href="/commitzero/es/installation.html" class="text-gray-400 hover:text-white transition-colors">Instalación</a></li>
+                        <li><a href="/commitzero/es/configuration.html" class="text-gray-400 hover:text-white transition-colors">Configuración</a></li>
+                        <li><a href="/commitzero/es/usage.html" class="text-gray-400 hover:text-white transition-colors">Uso</a></li>
+                        <li><a href="/commitzero/es/api.html" class="text-gray-400 hover:text-white transition-colors">Referencia API</a></li>
+                        <li><a href="/commitzero/es/examples.html" class="text-gray-400 hover:text-white transition-colors">Ejemplos</a></li>
+                    </ul>
+                </div>
+
+                <!-- Community -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Comunidad</h3>
+                    <ul class="space-y-2">
+                        <li><a href="/commitzero/es/contributing.html" class="text-gray-400 hover:text-white transition-colors">Contribuir</a></li>
+                        <li><a href="/commitzero/es/faq.html" class="text-gray-400 hover:text-white transition-colors">FAQ</a></li>
+                        <li><a href="/commitzero/es/changelog.html" class="text-gray-400 hover:text-white transition-colors">Changelog</a></li>
+                        <li><a href="https://github.com/commitzero/commitzero/issues" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors">Issues</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-gray-400 text-sm">
+                    © 2024 CommitZero. Licenciado bajo Licencia MIT.
+                </p>
+                <div class="flex space-x-6 mt-4 md:mt-0">
+                    <a href="/commitzero/contributing.html" class="text-gray-400 hover:text-white transition-colors text-sm">English</a>
+                    <a href="/commitzero/pt-br/contributing.html" class="text-gray-400 hover:text-white transition-colors text-sm">Português</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="/commitzero/assets/js/main.js"></script>
+</body>
+</html>

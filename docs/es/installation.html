@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instalación - Documentación de CommitZero</title>
+    <meta name="description" content="Aprende cómo instalar la herramienta CLI CommitZero para validar Conventional Commits. Múltiples métodos de instalación incluyendo npm, yarn y descarga directa.">
+    <meta name="keywords" content="instalación commitzero, npm install, conventional commits, configuración git hooks">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://commitzero.github.io/commitzero/es/installation.html">
+    <meta property="og:title" content="Instalación - Documentación de CommitZero">
+    <meta property="og:description" content="Aprende cómo instalar la herramienta CLI CommitZero para validar Conventional Commits.">
+    <meta property="og:image" content="https://commitzero.github.io/commitzero/assets/images/og-image.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://commitzero.github.io/commitzero/es/installation.html">
+    <meta property="twitter:title" content="Instalación - Documentación de CommitZero">
+    <meta property="twitter:description" content="Aprende cómo instalar la herramienta CLI CommitZero para validar Conventional Commits.">
+    <meta property="twitter:image" content="https://commitzero.github.io/commitzero/assets/images/og-image.png">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/commitzero/assets/images/favicon.svg">
+    <link rel="icon" type="image/png" href="/commitzero/assets/images/favicon.png">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="/commitzero/assets/css/main.css">
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" as="style">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;500;600&display=swap" as="style">
+</head>
+<body class="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300">
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                    <a href="/commitzero/es/" class="text-xl font-bold text-gray-900 dark:text-white">CommitZero</a>
+                </div>
+
+                <!-- Desktop Navigation -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="/commitzero/es/" class="nav-link">Inicio</a>
+                    <a href="/commitzero/es/installation.html" class="nav-link active">Instalación</a>
+                    <a href="/commitzero/es/configuration.html" class="nav-link">Configuración</a>
+                    <a href="/commitzero/es/usage.html" class="nav-link">Uso</a>
+                    <a href="/commitzero/es/api.html" class="nav-link">API</a>
+                    <a href="/commitzero/es/examples.html" class="nav-link">Ejemplos</a>
+                </div>
+
+                <!-- Right side buttons -->
+                <div class="flex items-center space-x-4">
+                    <!-- Language Selector -->
+                    <div class="relative">
+                        <button id="language-selector" class="flex items-center space-x-1 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors">
+                            <span id="current-language">ES</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div id="language-dropdown" class="absolute right-0 mt-2 w-32 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 hidden">
+                            <a href="/commitzero/installation.html" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">English</a>
+                            <a href="/commitzero/pt-br/installation.html" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Português</a>
+                            <a href="/commitzero/es/installation.html" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Español</a>
+                        </div>
+                    </div>
+
+                    <!-- Theme Toggle -->
+                    <button id="theme-toggle" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+                        <svg id="theme-toggle-dark-icon" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                        </svg>
+                        <svg id="theme-toggle-light-icon" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path>
+                        </svg>
+                    </button>
+
+                    <!-- GitHub Link -->
+                    <a href="https://github.com/commitzero/commitzero" target="_blank" rel="noopener noreferrer" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 0C4.477 0 0 4.484 0 10.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0110 4.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.203 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.942.359.31.678.921.678 1.856 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0020 10.017C20 4.484 15.522 0 10 0z" clip-rule="evenodd"></path>
+                        </svg>
+                    </a>
+
+                    <!-- Mobile Menu Button -->
+                    <button id="mobile-menu-button" class="md:hidden p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="md:hidden hidden bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
+            <div class="px-4 py-2 space-y-1">
+                <a href="/commitzero/es/" class="block px-3 py-2 text-base font-medium text-gray-700 dark:text-gray-300">Inicio</a>
+                <a href="/commitzero/es/installation.html" class="block px-3 py-2 text-base font-medium text-gray-900 dark:text-white">Instalación</a>
+                <a href="/commitzero/es/configuration.html" class="block px-3 py-2 text-base font-medium text-gray-700 dark:text-gray-300">Configuración</a>
+                <a href="/commitzero/es/usage.html" class="block px-3 py-2 text-base font-medium text-gray-700 dark:text-gray-300">Uso</a>
+                <a href="/commitzero/es/api.html" class="block px-3 py-2 text-base font-medium text-gray-700 dark:text-gray-300">API</a>
+                <a href="/commitzero/es/examples.html" class="block px-3 py-2 text-base font-medium text-gray-700 dark:text-gray-300">Ejemplos</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="pt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="flex flex-col lg:flex-row gap-12">
+                <!-- Sidebar -->
+                <aside class="lg:w-64 flex-shrink-0">
+                    <div class="sticky top-24">
+                        <nav class="space-y-1">
+                            <h3 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-3">Instalación</h3>
+                            <a href="#requirements" class="nav-sidebar-link">Requisitos</a>
+                            <a href="#npm-install" class="nav-sidebar-link">Instalación NPM</a>
+                            <a href="#yarn-install" class="nav-sidebar-link">Instalación Yarn</a>
+                            <a href="#pnpm-install" class="nav-sidebar-link">Instalación PNPM</a>
+                            <a href="#global-install" class="nav-sidebar-link">Instalación Global</a>
+                            <a href="#local-install" class="nav-sidebar-link">Instalación Local</a>
+                            <a href="#npx-usage" class="nav-sidebar-link">Uso con NPX</a>
+                            <a href="#verification" class="nav-sidebar-link">Verificación</a>
+                            <a href="#troubleshooting" class="nav-sidebar-link">Solución de Problemas</a>
+                            <a href="#uninstallation" class="nav-sidebar-link">Desinstalación</a>
+                        </nav>
+                    </div>
+                </aside>
+
+                <!-- Content -->
+                <div class="flex-1 min-w-0">
+                    <!-- Header -->
+                    <div class="mb-8">
+                        <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-4">Instalación</h1>
+                        <p class="text-xl text-gray-600 dark:text-gray-300">
+                            Aprende cómo instalar CommitZero en tu entorno de desarrollo. Hay múltiples métodos de instalación disponibles para adaptarse a tu flujo de trabajo.
+                        </p>
+                    </div>
+
+                    <!-- Requirements -->
+                    <section id="requirements" class="mb-12">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Requisitos del Sistema</h2>
+                        <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6 mb-6">
+                            <div class="flex items-start">
+                                <svg class="w-6 h-6 text-blue-600 dark:text-blue-400 mt-0.5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <div>
+                                    <h3 class="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-2">Requisito de Node.js</h3>
+                                    <p class="text-blue-800 dark:text-blue-200">
+                                        CommitZero requiere <strong>Node.js versión 16 o superior</strong>. Asegúrate de tener una versión compatible instalada antes de continuar.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Verificar Versión de Node.js</h3>
+                                <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
+                                    <code class="text-sm font-mono text-gray-800 dark:text-gray-200">node --version</code>
+                                    <button class="copy-button ml-4 p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors" data-copy="node --version">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Verificar Versión de NPM</h3>
+                                <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
+                                    <code class="text-sm font-mono text-gray-800 dark:text-gray-200">npm --version</code>
+                                    <button class="copy-button ml-4 p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors" data-copy="npm --version">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- NPM Installation -->
+                    <section id="npm-install" class="mb-12">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Instalación con NPM</h2>
+                        <p class="text-gray-600 dark:text-gray-300 mb-6">
+                            La forma más común de instalar CommitZero es a través de NPM, el gestor de paquetes de Node.js.
+                        </p>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <!-- Global Installation -->
+                            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Instalación Global</h3>
+                                <p class="text-gray-600 dark:text-gray-300 mb-4">
+                                    Instala CommitZero globalmente para usarlo en cualquier proyecto.
+                                </p>
+                                <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 mb-4">
+                                    <code class="text-sm font-mono text-gray-800 dark:text-gray-200">npm install -g commitzero</code>
+                                    <button class="copy-button ml-4 p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors" data-copy="npm install -g commitzero">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div class="flex items-start">
+                                    <svg class="w-5 h-5 text-green-600 dark:text-green-400 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                    <p class="text-sm text-gray-600 dark:text-gray-300">
+                                        Recomendado para uso general y múltiples proyectos
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Local Installation -->
+                            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Instalación Local</h3>
+                                <p class="text-gray-600 dark:text-gray-300 mb-4">
+                                    Instala CommitZero como dependencia de desarrollo en tu proyecto.
+                                </p>
+                                <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 mb-4">
+                                    <code class="text-sm font-mono text-gray-800 dark:text-gray-200">npm install --save-dev commitzero</code>
+                                    <button class="copy-button ml-4 p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors" data-copy="npm install --save-dev commitzero">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div class="flex items-start">
+                                    <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    <p class="text-sm text-gray-600 dark:text-gray-300">
+                                        Ideal para proyectos específicos y control de versiones
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Yarn Installation -->
+                    <section id="yarn-install" class="mb-12">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Instalación con Yarn</h2>
+                        <p class="text-gray-600 dark:text-gray-300 mb-6">
+                            Si prefieres usar Yarn como gestor de paquetes, también puedes instalar CommitZero con él.
+                        </p>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Instalación Global con Yarn</h3>
+                                <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
+                                    <code class="text-sm font-mono text-gray-800 dark:text-gray-200">yarn global add commitzero</code>
+                                    <button class="copy-button ml-4 p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors" data-copy="yarn global add commitzero">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Instalación Local con Yarn</h3>
+                                <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
+                                    <code class="text-sm font-mono text-gray-800 dark:text-gray-200">yarn add --dev commitzero</code>
+                                    <button class="copy-button ml-4 p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors" data-copy="yarn add --dev commitzero">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- PNPM Installation -->
+                    <section id="pnpm-install" class="mb-12">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Instalación con PNPM</h2>
+                        <p class="text-gray-600 dark:text-gray-300 mb-6">
+                            PNPM es un gestor de paquetes rápido y eficiente que también es compatible con CommitZero.
+                        </p>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Instalación Global con PNPM</h3>
+                                <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
+                                    <code class="text-sm font-mono text-gray-800 dark:text-gray-200">pnpm add -g commitzero</code>
+                                    <button class="copy-button ml-4 p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors" data-copy="pnpm add -g commitzero">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Instalación Local con PNPM</h3>
+                                <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
+                                    <code class="text-sm font-mono text-gray-800 dark:text-gray-200">pnpm add -D commitzero</code>
+                                    <button class="copy-button ml-4 p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors" data-copy="pnpm add -D commitzero">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- NPX Usage -->
+                    <section id="npx-usage" class="mb-12">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Uso con NPX</h2>
+                        <p class="text-gray-600 dark:text-gray-300 mb-6">
+                            Puedes usar CommitZero sin instalarlo permanentemente usando NPX, que viene incluido con NPM.
+                        </p>
+
+                        <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Ejecutar sin Instalación</h3>
+                            <p class="text-gray-600 dark:text-gray-300 mb-4">
+                                Ejecuta CommitZero directamente sin instalarlo en tu sistema:
+                            </p>
+                            <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 mb-4">
+                                <code class="text-sm font-mono text-gray-800 dark:text-gray-200">npx commitzero --help</code>
+                                <button class="copy-button ml-4 p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors" data-copy="npx commitzero --help">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+                                <div class="flex items-start">
+                                    <svg class="w-5 h-5 text-yellow-600 dark:text-yellow-400 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                    </svg>
+                                    <p class="text-sm text-yellow-800 dark:text-yellow-200">
+                                        <strong>Nota:</strong> NPX descargará y ejecutará la última versión cada vez, lo que puede ser más lento que una instalación local.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Verification -->
+                    <section id="verification" class="mb-12">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Verificación de la Instalación</h2>
+                        <p class="text-gray-600 dark:text-gray-300 mb-6">
+                            Después de la instalación, verifica que CommitZero esté correctamente instalado y funcionando.
+                        </p>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Verificar Versión</h3>
+                                <p class="text-gray-600 dark:text-gray-300 mb-4">
+                                    Comprueba que CommitZero esté instalado y muestra su versión:
+                                </p>
+                                <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
+                                    <code class="text-sm font-mono text-gray-800 dark:text-gray-200">commitzero --version</code>
+                                    <button class="copy-button ml-4 p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors" data-copy="commitzero --version">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Mostrar Ayuda</h3>
+                                <p class="text-gray-600 dark:text-gray-300 mb-4">
+                                    Muestra la información de ayuda y comandos disponibles:
+                                </p>
+                                <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
+                                    <code class="text-sm font-mono text-gray-800 dark:text-gray-200">commitzero --help</code>
+                                    <button class="copy-button ml-4 p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors" data-copy="commitzero --help">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-6">
+                            <div class="flex items-start">
+                                <svg class="w-6 h-6 text-green-600 dark:text-green-400 mt-0.5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <div>
+                                    <h3 class="text-lg font-semibold text-green-900 dark:text-green-100 mb-2">¡Instalación Exitosa!</h3>
+                                    <p class="text-green-800 dark:text-green-200">
+                                        Si ambos comandos funcionan correctamente, CommitZero está instalado y listo para usar. 
+                                        Continúa con la <a href="/commitzero/es/configuration.html" class="underline hover:no-underline">configuración</a> para personalizar tu experiencia.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Troubleshooting -->
+                    <section id="troubleshooting" class="mb-12">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Solución de Problemas</h2>
+                        <p class="text-gray-600 dark:text-gray-300 mb-6">
+                            Soluciones a problemas comunes que puedes encontrar durante la instalación.
+                        </p>
+
+                        <div class="space-y-6">
+                            <!-- Problem 1 -->
+                            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Comando no encontrado</h3>
+                                <p class="text-gray-600 dark:text-gray-300 mb-4">
+                                    Si obtienes un error "command not found" después de la instalación global:
+                                </p>
+                                <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-4">
+                                    <code class="text-sm font-mono text-red-800 dark:text-red-200">bash: commitzero: command not found</code>
+                                </div>
+                                <div class="space-y-3">
+                                    <div>
+                                        <h4 class="font-medium text-gray-900 dark:text-white mb-2">Solución 1: Verificar PATH</h4>
+                                        <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">Asegúrate de que el directorio global de NPM esté en tu PATH:</p>
+                                        <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
+                                            <code class="text-sm font-mono text-gray-800 dark:text-gray-200">npm config get prefix</code>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-medium text-gray-900 dark:text-white mb-2">Solución 2: Reinstalar</h4>
+                                        <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">Intenta desinstalar y reinstalar:</p>
+                                        <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
+                                            <code class="text-sm font-mono text-gray-800 dark:text-gray-200">npm uninstall -g commitzero && npm install -g commitzero</code>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Problem 2 -->
+                            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Errores de Permisos</h3>
+                                <p class="text-gray-600 dark:text-gray-300 mb-4">
+                                    Si encuentras errores de permisos durante la instalación global:
+                                </p>
+                                <div class="space-y-3">
+                                    <div>
+                                        <h4 class="font-medium text-gray-900 dark:text-white mb-2">Solución 1: Usar sudo (macOS/Linux)</h4>
+                                        <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
+                                            <code class="text-sm font-mono text-gray-800 dark:text-gray-200">sudo npm install -g commitzero</code>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-medium text-gray-900 dark:text-white mb-2">Solución 2: Configurar directorio NPM</h4>
+                                        <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">Configura NPM para usar un directorio diferente:</p>
+                                        <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
+                                            <code class="text-sm font-mono text-gray-800 dark:text-gray-200">npm config set prefix ~/.npm-global</code>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Problem 3 -->
+                            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Versión de Node.js Incompatible</h3>
+                                <p class="text-gray-600 dark:text-gray-300 mb-4">
+                                    Si tu versión de Node.js es menor a 16:
+                                </p>
+                                <div class="space-y-3">
+                                    <div>
+                                        <h4 class="font-medium text-gray-900 dark:text-white mb-2">Actualizar Node.js</h4>
+                                        <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">Visita <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer" class="text-primary-600 dark:text-primary-400 underline hover:no-underline">nodejs.org</a> para descargar la última versión LTS.</p>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-medium text-gray-900 dark:text-white mb-2">Usar NVM (recomendado)</h4>
+                                        <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">Instala y usa Node Version Manager para gestionar múltiples versiones:</p>
+                                        <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
+                                            <code class="text-sm font-mono text-gray-800 dark:text-gray-200">nvm install --lts && nvm use --lts</code>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Uninstallation -->
+                    <section id="uninstallation" class="mb-12">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Desinstalación</h2>
+                        <p class="text-gray-600 dark:text-gray-300 mb-6">
+                            Si necesitas desinstalar CommitZero, aquí tienes los comandos para cada método de instalación.
+                        </p>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Desinstalación Global</h3>
+                                <div class="space-y-4">
+                                    <div>
+                                        <h4 class="font-medium text-gray-900 dark:text-white mb-2">NPM</h4>
+                                        <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
+                                            <code class="text-sm font-mono text-gray-800 dark:text-gray-200">npm uninstall -g commitzero</code>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-medium text-gray-900 dark:text-white mb-2">Yarn</h4>
+                                        <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
+                                            <code class="text-sm font-mono text-gray-800 dark:text-gray-200">yarn global remove commitzero</code>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-medium text-gray-900 dark:text-white mb-2">PNPM</h4>
+                                        <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
+                                            <code class="text-sm font-mono text-gray-800 dark:text-gray-200">pnpm remove -g commitzero</code>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Desinstalación Local</h3>
+                                <div class="space-y-4">
+                                    <div>
+                                        <h4 class="font-medium text-gray-900 dark:text-white mb-2">NPM</h4>
+                                        <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
+                                            <code class="text-sm font-mono text-gray-800 dark:text-gray-200">npm uninstall commitzero</code>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-medium text-gray-900 dark:text-white mb-2">Yarn</h4>
+                                        <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
+                                            <code class="text-sm font-mono text-gray-800 dark:text-gray-200">yarn remove commitzero</code>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-medium text-gray-900 dark:text-white mb-2">PNPM</h4>
+                                        <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
+                                            <code class="text-sm font-mono text-gray-800 dark:text-gray-200">pnpm remove commitzero</code>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-6">
+                            <div class="flex items-start">
+                                <svg class="w-6 h-6 text-orange-600 dark:text-orange-400 mt-0.5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                </svg>
+                                <div>
+                                    <h3 class="text-lg font-semibold text-orange-900 dark:text-orange-100 mb-2">Limpiar Configuración</h3>
+                                    <p class="text-orange-800 dark:text-orange-200">
+                                        Después de desinstalar, puedes eliminar manualmente cualquier archivo de configuración de CommitZero 
+                                        (como <code>.commitzerorc.json</code>) de tus proyectos si ya no los necesitas.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Next Steps -->
+                    <section class="mb-12">
+                        <div class="bg-gradient-to-r from-primary-50 to-primary-100 dark:from-primary-900/20 dark:to-primary-800/20 rounded-lg p-8 border border-primary-200 dark:border-primary-800">
+                            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Próximos Pasos</h2>
+                            <p class="text-gray-600 dark:text-gray-300 mb-6">
+                                Ahora que tienes CommitZero instalado, aquí tienes algunos recursos útiles para comenzar:
+                            </p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <a href="/commitzero/es/configuration.html" class="block p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-600 transition-colors">
+                                    <h3 class="font-semibold text-gray-900 dark:text-white mb-2">Configuración</h3>
+                                    <p class="text-sm text-gray-600 dark:text-gray-300">Personaliza CommitZero para tu proyecto</p>
+                                </a>
+                                <a href="/commitzero/es/usage.html" class="block p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-600 transition-colors">
+                                    <h3 class="font-semibold text-gray-900 dark:text-white mb-2">Guía de Uso</h3>
+                                    <p class="text-sm text-gray-600 dark:text-gray-300">Aprende a usar todos los comandos</p>
+                                </a>
+                                <a href="/commitzero/es/examples.html" class="block p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-600 transition-colors">
+                                    <h3 class="font-semibold text-gray-900 dark:text-white mb-2">Ejemplos</h3>
+                                    <p class="text-sm text-gray-600 dark:text-gray-300">Ve ejemplos prácticos en acción</p>
+                                </a>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div class="col-span-1 md:col-span-2">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                        <span class="text-xl font-bold">CommitZero</span>
+                    </div>
+                    <p class="text-gray-400 mb-4">
+                        Validador de Conventional Commits con una CLI amigable, hooks de Git y un motor de reglas interno — sin dependencias de runtime.
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="https://github.com/commitzero/commitzero" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                            </svg>
+                        </a>
+                        <a href="https://www.npmjs.com/package/@codemastersolutions/commitzero" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M1.763 0C.786 0 0 .786 0 1.763v20.474C0 23.214.786 24 1.763 24h20.474c.977 0 1.763-.786 1.763-1.763V1.763C24 .786 23.214 0 22.237 0H1.763zM5.13 5.323l13.837.019-.009 13.836h-3.464l.01-10.382h-3.456L12.04 19.17H5.113L5.13 5.323z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Documentación</h3>
+                    <ul class="space-y-2">
+                        <li><a href="/commitzero/es/installation.html" class="text-gray-400 hover:text-white transition-colors">Instalación</a></li>
+                        <li><a href="/commitzero/es/configuration.html" class="text-gray-400 hover:text-white transition-colors">Configuración</a></li>
+                        <li><a href="/commitzero/es/usage.html" class="text-gray-400 hover:text-white transition-colors">Uso</a></li>
+                        <li><a href="/commitzero/es/api.html" class="text-gray-400 hover:text-white transition-colors">API</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Recursos</h3>
+                    <ul class="space-y-2">
+                        <li><a href="/commitzero/es/examples.html" class="text-gray-400 hover:text-white transition-colors">Ejemplos</a></li>
+                        <li><a href="/commitzero/es/contributing.html" class="text-gray-400 hover:text-white transition-colors">Contribuir</a></li>
+                        <li><a href="/commitzero/es/faq.html" class="text-gray-400 hover:text-white transition-colors">FAQ</a></li>
+                        <li><a href="/commitzero/es/changelog.html" class="text-gray-400 hover:text-white transition-colors">Changelog</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center">
+                <p class="text-gray-400">
+                    © 2024 CommitZero. Todos los derechos reservados. Licencia MIT.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="/commitzero/assets/js/main.js"></script>
+</body>
+</html>
