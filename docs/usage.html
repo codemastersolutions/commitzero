@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Usage - CommitZero Documentation</title>
+    <meta name="description" content="Learn how to use CommitZero CLI commands for validating commits, managing Git hooks, and enforcing Conventional Commits standards.">
+    <meta name="keywords" content="commitzero usage, cli commands, git hooks, commit validation, conventional commits">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://commitzero.github.io/commitzero/usage.html">
+    <meta property="og:title" content="Usage - CommitZero Documentation">
+    <meta property="og:description" content="Learn how to use CommitZero CLI commands for validating commits and managing Git hooks.">
+    <meta property="og:image" content="https://commitzero.github.io/commitzero/assets/images/og-image.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://commitzero.github.io/commitzero/usage.html">
+    <meta property="twitter:title" content="Usage - CommitZero Documentation">
+    <meta property="twitter:description" content="Learn how to use CommitZero CLI commands for validating commits and managing Git hooks.">
+    <meta property="twitter:image" content="https://commitzero.github.io/commitzero/assets/images/og-image.png">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/commitzero/assets/images/favicon.svg">
+    <link rel="icon" type="image/png" href="/commitzero/assets/images/favicon.png">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="/commitzero/assets/css/main.css">
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" as="style">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;500;600&display=swap" as="style">
+</head>
+<body class="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300">
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                    <a href="/commitzero/" class="text-xl font-bold text-gray-900 dark:text-white">CommitZero</a>
+                </div>
+
+                <!-- Desktop Navigation -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="/commitzero/" class="nav-link">Home</a>
+                    <a href="/commitzero/installation.html" class="nav-link">Installation</a>
+                    <a href="/commitzero/configuration.html" class="nav-link">Configuration</a>
+                    <a href="/commitzero/usage.html" class="nav-link active">Usage</a>
+                    <a href="/commitzero/api.html" class="nav-link">API</a>
+                    <a href="/commitzero/examples.html" class="nav-link">Examples</a>
+                </div>
+
+                <!-- Right side buttons -->
+                <div class="flex items-center space-x-4">
+                    <!-- Language Selector -->
+                    <div class="relative">
+                        <button id="language-selector" class="flex items-center space-x-1 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors">
+                            <span id="current-language">EN</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div id="language-dropdown" class="absolute right-0 mt-2 w-32 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 hidden">
+                            <a href="/commitzero/usage.html" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">English</a>
+                            <a href="/commitzero/pt-br/usage.html" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Português</a>
+                            <a href="/commitzero/es/usage.html" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Español</a>
+                        </div>
+                    </div>
+
+                    <!-- Theme Toggle -->
+                    <button id="theme-toggle" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+                        <svg id="theme-toggle-dark-icon" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                        </svg>
+                        <svg id="theme-toggle-light-icon" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path>
+                        </svg>
+                    </button>
+
+                    <!-- GitHub Link -->
+                    <a href="https://github.com/commitzero/commitzero" target="_blank" rel="noopener noreferrer" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 0C4.477 0 0 4.484 0 10.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0110 4.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.203 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.942.359.31.678.921.678 1.856 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0020 10.017C20 4.484 15.522 0 10 0z" clip-rule="evenodd"></path>
+                        </svg>
+                    </a>
+
+                    <!-- Mobile Menu Button -->
+                    <button id="mobile-menu-button" class="md:hidden p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="md:hidden hidden bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
+            <div class="px-4 py-2 space-y-1">
+                <a href="/commitzero/" class="block px-3 py-2 text-base font-medium text-gray-700 dark:text-gray-300">Home</a>
+                <a href="/commitzero/installation.html" class="block px-3 py-2 text-base font-medium text-gray-700 dark:text-gray-300">Installation</a>
+                <a href="/commitzero/configuration.html" class="block px-3 py-2 text-base font-medium text-gray-700 dark:text-gray-300">Configuration</a>
+                <a href="/commitzero/usage.html" class="block px-3 py-2 text-base font-medium text-gray-900 dark:text-white">Usage</a>
+                <a href="/commitzero/api.html" class="block px-3 py-2 text-base font-medium text-gray-700 dark:text-gray-300">API</a>
+                <a href="/commitzero/examples.html" class="block px-3 py-2 text-base font-medium text-gray-700 dark:text-gray-300">Examples</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="pt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="flex flex-col lg:flex-row gap-12">
+                <!-- Sidebar -->
+                <aside class="lg:w-64 flex-shrink-0">
+                    <div class="sticky top-24">
+                        <nav class="space-y-1">
+                            <h3 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-3">Usage Guide</h3>
+                            <a href="#cli-commands" class="nav-sidebar-link">CLI Commands</a>
+                            <a href="#validation" class="nav-sidebar-link">Commit Validation</a>
+                            <a href="#interactive-mode" class="nav-sidebar-link">Interactive Mode</a>
+                            <a href="#git-hooks" class="nav-sidebar-link">Git Hooks</a>
+                            <a href="#workflow" class="nav-sidebar-link">Workflow Integration</a>
+                            <a href="#troubleshooting" class="nav-sidebar-link">Troubleshooting</a>
+                            <a href="#best-practices" class="nav-sidebar-link">Best Practices</a>
+                        </nav>
+                    </div>
+                </aside>
+
+                <!-- Content -->
+                <div class="flex-1 min-w-0">
+                    <!-- Header -->
+                    <div class="mb-8">
+                        <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-4">Usage Guide</h1>
+                        <p class="text-xl text-gray-600 dark:text-gray-300">
+                            Learn how to use CommitZero CLI commands, validate commits, and integrate with your development workflow.
+                        </p>
+                    </div>
+
+                    <!-- CLI Commands -->
+                    <section id="cli-commands" class="mb-12">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">CLI Commands</h2>
+                        <p class="text-gray-600 dark:text-gray-300 mb-6">
+                            CommitZero provides several commands to help you manage commit validation and Git hooks.
+                        </p>
+
+                        <div class="space-y-6">
+                            <!-- Initialize -->
+                            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Initialize Project</h3>
+                                    <span class="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 text-xs font-medium rounded">Setup</span>
+                                </div>
+                                <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 mb-4">
+                                    <div class="flex items-center justify-between">
+                                        <code class="text-sm font-mono text-gray-800 dark:text-gray-200">commitzero init</code>
+                                        <button class="copy-button ml-4 p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors" data-copy="commitzero init">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                                <p class="text-gray-600 dark:text-gray-300 mb-3">
+                                    Creates configuration file and installs Git hooks for automatic validation.
+                                </p>
+                                <div class="text-sm text-gray-500 dark:text-gray-400">
+                                    <strong>What it does:</strong>
+                                    <ul class="list-disc list-inside mt-1 space-y-1">
+                                        <li>Creates <code>.commitzero.json</code> configuration file</li>
+                                        <li>Installs pre-commit and commit-msg Git hooks</li>
+                                        <li>Backs up existing hooks if present</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Validate -->
+                            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Validate Commit Message</h3>
+                                    <span class="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 text-xs font-medium rounded">Validation</span>
+                                </div>
+                                <div class="space-y-3">
+                                    <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
+                                        <div class="flex items-center justify-between">
+                                            <code class="text-sm font-mono text-gray-800 dark:text-gray-200">commitzero validate "feat: add user authentication"</code>
+                                            <button class="copy-button ml-4 p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors" data-copy='commitzero validate "feat: add user authentication"'>
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
+                                        <div class="flex items-center justify-between">
+                                            <code class="text-sm font-mono text-gray-800 dark:text-gray-200">commitzero validate --file commit-message.txt</code>
+                                            <button class="copy-button ml-4 p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors" data-copy="commitzero validate --file commit-message.txt">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="text-gray-600 dark:text-gray-300 mt-3">
+                                    Validates a commit message against your configuration rules.
+                                </p>
+                            </div>
+
+                            <!-- Install/Uninstall Hooks -->
+                            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Manage Git Hooks</h3>
+                                    <span class="px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-200 text-xs font-medium rounded">Hooks</span>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <h4 class="font-medium text-gray-900 dark:text-white mb-2">Install Hooks</h4>
+                                        <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
+                                            <code class="text-sm text-gray-800 dark:text-gray-200">commitzero install</code>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-medium text-gray-900 dark:text-white mb-2">Uninstall Hooks</h4>
+                                        <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
+                                            <code class="text-sm text-gray-800 dark:text-gray-200">commitzero uninstall</code>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="text-gray-600 dark:text-gray-300 mt-3">
+                                    Manually install or remove Git hooks for commit validation.
+                                </p>
+                            </div>
+
+                            <!-- Help -->
+                            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Get Help</h3>
+                                    <span class="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs font-medium rounded">Info</span>
+                                </div>
+                                <div class="space-y-3">
+                                    <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
+                                        <code class="text-sm font-mono text-gray-800 dark:text-gray-200">commitzero --help</code>
+                                    </div>
+                                    <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
+                                        <code class="text-sm font-mono text-gray-800 dark:text-gray-200">commitzero --version</code>
+                                    </div>
+                                </div>
+                                <p class="text-gray-600 dark:text-gray-300 mt-3">
+                                    Display help information and version details.
+                                </p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Commit Validation -->
+                    <section id="validation" class="mb-12">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Commit Validation</h2>
+                        <p class="text-gray-600 dark:text-gray-300 mb-6">
+                            Understanding how CommitZero validates your commit messages and what makes a valid commit.
+                        </p>
+
+                        <div class="space-y-6">
+                            <!-- Valid Commit Examples -->
+                            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">✅ Valid Commit Messages</h3>
+                                <div class="space-y-3">
+                                    <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
+                                        <code class="text-sm text-green-800 dark:text-green-200">feat: add user authentication system</code>
+                                    </div>
+                                    <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
+                                        <code class="text-sm text-green-800 dark:text-green-200">fix(api): resolve login endpoint timeout issue</code>
+                                    </div>
+                                    <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
+                                        <code class="text-sm text-green-800 dark:text-green-200">docs: update installation instructions</code>
+                                    </div>
+                                    <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
+                                        <code class="text-sm text-green-800 dark:text-green-200">feat!: change API response format</code>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Invalid Commit Examples -->
+                            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">❌ Invalid Commit Messages</h3>
+                                <div class="space-y-3">
+                                    <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
+                                        <code class="text-sm text-red-800 dark:text-red-200">added new feature</code>
+                                        <p class="text-xs text-red-600 dark:text-red-400 mt-1">Missing type prefix</p>
+                                    </div>
+                                    <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
+                                        <code class="text-sm text-red-800 dark:text-red-200">feat:</code>
+                                        <p class="text-xs text-red-600 dark:text-red-400 mt-1">Missing description</p>
+                                    </div>
+                                    <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
+                                        <code class="text-sm text-red-800 dark:text-red-200">feat: Add New Feature</code>
+                                        <p class="text-xs text-red-600 dark:text-red-400 mt-1">Description should start with lowercase</p>
+                                    </div>
+                                    <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
+                                        <code class="text-sm text-red-800 dark:text-red-200">unknown: add something</code>
+                                        <p class="text-xs text-red-600 dark:text-red-400 mt-1">Invalid commit type</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Validation Rules -->
+                            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Validation Rules</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <h4 class="font-medium text-gray-900 dark:text-white mb-3">Format Requirements</h4>
+                                        <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-300">
+                                            <li class="flex items-start">
+                                                <svg class="w-4 h-4 text-green-500 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                </svg>
+                                                Must start with valid type
+                                            </li>
+                                            <li class="flex items-start">
+                                                <svg class="w-4 h-4 text-green-500 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                </svg>
+                                                Colon and space after type
+                                            </li>
+                                            <li class="flex items-start">
+                                                <svg class="w-4 h-4 text-green-500 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                </svg>
+                                                Description starts lowercase
+                                            </li>
+                                            <li class="flex items-start">
+                                                <svg class="w-4 h-4 text-green-500 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                </svg>
+                                                No period at the end
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-medium text-gray-900 dark:text-white mb-3">Length Limits</h4>
+                                        <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-300">
+                                            <li class="flex items-start">
+                                                <svg class="w-4 h-4 text-blue-500 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                </svg>
+                                                Subject: 1-100 characters
+                                            </li>
+                                            <li class="flex items-start">
+                                                <svg class="w-4 h-4 text-blue-500 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                </svg>
+                                                Body: max 500 characters
+                                            </li>
+                                            <li class="flex items-start">
+                                                <svg class="w-4 h-4 text-blue-500 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                </svg>
+                                                Footer: max 100 characters
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Interactive Mode -->
+                    <section id="interactive-mode" class="mb-12">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Interactive Mode</h2>
+                        <p class="text-gray-600 dark:text-gray-300 mb-6">
+                            Use CommitZero's interactive mode to create well-formatted commit messages with guided prompts.
+                        </p>
+
+                        <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Start Interactive Mode</h3>
+                                <button class="copy-button p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors" data-copy="commitzero commit">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 mb-4">
+                                <code class="text-sm font-mono text-gray-800 dark:text-gray-200">commitzero commit</code>
+                            </div>
+                            
+                            <div class="space-y-4">
+                                <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                                    <h4 class="font-medium text-blue-900 dark:text-blue-100 mb-2">Interactive Prompts</h4>
+                                    <div class="text-sm text-blue-800 dark:text-blue-200 space-y-2">
+                                        <div class="font-mono bg-blue-100 dark:bg-blue-900/40 p-2 rounded">
+                                            <span class="text-blue-600 dark:text-blue-300">?</span> Select the type of change: <span class="text-blue-800 dark:text-blue-200">(Use arrow keys)</span><br>
+                                            <span class="ml-2">❯ feat: A new feature</span><br>
+                                            <span class="ml-4">fix: A bug fix</span><br>
+                                            <span class="ml-4">docs: Documentation only changes</span>
+                                        </div>
+                                        <div class="font-mono bg-blue-100 dark:bg-blue-900/40 p-2 rounded">
+                                            <span class="text-blue-600 dark:text-blue-300">?</span> What is the scope of this change? <span class="text-gray-500">(optional)</span><br>
+                                            <span class="ml-2">api</span>
+                                        </div>
+                                        <div class="font-mono bg-blue-100 dark:bg-blue-900/40 p-2 rounded">
+                                            <span class="text-blue-600 dark:text-blue-300">?</span> Write a short description:<br>
+                                            <span class="ml-2">add user authentication endpoint</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+                                    <h4 class="font-medium text-green-900 dark:text-green-100 mb-2">Generated Commit</h4>
+                                    <div class="font-mono text-sm bg-green-100 dark:bg-green-900/40 p-2 rounded text-green-800 dark:text-green-200">
+                                        feat(api): add user authentication endpoint
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Git Hooks Integration -->
+                    <section id="git-hooks" class="mb-12">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Git Hooks Integration</h2>
+                        <p class="text-gray-600 dark:text-gray-300 mb-6">
+                            CommitZero automatically validates commits through Git hooks, ensuring consistency across your team.
+                        </p>
+
+                        <div class="space-y-6">
+                            <!-- Hook Types -->
+                            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Installed Hooks</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <h4 class="font-medium text-gray-900 dark:text-white mb-3">Pre-commit Hook</h4>
+                                        <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-300">
+                                            <li class="flex items-start">
+                                                <svg class="w-4 h-4 text-green-500 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                </svg>
+                                                Runs before commit creation
+                                            </li>
+                                            <li class="flex items-start">
+                                                <svg class="w-4 h-4 text-green-500 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                </svg>
+                                                Executes pre-commit commands
+                                            </li>
+                                            <li class="flex items-start">
+                                                <svg class="w-4 h-4 text-green-500 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                </svg>
+                                                Can run linting, tests, etc.
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-medium text-gray-900 dark:text-white mb-3">Commit-msg Hook</h4>
+                                        <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-300">
+                                            <li class="flex items-start">
+                                                <svg class="w-4 h-4 text-blue-500 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                </svg>
+                                                Validates commit message format
+                                            </li>
+                                            <li class="flex items-start">
+                                                <svg class="w-4 h-4 text-blue-500 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                </svg>
+                                                Checks against configuration
+                                            </li>
+                                            <li class="flex items-start">
+                                                <svg class="w-4 h-4 text-blue-500 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                </svg>
+                                                Prevents invalid commits
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Hook Workflow -->
+                            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Commit Workflow</h3>
+                                <div class="space-y-4">
+                                    <div class="flex items-center space-x-4">
+                                        <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center text-sm font-semibold">1</div>
+                                        <div>
+                                            <h4 class="font-medium text-gray-900 dark:text-white">Stage Changes</h4>
+                                            <p class="text-sm text-gray-600 dark:text-gray-300">Add files to staging area with <code>git add</code></p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center space-x-4">
+                                        <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center text-sm font-semibold">2</div>
+                                        <div>
+                                            <h4 class="font-medium text-gray-900 dark:text-white">Pre-commit Validation</h4>
+                                            <p class="text-sm text-gray-600 dark:text-gray-300">Runs configured pre-commit commands (linting, tests)</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center space-x-4">
+                                        <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center text-sm font-semibold">3</div>
+                                        <div>
+                                            <h4 class="font-medium text-gray-900 dark:text-white">Commit Message</h4>
+                                            <p class="text-sm text-gray-600 dark:text-gray-300">Create commit with <code>git commit -m "message"</code></p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center space-x-4">
+                                        <div class="w-8 h-8 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center text-sm font-semibold">4</div>
+                                        <div>
+                                            <h4 class="font-medium text-gray-900 dark:text-white">Message Validation</h4>
+                                            <p class="text-sm text-gray-600 dark:text-gray-300">CommitZero validates message format and rules</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Workflow Integration -->
+                    <section id="workflow" class="mb-12">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Workflow Integration</h2>
+                        <p class="text-gray-600 dark:text-gray-300 mb-6">
+                            Integrate CommitZero with your existing development workflow and tools.
+                        </p>
+
+                        <div class="space-y-6">
+                            <!-- CI/CD Integration -->
+                            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">CI/CD Integration</h3>
+                                <p class="text-gray-600 dark:text-gray-300 mb-4">
+                                    Validate commit messages in your CI/CD pipeline:
+                                </p>
+                                <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
+                                    <pre class="text-sm text-gray-800 dark:text-gray-200"><code># GitHub Actions example
+name: Validate Commits
+on: [push, pull_request]
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - run: npm install -g commitzero
+      - run: commitzero validate-range HEAD~1..HEAD</code></pre>
+                                </div>
+                            </div>
+
+                            <!-- IDE Integration -->
+                            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">IDE Integration</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <h4 class="font-medium text-gray-900 dark:text-white mb-3">VS Code</h4>
+                                        <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">
+                                            Use the Conventional Commits extension with CommitZero validation.
+                                        </p>
+                                        <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
+                                            <code class="text-xs text-gray-800 dark:text-gray-200">ext install vivaxy.vscode-conventional-commits</code>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-medium text-gray-900 dark:text-white mb-3">Git GUI Tools</h4>
+                                        <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">
+                                            Works with any Git GUI that respects Git hooks.
+                                        </p>
+                                        <ul class="text-xs text-gray-500 dark:text-gray-400 space-y-1">
+                                            <li>• SourceTree</li>
+                                            <li>• GitKraken</li>
+                                            <li>• GitHub Desktop</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Team Workflow -->
+                            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Team Workflow</h3>
+                                <div class="space-y-4">
+                                    <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                                        <h4 class="font-medium text-blue-900 dark:text-blue-100 mb-2">Setup for New Team Members</h4>
+                                        <ol class="text-sm text-blue-800 dark:text-blue-200 space-y-1 list-decimal list-inside">
+                                            <li>Clone the repository</li>
+                                            <li>Run <code>npm install</code> (if CommitZero is in devDependencies)</li>
+                                            <li>Run <code>commitzero init</code> to install hooks</li>
+                                            <li>Start committing with validation!</li>
+                                        </ol>
+                                    </div>
+                                    <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+                                        <h4 class="font-medium text-green-900 dark:text-green-100 mb-2">Shared Configuration</h4>
+                                        <p class="text-sm text-green-800 dark:text-green-200">
+                                            Commit your <code>.commitzero.json</code> file to ensure consistent rules across the team.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Troubleshooting -->
+                    <section id="troubleshooting" class="mb-12">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Troubleshooting</h2>
+                        <p class="text-gray-600 dark:text-gray-300 mb-6">
+                            Common issues and their solutions when using CommitZero.
+                        </p>
+
+                        <div class="space-y-6">
+                            <!-- Common Issues -->
+                            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Common Issues</h3>
+                                <div class="space-y-4">
+                                    <div class="border-l-4 border-yellow-400 pl-4">
+                                        <h4 class="font-medium text-gray-900 dark:text-white mb-2">Hooks not running</h4>
+                                        <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">
+                                            If Git hooks aren't executing, check:
+                                        </p>
+                                        <ul class="text-sm text-gray-600 dark:text-gray-300 space-y-1 list-disc list-inside">
+                                            <li>Hook files exist in <code>.git/hooks/</code></li>
+                                            <li>Hook files are executable (<code>chmod +x</code>)</li>
+                                            <li>No syntax errors in hook scripts</li>
+                                        </ul>
+                                        <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 mt-2">
+                                            <code class="text-sm text-gray-800 dark:text-gray-200">commitzero install --force</code>
+                                        </div>
+                                    </div>
+
+                                    <div class="border-l-4 border-red-400 pl-4">
+                                        <h4 class="font-medium text-gray-900 dark:text-white mb-2">Configuration not found</h4>
+                                        <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">
+                                            If CommitZero can't find your configuration:
+                                        </p>
+                                        <ul class="text-sm text-gray-600 dark:text-gray-300 space-y-1 list-disc list-inside">
+                                            <li>Ensure <code>.commitzero.json</code> exists in project root</li>
+                                            <li>Check JSON syntax is valid</li>
+                                            <li>Use <code>--config</code> flag to specify custom path</li>
+                                        </ul>
+                                        <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 mt-2">
+                                            <code class="text-sm text-gray-800 dark:text-gray-200">commitzero validate --config ./custom-config.json</code>
+                                        </div>
+                                    </div>
+
+                                    <div class="border-l-4 border-blue-400 pl-4">
+                                        <h4 class="font-medium text-gray-900 dark:text-white mb-2">Permission denied errors</h4>
+                                        <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">
+                                            On Unix systems, you might need to make hooks executable:
+                                        </p>
+                                        <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 mt-2">
+                                            <code class="text-sm text-gray-800 dark:text-gray-200">chmod +x .git/hooks/pre-commit .git/hooks/commit-msg</code>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Debug Mode -->
+                            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Debug Mode</h3>
+                                <p class="text-gray-600 dark:text-gray-300 mb-4">
+                                    Enable verbose logging to troubleshoot issues:
+                                </p>
+                                <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
+                                    <code class="text-sm text-gray-800 dark:text-gray-200">commitzero validate "feat: test" --verbose</code>
+                                </div>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                                    This will show detailed validation steps and configuration loading.
+                                </p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Best Practices -->
+                    <section id="best-practices" class="mb-12">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Best Practices</h2>
+                        <p class="text-gray-600 dark:text-gray-300 mb-6">
+                            Follow these best practices to get the most out of CommitZero.
+                        </p>
+
+                        <div class="space-y-6">
+                            <!-- Writing Good Commits -->
+                            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Writing Good Commit Messages</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <h4 class="font-medium text-green-900 dark:text-green-100 mb-3">✅ Do</h4>
+                                        <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-300">
+                                            <li class="flex items-start">
+                                                <svg class="w-4 h-4 text-green-500 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                </svg>
+                                                Use imperative mood ("add" not "added")
+                                            </li>
+                                            <li class="flex items-start">
+                                                <svg class="w-4 h-4 text-green-500 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                </svg>
+                                                Be specific and descriptive
+                                            </li>
+                                            <li class="flex items-start">
+                                                <svg class="w-4 h-4 text-green-500 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                </svg>
+                                                Use scopes for context
+                                            </li>
+                                            <li class="flex items-start">
+                                                <svg class="w-4 h-4 text-green-500 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                </svg>
+                                                Keep subject line under 50 chars when possible
+                                            </li>
+                                            <li class="flex items-start">
+                                                <svg class="w-4 h-4 text-green-500 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                </svg>
+                                                Use body for detailed explanations
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-medium text-red-900 dark:text-red-100 mb-3">❌ Don't</h4>
+                                        <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-300">
+                                            <li class="flex items-start">
+                                                <svg class="w-4 h-4 text-red-500 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                </svg>
+                                                Use vague descriptions ("fix stuff")
+                                            </li>
+                                            <li class="flex items-start">
+                                                <svg class="w-4 h-4 text-red-500 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                </svg>
+                                                Mix multiple unrelated changes
+                                            </li>
+                                            <li class="flex items-start">
+                                                <svg class="w-4 h-4 text-red-500 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                </svg>
+                                                Use past tense ("added feature")
+                                            </li>
+                                            <li class="flex items-start">
+                                                <svg class="w-4 h-4 text-red-500 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                </svg>
+                                                End with periods
+                                            </li>
+                                            <li class="flex items-start">
+                                                <svg class="w-4 h-4 text-red-500 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                </svg>
+                                                Capitalize first letter of description
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Team Guidelines -->
+                            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Team Guidelines</h3>
+                                <div class="space-y-4">
+                                    <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                                        <h4 class="font-medium text-blue-900 dark:text-blue-100 mb-2">Establish Clear Rules</h4>
+                                        <ul class="text-sm text-blue-800 dark:text-blue-200 space-y-1 list-disc list-inside">
+                                            <li>Define project-specific commit types and scopes</li>
+                                            <li>Document commit message conventions in README</li>
+                                            <li>Set up shared configuration file</li>
+                                            <li>Train team members on conventional commits</li>
+                                        </ul>
+                                    </div>
+                                    <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+                                        <h4 class="font-medium text-green-900 dark:text-green-100 mb-2">Automate Enforcement</h4>
+                                        <ul class="text-sm text-green-800 dark:text-green-200 space-y-1 list-disc list-inside">
+                                            <li>Install hooks automatically in setup scripts</li>
+                                            <li>Add CommitZero to CI/CD pipeline</li>
+                                            <li>Use pre-commit commands for code quality</li>
+                                            <li>Block non-compliant commits in pull requests</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Next Steps -->
+                    <section class="bg-gradient-to-r from-primary-50 to-primary-100 dark:from-primary-900/20 dark:to-primary-800/20 rounded-lg p-8">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Next Steps</h2>
+                        <p class="text-gray-600 dark:text-gray-300 mb-6">
+                            Now that you know how to use CommitZero, explore more advanced features:
+                        </p>
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <a href="/commitzero/api.html" class="btn-primary">
+                                API Reference
+                                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                                </svg>
+                            </a>
+                            <a href="/commitzero/examples.html" class="btn-secondary">
+                                View Examples
+                            </a>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <!-- Logo and Description -->
+                <div class="md:col-span-2">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                        <span class="text-xl font-bold">CommitZero</span>
+                    </div>
+                    <p class="text-gray-400 mb-4 max-w-md">
+                        A powerful CLI tool for validating and enforcing Conventional Commits standards in your Git workflow.
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="https://github.com/commitzero/commitzero" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                            </svg>
+                        </a>
+                        <a href="https://www.npmjs.com/package/commitzero" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M1.763 0C.786 0 0 .786 0 1.763v20.474C0 23.214.786 24 1.763 24h20.474c.977 0 1.763-.786 1.763-1.763V1.763C24 .786 23.214 0 22.237 0H1.763zM5.13 5.323l13.837.019-.009 13.836h-3.464l.01-10.382h-3.456L12.04 19.17H5.113L5.13 5.323z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Documentation -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Documentation</h3>
+                    <ul class="space-y-2">
+                        <li><a href="/commitzero/installation.html" class="text-gray-400 hover:text-white transition-colors">Installation</a></li>
+                        <li><a href="/commitzero/configuration.html" class="text-gray-400 hover:text-white transition-colors">Configuration</a></li>
+                        <li><a href="/commitzero/usage.html" class="text-gray-400 hover:text-white transition-colors">Usage</a></li>
+                        <li><a href="/commitzero/api.html" class="text-gray-400 hover:text-white transition-colors">API Reference</a></li>
+                        <li><a href="/commitzero/examples.html" class="text-gray-400 hover:text-white transition-colors">Examples</a></li>
+                    </ul>
+                </div>
+
+                <!-- Community -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Community</h3>
+                    <ul class="space-y-2">
+                        <li><a href="/commitzero/contributing.html" class="text-gray-400 hover:text-white transition-colors">Contributing</a></li>
+                        <li><a href="/commitzero/faq.html" class="text-gray-400 hover:text-white transition-colors">FAQ</a></li>
+                        <li><a href="/commitzero/changelog.html" class="text-gray-400 hover:text-white transition-colors">Changelog</a></li>
+                        <li><a href="https://github.com/commitzero/commitzero/issues" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors">Issues</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-gray-400 text-sm">
+                    © 2024 CommitZero. Licensed under MIT License.
+                </p>
+                <div class="flex space-x-6 mt-4 md:mt-0">
+                    <a href="/commitzero/pt-br/usage.html" class="text-gray-400 hover:text-white transition-colors text-sm">Português</a>
+                    <a href="/commitzero/es/usage.html" class="text-gray-400 hover:text-white transition-colors text-sm">Español</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="/commitzero/assets/js/main.js"></script>
+</body>
+</html>

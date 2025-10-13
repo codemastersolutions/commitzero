@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Changelog - CommitZero</title>
+    <meta name="description" content="Acompanhe todas as mudanças, melhorias e correções do CommitZero. Histórico completo de versões e atualizações.">
+    <meta name="keywords" content="CommitZero, changelog, versões, atualizações, histórico, releases">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="Changelog - CommitZero">
+    <meta property="og:description" content="Acompanhe todas as mudanças, melhorias e correções do CommitZero. Histórico completo de versões e atualizações.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://commitzero.github.io/commitzero/pt-br/changelog.html">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/commitzero/assets/images/favicon.svg">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="/commitzero/assets/css/main.css">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Source+Code+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+    <!-- Navigation -->
+    <nav class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <div class="flex items-center space-x-3">
+                    <a href="/commitzero/pt-br/" class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                        <span class="text-xl font-bold text-gray-900 dark:text-white">CommitZero</span>
+                    </a>
+                </div>
+
+                <!-- Desktop Navigation -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="/commitzero/pt-br/installation.html" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Instalação</a>
+                    <a href="/commitzero/pt-br/configuration.html" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Configuração</a>
+                    <a href="/commitzero/pt-br/usage.html" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Uso</a>
+                    <a href="/commitzero/pt-br/api.html" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">API</a>
+                    <a href="/commitzero/pt-br/examples.html" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Exemplos</a>
+                </div>
+
+                <!-- Right side buttons -->
+                <div class="flex items-center space-x-4">
+                    <!-- Language Selector -->
+                    <div class="relative">
+                        <button id="language-selector" class="flex items-center space-x-1 text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path>
+                            </svg>
+                            <span class="text-sm">PT</span>
+                        </button>
+                        <div id="language-dropdown" class="absolute right-0 mt-2 w-32 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 hidden">
+                            <a href="/commitzero/changelog.html" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">English</a>
+                            <a href="/commitzero/pt-br/changelog.html" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Português</a>
+                            <a href="/commitzero/es/changelog.html" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Español</a>
+                        </div>
+                    </div>
+
+                    <!-- Theme Toggle -->
+                    <button id="theme-toggle" class="p-2 text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+                        <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                        </svg>
+                        <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path>
+                        </svg>
+                    </button>
+
+                    <!-- GitHub Link -->
+                    <a href="https://github.com/commitzero/commitzero" target="_blank" rel="noopener noreferrer" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                        </svg>
+                    </a>
+
+                    <!-- Mobile menu button -->
+                    <button id="mobile-menu-button" class="md:hidden p-2 text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile Navigation -->
+            <div id="mobile-menu" class="md:hidden hidden border-t border-gray-200 dark:border-gray-700 py-4">
+                <div class="flex flex-col space-y-4">
+                    <a href="/commitzero/pt-br/installation.html" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Instalação</a>
+                    <a href="/commitzero/pt-br/configuration.html" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Configuração</a>
+                    <a href="/commitzero/pt-br/usage.html" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Uso</a>
+                    <a href="/commitzero/pt-br/api.html" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">API</a>
+                    <a href="/commitzero/pt-br/examples.html" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Exemplos</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-1">
+        <!-- Header -->
+        <section class="bg-gradient-to-br from-primary-50 via-white to-primary-100 dark:from-gray-900 dark:via-gray-800 dark:to-primary-900/20 py-16">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <h1 class="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+                        Changelog
+                    </h1>
+                    <p class="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+                        Acompanhe todas as mudanças, melhorias e correções do CommitZero
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Changelog Content -->
+        <section class="py-16">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                <!-- Filter Options -->
+                <div class="mb-8">
+                    <div class="flex flex-wrap justify-center gap-4">
+                        <button class="version-filter-btn active" data-filter="all">Todas as Versões</button>
+                        <button class="version-filter-btn" data-filter="major">Versões Principais</button>
+                        <button class="version-filter-btn" data-filter="minor">Funcionalidades</button>
+                        <button class="version-filter-btn" data-filter="patch">Correções</button>
+                    </div>
+                </div>
+
+                <!-- Changelog Entries -->
+                <div class="space-y-12">
+                    <!-- Version 2.0.0 -->
+                    <div class="changelog-entry" data-version-type="major">
+                        <div class="flex items-center mb-6">
+                            <div class="flex-shrink-0 w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-lg flex items-center justify-center mr-4">
+                                <svg class="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">v2.0.0</h2>
+                                <p class="text-gray-600 dark:text-gray-300">15 de Janeiro, 2024</p>
+                            </div>
+                        </div>
+
+                        <div class="ml-16">
+                            <!-- Breaking Changes -->
+                            <div class="mb-6">
+                                <h3 class="text-lg font-semibold text-red-600 dark:text-red-400 mb-3 flex items-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                    </svg>
+                                    Mudanças Incompatíveis
+                                </h3>
+                                <ul class="list-disc list-inside text-gray-600 dark:text-gray-300 space-y-2">
+                                    <li>Removido suporte para Node.js &lt; 16.0.0</li>
+                                    <li>Alterado formato do arquivo de configuração (migração automática disponível)</li>
+                                    <li>API <code>validate()</code> agora retorna Promise em vez de resultado síncrono</li>
+                                    <li>Renomeado comando <code>--setup</code> para <code>--init</code></li>
+                                </ul>
+                            </div>
+
+                            <!-- New Features -->
+                            <div class="mb-6">
+                                <h3 class="text-lg font-semibold text-green-600 dark:text-green-400 mb-3 flex items-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                    Novas Funcionalidades
+                                </h3>
+                                <ul class="list-disc list-inside text-gray-600 dark:text-gray-300 space-y-2">
+                                    <li>Suporte completo para TypeScript com tipos exportados</li>
+                                    <li>Modo interativo melhorado com autocomplete e sugestões</li>
+                                    <li>Integração nativa com editores (VS Code, Vim, Emacs)</li>
+                                    <li>Suporte para configuração em YAML e TOML</li>
+                                    <li>Plugin system para extensões personalizadas</li>
+                                    <li>Validação em tempo real durante digitação</li>
+                                </ul>
+                            </div>
+
+                            <!-- Improvements -->
+                            <div class="mb-6">
+                                <h3 class="text-lg font-semibold text-blue-600 dark:text-blue-400 mb-3 flex items-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                                    </svg>
+                                    Melhorias
+                                </h3>
+                                <ul class="list-disc list-inside text-gray-600 dark:text-gray-300 space-y-2">
+                                    <li>Performance 3x mais rápida na validação de commits</li>
+                                    <li>Interface de linha de comando redesenhada</li>
+                                    <li>Mensagens de erro mais claras e acionáveis</li>
+                                    <li>Documentação completamente reescrita</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Version 1.5.0 -->
+                    <div class="changelog-entry" data-version-type="minor">
+                        <div class="flex items-center mb-6">
+                            <div class="flex-shrink-0 w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center mr-4">
+                                <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">v1.5.0</h2>
+                                <p class="text-gray-600 dark:text-gray-300">28 de Novembro, 2023</p>
+                            </div>
+                        </div>
+
+                        <div class="ml-16">
+                            <div class="mb-6">
+                                <h3 class="text-lg font-semibold text-green-600 dark:text-green-400 mb-3 flex items-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                    Novas Funcionalidades
+                                </h3>
+                                <ul class="list-disc list-inside text-gray-600 dark:text-gray-300 space-y-2">
+                                    <li>Adicionado suporte para monorepos com configurações por workspace</li>
+                                    <li>Comando <code>commitzero format</code> para reformatar mensagens existentes</li>
+                                    <li>Integração com GitHub Actions e GitLab CI</li>
+                                    <li>Suporte para templates de commit personalizados</li>
+                                </ul>
+                            </div>
+
+                            <div class="mb-6">
+                                <h3 class="text-lg font-semibold text-blue-600 dark:text-blue-400 mb-3 flex items-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                                    </svg>
+                                    Melhorias
+                                </h3>
+                                <ul class="list-disc list-inside text-gray-600 dark:text-gray-300 space-y-2">
+                                    <li>Melhor detecção de repositórios Git</li>
+                                    <li>Suporte aprimorado para Windows</li>
+                                    <li>Validação mais robusta de escopos</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Version 1.4.2 -->
+                    <div class="changelog-entry" data-version-type="patch">
+                        <div class="flex items-center mb-6">
+                            <div class="flex-shrink-0 w-12 h-12 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center mr-4">
+                                <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">v1.4.2</h2>
+                                <p class="text-gray-600 dark:text-gray-300">15 de Outubro, 2023</p>
+                            </div>
+                        </div>
+
+                        <div class="ml-16">
+                            <div class="mb-6">
+                                <h3 class="text-lg font-semibold text-orange-600 dark:text-orange-400 mb-3 flex items-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                    </svg>
+                                    Correções de Bugs
+                                </h3>
+                                <ul class="list-disc list-inside text-gray-600 dark:text-gray-300 space-y-2">
+                                    <li>Corrigido crash ao usar escopos com caracteres especiais</li>
+                                    <li>Resolvido problema de encoding em sistemas Windows</li>
+                                    <li>Corrigida validação incorreta de breaking changes</li>
+                                    <li>Melhorada compatibilidade com Git 2.40+</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Version 1.4.0 -->
+                    <div class="changelog-entry" data-version-type="minor">
+                        <div class="flex items-center mb-6">
+                            <div class="flex-shrink-0 w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center mr-4">
+                                <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">v1.4.0</h2>
+                                <p class="text-gray-600 dark:text-gray-300">2 de Setembro, 2023</p>
+                            </div>
+                        </div>
+
+                        <div class="ml-16">
+                            <div class="mb-6">
+                                <h3 class="text-lg font-semibold text-green-600 dark:text-green-400 mb-3 flex items-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                    Novas Funcionalidades
+                                </h3>
+                                <ul class="list-disc list-inside text-gray-600 dark:text-gray-300 space-y-2">
+                                    <li>Comando <code>commitzero interactive</code> para criação guiada de commits</li>
+                                    <li>Suporte para configuração global do usuário</li>
+                                    <li>Validação de comprimento de linha configurável</li>
+                                    <li>Modo silencioso com flag <code>--quiet</code></li>
+                                </ul>
+                            </div>
+
+                            <div class="mb-6">
+                                <h3 class="text-lg font-semibold text-blue-600 dark:text-blue-400 mb-3 flex items-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                                    </svg>
+                                    Melhorias
+                                </h3>
+                                <ul class="list-disc list-inside text-gray-600 dark:text-gray-300 space-y-2">
+                                    <li>Interface mais intuitiva e colorida</li>
+                                    <li>Melhor tratamento de erros</li>
+                                    <li>Documentação expandida com mais exemplos</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Version 1.3.1 -->
+                    <div class="changelog-entry" data-version-type="patch">
+                        <div class="flex items-center mb-6">
+                            <div class="flex-shrink-0 w-12 h-12 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center mr-4">
+                                <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">v1.3.1</h2>
+                                <p class="text-gray-600 dark:text-gray-300">18 de Agosto, 2023</p>
+                            </div>
+                        </div>
+
+                        <div class="ml-16">
+                            <div class="mb-6">
+                                <h3 class="text-lg font-semibold text-orange-600 dark:text-orange-400 mb-3 flex items-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                    </svg>
+                                    Correções de Bugs
+                                </h3>
+                                <ul class="list-disc list-inside text-gray-600 dark:text-gray-300 space-y-2">
+                                    <li>Corrigido problema com hooks em repositórios bare</li>
+                                    <li>Resolvida falha na detecção de configuração em subdiretórios</li>
+                                    <li>Melhorada compatibilidade com npm workspaces</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Version 1.3.0 -->
+                    <div class="changelog-entry" data-version-type="minor">
+                        <div class="flex items-center mb-6">
+                            <div class="flex-shrink-0 w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center mr-4">
+                                <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">v1.3.0</h2>
+                                <p class="text-gray-600 dark:text-gray-300">5 de Julho, 2023</p>
+                            </div>
+                        </div>
+
+                        <div class="ml-16">
+                            <div class="mb-6">
+                                <h3 class="text-lg font-semibold text-green-600 dark:text-green-400 mb-3 flex items-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                    Novas Funcionalidades
+                                </h3>
+                                <ul class="list-disc list-inside text-gray-600 dark:text-gray-300 space-y-2">
+                                    <li>Suporte para Git hooks automáticos (pre-commit, commit-msg)</li>
+                                    <li>Comando <code>commitzero install-hooks</code> e <code>uninstall-hooks</code></li>
+                                    <li>Validação de escopos personalizados</li>
+                                    <li>Suporte para múltiplos tipos de commit por projeto</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Version 1.2.0 -->
+                    <div class="changelog-entry" data-version-type="minor">
+                        <div class="flex items-center mb-6">
+                            <div class="flex-shrink-0 w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center mr-4">
+                                <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">v1.2.0</h2>
+                                <p class="text-gray-600 dark:text-gray-300">20 de Maio, 2023</p>
+                            </div>
+                        </div>
+
+                        <div class="ml-16">
+                            <div class="mb-6">
+                                <h3 class="text-lg font-semibold text-green-600 dark:text-green-400 mb-3 flex items-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                    Novas Funcionalidades
+                                </h3>
+                                <ul class="list-disc list-inside text-gray-600 dark:text-gray-300 space-y-2">
+                                    <li>Arquivo de configuração <code>.commitzero.json</code></li>
+                                    <li>Comando <code>commitzero init</code> para configuração inicial</li>
+                                    <li>Suporte para configuração no <code>package.json</code></li>
+                                    <li>Validação de breaking changes</li>
+                                </ul>
+                            </div>
+
+                            <div class="mb-6">
+                                <h3 class="text-lg font-semibold text-blue-600 dark:text-blue-400 mb-3 flex items-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                                    </svg>
+                                    Melhorias
+                                </h3>
+                                <ul class="list-disc list-inside text-gray-600 dark:text-gray-300 space-y-2">
+                                    <li>Mensagens de erro mais descritivas</li>
+                                    <li>Melhor performance na validação</li>
+                                    <li>Suporte aprimorado para diferentes shells</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Version 1.1.0 -->
+                    <div class="changelog-entry" data-version-type="minor">
+                        <div class="flex items-center mb-6">
+                            <div class="flex-shrink-0 w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center mr-4">
+                                <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">v1.1.0</h2>
+                                <p class="text-gray-600 dark:text-gray-300">8 de Abril, 2023</p>
+                            </div>
+                        </div>
+
+                        <div class="ml-16">
+                            <div class="mb-6">
+                                <h3 class="text-lg font-semibold text-green-600 dark:text-green-400 mb-3 flex items-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                    Novas Funcionalidades
+                                </h3>
+                                <ul class="list-disc list-inside text-gray-600 dark:text-gray-300 space-y-2">
+                                    <li>Comando <code>commitzero parse</code> para análise de mensagens</li>
+                                    <li>Suporte para validação de múltiplas mensagens</li>
+                                    <li>Flag <code>--verbose</code> para saída detalhada</li>
+                                    <li>Integração com editores de texto</li>
+                                </ul>
+                            </div>
+
+                            <div class="mb-6">
+                                <h3 class="text-lg font-semibold text-blue-600 dark:text-blue-400 mb-3 flex items-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                                    </svg>
+                                    Melhorias
+                                </h3>
+                                <ul class="list-disc list-inside text-gray-600 dark:text-gray-300 space-y-2">
+                                    <li>Interface de linha de comando aprimorada</li>
+                                    <li>Melhor documentação e exemplos</li>
+                                    <li>Testes automatizados expandidos</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Version 1.0.0 -->
+                    <div class="changelog-entry" data-version-type="major">
+                        <div class="flex items-center mb-6">
+                            <div class="flex-shrink-0 w-12 h-12 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center mr-4">
+                                <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">v1.0.0</h2>
+                                <p class="text-gray-600 dark:text-gray-300">15 de Março, 2023</p>
+                            </div>
+                        </div>
+
+                        <div class="ml-16">
+                            <div class="mb-6">
+                                <h3 class="text-lg font-semibold text-purple-600 dark:text-purple-400 mb-3 flex items-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+                                    </svg>
+                                    Lançamento Inicial
+                                </h3>
+                                <ul class="list-disc list-inside text-gray-600 dark:text-gray-300 space-y-2">
+                                    <li>Validação de Conventional Commits</li>
+                                    <li>Comando <code>commitzero validate</code></li>
+                                    <li>Suporte para tipos padrão (feat, fix, docs, etc.)</li>
+                                    <li>Validação de formato e estrutura</li>
+                                    <li>Instalação via npm</li>
+                                    <li>Documentação básica</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Subscribe to Updates -->
+                <div class="mt-16 bg-gradient-to-r from-primary-50 to-primary-100 dark:from-primary-900/20 dark:to-primary-800/20 rounded-lg p-8">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Mantenha-se Atualizado</h2>
+                    <p class="text-gray-600 dark:text-gray-300 mb-6">
+                        Acompanhe as últimas atualizações e releases do CommitZero:
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <a href="https://github.com/commitzero/commitzero/releases" target="_blank" rel="noopener noreferrer" class="btn-primary">
+                            Ver Releases no GitHub
+                            <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                            </svg>
+                        </a>
+                        <a href="https://github.com/commitzero/commitzero/subscription" target="_blank" rel="noopener noreferrer" class="btn-secondary">
+                            Receber Notificações
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <!-- Logo and Description -->
+                <div class="md:col-span-2">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                        <span class="text-xl font-bold">CommitZero</span>
+                    </div>
+                    <p class="text-gray-400 mb-4 max-w-md">
+                        Uma ferramenta CLI poderosa para validar e aplicar padrões de Conventional Commits no seu fluxo de trabalho Git.
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="https://github.com/commitzero/commitzero" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                            </svg>
+                        </a>
+                        <a href="https://www.npmjs.com/package/commitzero" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M1.763 0C.786 0 0 .786 0 1.763v20.474C0 23.214.786 24 1.763 24h20.474c.977 0 1.763-.786 1.763-1.763V1.763C24 .786 23.214 0 22.237 0H1.763zM5.13 5.323l13.837.019-.009 13.836h-3.464l.01-10.382h-3.456L12.04 19.17H5.113L5.13 5.323z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Documentation -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Documentação</h3>
+                    <ul class="space-y-2">
+                        <li><a href="/commitzero/pt-br/installation.html" class="text-gray-400 hover:text-white transition-colors">Instalação</a></li>
+                        <li><a href="/commitzero/pt-br/configuration.html" class="text-gray-400 hover:text-white transition-colors">Configuração</a></li>
+                        <li><a href="/commitzero/pt-br/usage.html" class="text-gray-400 hover:text-white transition-colors">Uso</a></li>
+                        <li><a href="/commitzero/pt-br/api.html" class="text-gray-400 hover:text-white transition-colors">Referência da API</a></li>
+                        <li><a href="/commitzero/pt-br/examples.html" class="text-gray-400 hover:text-white transition-colors">Exemplos</a></li>
+                    </ul>
+                </div>
+
+                <!-- Community -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Comunidade</h3>
+                    <ul class="space-y-2">
+                        <li><a href="/commitzero/pt-br/contributing.html" class="text-gray-400 hover:text-white transition-colors">Contribuir</a></li>
+                        <li><a href="/commitzero/pt-br/faq.html" class="text-gray-400 hover:text-white transition-colors">FAQ</a></li>
+                        <li><a href="/commitzero/pt-br/changelog.html" class="text-gray-400 hover:text-white transition-colors">Changelog</a></li>
+                        <li><a href="https://github.com/commitzero/commitzero/issues" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors">Issues</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-gray-400 text-sm">
+                    © 2024 CommitZero. Licenciado sob MIT License.
+                </p>
+                <div class="flex space-x-6 mt-4 md:mt-0">
+                    <a href="/commitzero/changelog.html" class="text-gray-400 hover:text-white transition-colors text-sm">English</a>
+                    <a href="/commitzero/es/changelog.html" class="text-gray-400 hover:text-white transition-colors text-sm">Español</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="/commitzero/assets/js/main.js"></script>
+    <script>
+        // Version filtering functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const filterButtons = document.querySelectorAll('.version-filter-btn');
+            const changelogEntries = document.querySelectorAll('.changelog-entry');
+
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Update active button
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+
+                    const filter = this.dataset.filter;
+
+                    // Filter changelog entries
+                    changelogEntries.forEach(entry => {
+                        if (filter === 'all' || entry.dataset.versionType === filter) {
+                            entry.style.display = 'block';
+                        } else {
+                            entry.style.display = 'none';
+                        }
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>
