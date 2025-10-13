@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Referencia de API - CommitZero</title>
+    <meta name="description" content="Documentación completa de la API de CommitZero para validación programática de mensajes de commit y gestión de configuración.">
+    <meta name="keywords" content="CommitZero, API, validación de commits, Conventional Commits, Git hooks, TypeScript">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="Referencia de API - CommitZero">
+    <meta property="og:description" content="Documentación completa de la API de CommitZero para validación programática de mensajes de commit.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://commitzero.github.io/es/api.html">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="../favicon.ico">
+    
+    <!-- Styles -->
+    <link href="../styles.css" rel="stylesheet">
+    <link href="../prism.css" rel="stylesheet">
+    
+    <!-- Scripts -->
+    <script src="../prism.js" defer></script>
+    <script src="../script.js" defer></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+    <!-- Navigation -->
+    <nav class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                    <a href="../es/index.html" class="text-xl font-bold text-gray-900 dark:text-white">CommitZero</a>
+                </div>
+
+                <!-- Navigation Links -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="../es/index.html" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Inicio</a>
+                    <a href="../es/installation.html" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Instalación</a>
+                    <a href="../es/configuration.html" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Configuración</a>
+                    <a href="../es/usage.html" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Uso</a>
+                    <a href="../es/api.html" class="text-primary-600 dark:text-primary-400 font-medium">API</a>
+                    <a href="../es/examples.html" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Ejemplos</a>
+                </div>
+
+                <!-- Right side buttons -->
+                <div class="flex items-center space-x-4">
+                    <!-- Language Selector -->
+                    <div class="relative">
+                        <select id="language-selector" class="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-1 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500">
+                            <option value="en">English</option>
+                            <option value="pt">Português</option>
+                            <option value="es" selected>Español</option>
+                        </select>
+                    </div>
+
+                    <!-- Theme Toggle -->
+                    <button id="theme-toggle" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                        <svg class="w-5 h-5 hidden dark:block" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path>
+                        </svg>
+                        <svg class="w-5 h-5 block dark:hidden" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                        </svg>
+                    </button>
+
+                    <!-- GitHub Link -->
+                    <a href="https://github.com/commitzero/commitzero" target="_blank" rel="noopener noreferrer" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                        </svg>
+                    </a>
+
+                    <!-- Mobile menu button -->
+                    <button id="mobile-menu-button" class="md:hidden p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile Navigation -->
+            <div id="mobile-menu" class="hidden md:hidden border-t border-gray-200 dark:border-gray-700 py-4">
+                <div class="flex flex-col space-y-2">
+                    <a href="../es/index.html" class="px-3 py-2 text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Inicio</a>
+                    <a href="../es/installation.html" class="px-3 py-2 text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Instalación</a>
+                    <a href="../es/configuration.html" class="px-3 py-2 text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Configuración</a>
+                    <a href="../es/usage.html" class="px-3 py-2 text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Uso</a>
+                    <a href="../es/api.html" class="px-3 py-2 text-primary-600 dark:text-primary-400 font-medium">API</a>
+                    <a href="../es/examples.html" class="px-3 py-2 text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Ejemplos</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-1">
+        <!-- Hero Section -->
+        <section class="bg-gradient-to-r from-primary-600 to-primary-700 text-white py-16">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <h1 class="text-4xl md:text-5xl font-bold mb-6">Referencia de API</h1>
+                    <p class="text-xl text-primary-100 max-w-3xl mx-auto">
+                        Documentación completa de la API de CommitZero para validación programática de mensajes de commit, gestión de configuración e integración de Git hooks.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Content -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="flex flex-col lg:flex-row gap-8">
+                <!-- Sidebar -->
+                <aside class="lg:w-64 flex-shrink-0">
+                    <div class="sticky top-24">
+                        <nav class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                            <h3 class="font-semibold text-gray-900 dark:text-white mb-4">Referencia de API</h3>
+                            <ul class="space-y-2 text-sm">
+                                <li><a href="#overview" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Descripción General</a></li>
+                                <li><a href="#installation" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Instalación</a></li>
+                                <li>
+                                    <span class="text-gray-900 dark:text-white font-medium">API Principal</span>
+                                    <ul class="ml-4 mt-2 space-y-1">
+                                        <li><a href="#validate" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">validate()</a></li>
+                                        <li><a href="#parse" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">parse()</a></li>
+                                        <li><a href="#format" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">format()</a></li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    <span class="text-gray-900 dark:text-white font-medium">API de Configuración</span>
+                                    <ul class="ml-4 mt-2 space-y-1">
+                                        <li><a href="#load-config" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">loadConfig()</a></li>
+                                        <li><a href="#create-config" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">createConfig()</a></li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    <span class="text-gray-900 dark:text-white font-medium">API de Hooks</span>
+                                    <ul class="ml-4 mt-2 space-y-1">
+                                        <li><a href="#install-hooks" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">installHooks()</a></li>
+                                        <li><a href="#uninstall-hooks" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">uninstallHooks()</a></li>
+                                    </ul>
+                                </li>
+                                <li><a href="#types" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Tipos de TypeScript</a></li>
+                                <li><a href="#examples" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Ejemplos</a></li>
+                            </ul>
+                        </nav>
+                    </div>
+                </aside>
+
+                <!-- Main Content -->
+                <div class="flex-1 min-w-0">
+                    <!-- Overview -->
+                    <section id="overview" class="mb-12">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Descripción General</h2>
+                        <div class="prose prose-gray dark:prose-invert max-w-none">
+                            <p class="text-lg text-gray-600 dark:text-gray-300 mb-6">
+                                CommitZero proporciona una interfaz programática completa para validar mensajes de commit, gestionar configuraciones e integrar Git hooks en sus aplicaciones y flujos de trabajo.
+                            </p>
+                            
+                            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 mb-6">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Características Principales</h3>
+                                <ul class="space-y-3">
+                                    <li class="flex items-start">
+                                        <svg class="w-5 h-5 text-blue-500 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                        Validar mensajes de commit contra estándares de Conventional Commits
+                                    </li>
+                                    <li class="flex items-start">
+                                        <svg class="w-5 h-5 text-blue-500 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                        Analizar y formatear mensajes de commit
+                                    </li>
+                                    <li class="flex items-start">
+                                        <svg class="w-5 h-5 text-blue-500 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                        Cargar y gestionar archivos de configuración
+                                    </li>
+                                    <li class="flex items-start">
+                                        <svg class="w-5 h-5 text-blue-500 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                        Instalar y gestionar Git hooks
+                                    </li>
+                                    <li class="flex items-start">
+                                        <svg class="w-5 h-5 text-blue-500 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                        Soporte completo de TypeScript con definiciones de tipos
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Installation -->
+                    <section id="installation" class="mb-12">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Instalación</h2>
+                        <div class="space-y-6">
+                            <p class="text-gray-600 dark:text-gray-300">
+                                Instale CommitZero como una dependencia en su proyecto para acceder a la API programática:
+                            </p>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="code-block">
+                                    <div class="code-header">
+                                        <span class="code-title">NPM</span>
+                                        <button class="copy-button" data-copy="npm install commitzero">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <pre><code class="language-bash">npm install commitzero</code></pre>
+                                </div>
+
+                                <div class="code-block">
+                                    <div class="code-header">
+                                        <span class="code-title">Yarn</span>
+                                        <button class="copy-button" data-copy="yarn add commitzero">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <pre><code class="language-bash">yarn add commitzero</code></pre>
+                                </div>
+                            </div>
+
+                            <div class="code-block">
+                                <div class="code-header">
+                                    <span class="code-title">Importación Básica</span>
+                                    <button class="copy-button" data-copy="import { validate, parse, format } from 'commitzero';&#10;&#10;// O usando CommonJS&#10;const { validate, parse, format } = require('commitzero');">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <pre><code class="language-javascript">import { validate, parse, format } from 'commitzero';
+
+// O usando CommonJS
+const { validate, parse, format } = require('commitzero');</code></pre>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Core API -->
+                    <section id="core-api" class="mb-12">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">API Principal</h2>
+                        <p class="text-gray-600 dark:text-gray-300 mb-8">
+                            La API principal proporciona funciones para validar, analizar y formatear mensajes de commit.
+                        </p>
+
+                        <!-- validate() -->
+                        <div id="validate" class="mb-8">
+                            <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">validate(message, options?)</h3>
+                            <p class="text-gray-600 dark:text-gray-300 mb-4">
+                                Valida un mensaje de commit contra los estándares de Conventional Commits y reglas personalizadas.
+                            </p>
+
+                            <div class="space-y-4">
+                                <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                    <h4 class="font-medium text-gray-900 dark:text-white mb-3">Parámetros</h4>
+                                    <div class="overflow-x-auto">
+                                        <table class="min-w-full text-sm">
+                                            <thead>
+                                                <tr class="border-b border-gray-200 dark:border-gray-700">
+                                                    <th class="text-left py-2 text-gray-900 dark:text-white">Parámetro</th>
+                                                    <th class="text-left py-2 text-gray-900 dark:text-white">Tipo</th>
+                                                    <th class="text-left py-2 text-gray-900 dark:text-white">Descripción</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="text-gray-600 dark:text-gray-300">
+                                                <tr class="border-b border-gray-100 dark:border-gray-800">
+                                                    <td class="py-2 font-mono">message</td>
+                                                    <td class="py-2 font-mono">string</td>
+                                                    <td class="py-2">El mensaje de commit a validar</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="py-2 font-mono">options</td>
+                                                    <td class="py-2 font-mono">ValidationOptions?</td>
+                                                    <td class="py-2">Configuración de validación opcional</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <div class="code-block">
+                                    <div class="code-header">
+                                        <span class="code-title">Ejemplo de Uso</span>
+                                        <button class="copy-button" data-copy="import { validate } from 'commitzero';&#10;&#10;const result = await validate('feat: agregar autenticación de usuario');&#10;&#10;if (result.valid) {&#10;  console.log('✅ Mensaje de commit válido');&#10;} else {&#10;  console.log('❌ Mensaje de commit inválido');&#10;  result.errors.forEach(error => {&#10;    console.log(`- ${error.message}`);&#10;  });&#10;}">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <pre><code class="language-javascript">import { validate } from 'commitzero';
+
+const result = await validate('feat: agregar autenticación de usuario');
+
+if (result.valid) {
+  console.log('✅ Mensaje de commit válido');
+} else {
+  console.log('❌ Mensaje de commit inválido');
+  result.errors.forEach(error => {
+    console.log(`- ${error.message}`);
+  });
+}</code></pre>
+                                </div>
+
+                                <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                    <h4 class="font-medium text-gray-900 dark:text-white mb-3">Valor de Retorno</h4>
+                                    <p class="text-gray-600 dark:text-gray-300 mb-3">Devuelve un objeto <code class="font-mono">ValidationResult</code>:</p>
+                                    <div class="code-block">
+                                        <pre><code class="language-typescript">interface ValidationResult {
+  valid: boolean;
+  errors: ValidationError[];
+  warnings: ValidationWarning[];
+  parsed?: ParsedCommit;
+}</code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- parse() -->
+                        <div id="parse" class="mb-8">
+                            <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">parse(message)</h3>
+                            <p class="text-gray-600 dark:text-gray-300 mb-4">
+                                Analiza un mensaje de commit en sus partes constituyentes (tipo, alcance, descripción, cuerpo, pie de página).
+                            </p>
+
+                            <div class="space-y-4">
+                                <div class="code-block">
+                                    <div class="code-header">
+                                        <span class="code-title">Ejemplo de Uso</span>
+                                        <button class="copy-button" data-copy="import { parse } from 'commitzero';&#10;&#10;const parsed = parse('feat(auth): agregar integración OAuth2&#10;&#10;Implementar autenticación OAuth2 con proveedores Google y GitHub.&#10;&#10;Closes #123');&#10;&#10;console.log(parsed);&#10;// {&#10;//   type: 'feat',&#10;//   scope: 'auth',&#10;//   description: 'agregar integración OAuth2',&#10;//   body: 'Implementar autenticación OAuth2 con proveedores Google y GitHub.',&#10;//   footer: 'Closes #123'&#10;// }">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <pre><code class="language-javascript">import { parse } from 'commitzero';
+
+const parsed = parse('feat(auth): agregar integración OAuth2
+
+Implementar autenticación OAuth2 con proveedores Google y GitHub.
+
+Closes #123');
+
+console.log(parsed);
+// {
+//   type: 'feat',
+//   scope: 'auth',
+//   description: 'agregar integración OAuth2',
+//   body: 'Implementar autenticación OAuth2 con proveedores Google y GitHub.',
+//   footer: 'Closes #123'
+// }</code></pre>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- format() -->
+                        <div id="format" class="mb-8">
+                            <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">format(commit)</h3>
+                            <p class="text-gray-600 dark:text-gray-300 mb-4">
+                                Formatea un objeto de commit analizado de vuelta a una cadena de mensaje de commit convencional.
+                            </p>
+
+                            <div class="space-y-4">
+                                <div class="code-block">
+                                    <div class="code-header">
+                                        <span class="code-title">Ejemplo de Uso</span>
+                                        <button class="copy-button" data-copy="import { format } from 'commitzero';&#10;&#10;const commit = {&#10;  type: 'feat',&#10;  scope: 'auth',&#10;  description: 'agregar integración OAuth2',&#10;  body: 'Implementar autenticación OAuth2 con proveedores Google y GitHub.',&#10;  footer: 'Closes #123'&#10;};&#10;&#10;const formatted = format(commit);&#10;console.log(formatted);&#10;// 'feat(auth): agregar integración OAuth2&#10;//&#10;// Implementar autenticación OAuth2 con proveedores Google y GitHub.&#10;//&#10;// Closes #123'">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <pre><code class="language-javascript">import { format } from 'commitzero';
+
+const commit = {
+  type: 'feat',
+  scope: 'auth',
+  description: 'agregar integración OAuth2',
+  body: 'Implementar autenticación OAuth2 con proveedores Google y GitHub.',
+  footer: 'Closes #123'
+};
+
+const formatted = format(commit);
+console.log(formatted);
+// 'feat(auth): agregar integración OAuth2
+//
+// Implementar autenticación OAuth2 con proveedores Google y GitHub.
+//
+// Closes #123'</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Configuration API -->
+                    <section id="config-api" class="mb-12">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">API de Configuración</h2>
+                        <p class="text-gray-600 dark:text-gray-300 mb-8">
+                            Funciones para cargar y gestionar archivos de configuración de CommitZero.
+                        </p>
+
+                        <!-- loadConfig() -->
+                        <div id="load-config" class="mb-8">
+                            <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">loadConfig(path?)</h3>
+                            <p class="text-gray-600 dark:text-gray-300 mb-4">
+                                Carga la configuración desde un archivo o busca configuración en ubicaciones estándar.
+                            </p>
+
+                            <div class="code-block">
+                                <div class="code-header">
+                                    <span class="code-title">Ejemplo de Uso</span>
+                                    <button class="copy-button" data-copy="import { loadConfig } from 'commitzero';&#10;&#10;// Cargar desde ubicaciones predeterminadas&#10;const config = await loadConfig();&#10;&#10;// Cargar desde ruta específica&#10;const customConfig = await loadConfig('./custom-commitzero.config.js');&#10;&#10;console.log(config.types); // Tipos de commit disponibles&#10;console.log(config.scopes); // Alcances disponibles">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <pre><code class="language-javascript">import { loadConfig } from 'commitzero';
+
+// Cargar desde ubicaciones predeterminadas
+const config = await loadConfig();
+
+// Cargar desde ruta específica
+const customConfig = await loadConfig('./custom-commitzero.config.js');
+
+console.log(config.types); // Tipos de commit disponibles
+console.log(config.scopes); // Alcances disponibles</code></pre>
+                            </div>
+                        </div>
+
+                        <!-- createConfig() -->
+                        <div id="create-config" class="mb-8">
+                            <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">createConfig(options)</h3>
+                            <p class="text-gray-600 dark:text-gray-300 mb-4">
+                                Crea un nuevo archivo de configuración con las opciones especificadas.
+                            </p>
+
+                            <div class="code-block">
+                                <div class="code-header">
+                                    <span class="code-title">Ejemplo de Uso</span>
+                                    <button class="copy-button" data-copy="import { createConfig } from 'commitzero';&#10;&#10;await createConfig({&#10;  path: './commitzero.config.js',&#10;  types: ['feat', 'fix', 'docs', 'style', 'refactor'],&#10;  scopes: ['api', 'ui', 'auth', 'db'],&#10;  rules: {&#10;    'subject-case': ['error', 'lower-case'],&#10;    'subject-max-length': ['error', 50]&#10;  }&#10;});">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <pre><code class="language-javascript">import { createConfig } from 'commitzero';
+
+await createConfig({
+  path: './commitzero.config.js',
+  types: ['feat', 'fix', 'docs', 'style', 'refactor'],
+  scopes: ['api', 'ui', 'auth', 'db'],
+  rules: {
+    'subject-case': ['error', 'lower-case'],
+    'subject-max-length': ['error', 50]
+  }
+});</code></pre>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Hooks API -->
+                    <section id="hooks-api" class="mb-12">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">API de Hooks</h2>
+                        <p class="text-gray-600 dark:text-gray-300 mb-8">
+                            Funciones para gestionar la integración de Git hooks.
+                        </p>
+
+                        <!-- installHooks() -->
+                        <div id="install-hooks" class="mb-8">
+                            <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">installHooks(options?)</h3>
+                            <p class="text-gray-600 dark:text-gray-300 mb-4">
+                                Instala Git hooks para validación automática de mensajes de commit.
+                            </p>
+
+                            <div class="code-block">
+                                <div class="code-header">
+                                    <span class="code-title">Ejemplo de Uso</span>
+                                    <button class="copy-button" data-copy="import { installHooks } from 'commitzero';&#10;&#10;// Instalar con opciones predeterminadas&#10;await installHooks();&#10;&#10;// Instalar con opciones personalizadas&#10;await installHooks({&#10;  hooks: ['commit-msg', 'pre-commit'],&#10;  gitDir: './.git',&#10;  force: true&#10;});">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <pre><code class="language-javascript">import { installHooks } from 'commitzero';
+
+// Instalar con opciones predeterminadas
+await installHooks();
+
+// Instalar con opciones personalizadas
+await installHooks({
+  hooks: ['commit-msg', 'pre-commit'],
+  gitDir: './.git',
+  force: true
+});</code></pre>
+                            </div>
+                        </div>
+
+                        <!-- uninstallHooks() -->
+                        <div id="uninstall-hooks" class="mb-8">
+                            <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">uninstallHooks(options?)</h3>
+                            <p class="text-gray-600 dark:text-gray-300 mb-4">
+                                Elimina los Git hooks de CommitZero del repositorio.
+                            </p>
+
+                            <div class="code-block">
+                                <div class="code-header">
+                                    <span class="code-title">Ejemplo de Uso</span>
+                                    <button class="copy-button" data-copy="import { uninstallHooks } from 'commitzero';&#10;&#10;// Desinstalar todos los hooks&#10;await uninstallHooks();&#10;&#10;// Desinstalar hooks específicos&#10;await uninstallHooks({&#10;  hooks: ['commit-msg'],&#10;  gitDir: './.git'&#10;});">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <pre><code class="language-javascript">import { uninstallHooks } from 'commitzero';
+
+// Desinstalar todos los hooks
+await uninstallHooks();
+
+// Desinstalar hooks específicos
+await uninstallHooks({
+  hooks: ['commit-msg'],
+  gitDir: './.git'
+});</code></pre>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- TypeScript Types -->
+                    <section id="types" class="mb-12">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Tipos de TypeScript</h2>
+                        <p class="text-gray-600 dark:text-gray-300 mb-6">
+                            CommitZero incluye definiciones de tipos de TypeScript completas para todas las funciones de API y estructuras de datos.
+                        </p>
+
+                        <div class="space-y-6">
+                            <div class="code-block">
+                                <div class="code-header">
+                                    <span class="code-title">Tipos Principales</span>
+                                    <button class="copy-button" data-copy="interface ParsedCommit {&#10;  type: string;&#10;  scope?: string;&#10;  description: string;&#10;  body?: string;&#10;  footer?: string;&#10;  breaking?: boolean;&#10;}&#10;&#10;interface ValidationResult {&#10;  valid: boolean;&#10;  errors: ValidationError[];&#10;  warnings: ValidationWarning[];&#10;  parsed?: ParsedCommit;&#10;}&#10;&#10;interface ValidationError {&#10;  message: string;&#10;  rule: string;&#10;  level: 'error' | 'warning';&#10;}">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <pre><code class="language-typescript">interface ParsedCommit {
+  type: string;
+  scope?: string;
+  description: string;
+  body?: string;
+  footer?: string;
+  breaking?: boolean;
+}
+
+interface ValidationResult {
+  valid: boolean;
+  errors: ValidationError[];
+  warnings: ValidationWarning[];
+  parsed?: ParsedCommit;
+}
+
+interface ValidationError {
+  message: string;
+  rule: string;
+  level: 'error' | 'warning';
+}</code></pre>
+                            </div>
+
+                            <div class="code-block">
+                                <div class="code-header">
+                                    <span class="code-title">Tipos de Configuración</span>
+                                    <button class="copy-button" data-copy="interface CommitZeroConfig {&#10;  types: string[];&#10;  scopes?: string[];&#10;  rules: Record<string, [string, any]>;&#10;  parserPreset?: string;&#10;  formatter?: string;&#10;  helpUrl?: string;&#10;}&#10;&#10;interface ValidationOptions {&#10;  config?: CommitZeroConfig;&#10;  cwd?: string;&#10;  from?: string;&#10;  to?: string;&#10;}">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <pre><code class="language-typescript">interface CommitZeroConfig {
+  types: string[];
+  scopes?: string[];
+  rules: Record<string, [string, any]>;
+  parserPreset?: string;
+  formatter?: string;
+  helpUrl?: string;
+}
+
+interface ValidationOptions {
+  config?: CommitZeroConfig;
+  cwd?: string;
+  from?: string;
+  to?: string;
+}</code></pre>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Examples -->
+                    <section id="examples" class="mb-12">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Ejemplos Completos</h2>
+                        <div class="space-y-8">
+                            <!-- Custom Validation Tool -->
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Herramienta de Validación Personalizada</h3>
+                                <div class="code-block">
+                                    <div class="code-header">
+                                        <span class="code-title">validate-commits.js</span>
+                                        <button class="copy-button" data-copy="#!/usr/bin/env node&#10;&#10;import { validate, loadConfig } from 'commitzero';&#10;import { readFileSync } from 'fs';&#10;import { execSync } from 'child_process';&#10;&#10;async function validateCommits() {&#10;  try {&#10;    // Cargar configuración&#10;    const config = await loadConfig();&#10;    &#10;    // Obtener mensajes de commit del git log&#10;    const commits = execSync('git log --oneline -10 --pretty=format:%s')&#10;      .toString()&#10;      .split('\n')&#10;      .filter(Boolean);&#10;&#10;    let hasErrors = false;&#10;&#10;    for (const commit of commits) {&#10;      const result = await validate(commit, { config });&#10;      &#10;      if (!result.valid) {&#10;        console.log(`❌ ${commit}`);&#10;        result.errors.forEach(error => {&#10;          console.log(`   ${error.message}`);&#10;        });&#10;        hasErrors = true;&#10;      } else {&#10;        console.log(`✅ ${commit}`);&#10;      }&#10;    }&#10;&#10;    if (hasErrors) {&#10;      process.exit(1);&#10;    }&#10;  } catch (error) {&#10;    console.error('Error validando commits:', error.message);&#10;    process.exit(1);&#10;  }&#10;}&#10;&#10;validateCommits();">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <pre><code class="language-javascript">#!/usr/bin/env node
+
+import { validate, loadConfig } from 'commitzero';
+import { readFileSync } from 'fs';
+import { execSync } from 'child_process';
+
+async function validateCommits() {
+  try {
+    // Cargar configuración
+    const config = await loadConfig();
+    
+    // Obtener mensajes de commit del git log
+    const commits = execSync('git log --oneline -10 --pretty=format:%s')
+      .toString()
+      .split('\n')
+      .filter(Boolean);
+
+    let hasErrors = false;
+
+    for (const commit of commits) {
+      const result = await validate(commit, { config });
+      
+      if (!result.valid) {
+        console.log(`❌ ${commit}`);
+        result.errors.forEach(error => {
+          console.log(`   ${error.message}`);
+        });
+        hasErrors = true;
+      } else {
+        console.log(`✅ ${commit}`);
+      }
+    }
+
+    if (hasErrors) {
+      process.exit(1);
+    }
+  } catch (error) {
+    console.error('Error validando commits:', error.message);
+    process.exit(1);
+  }
+}
+
+validateCommits();</code></pre>
+                                </div>
+                            </div>
+
+                            <!-- CI/CD Integration -->
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Integración CI/CD</h3>
+                                <div class="code-block">
+                                    <div class="code-header">
+                                        <span class="code-title">Flujo de Trabajo de GitHub Actions</span>
+                                        <button class="copy-button" data-copy="name: Validar Commits&#10;&#10;on:&#10;  pull_request:&#10;    branches: [main]&#10;&#10;jobs:&#10;  validate-commits:&#10;    runs-on: ubuntu-latest&#10;    steps:&#10;      - uses: actions/checkout@v3&#10;        with:&#10;          fetch-depth: 0&#10;      &#10;      - uses: actions/setup-node@v3&#10;        with:&#10;          node-version: '18'&#10;      &#10;      - run: npm install commitzero&#10;      &#10;      - name: Validar mensajes de commit&#10;        run: |&#10;          node -e \"&#10;          import { validate } from 'commitzero';&#10;          import { execSync } from 'child_process';&#10;          &#10;          const commits = execSync('git log origin/main..HEAD --pretty=format:%s')&#10;            .toString().split('\n').filter(Boolean);&#10;          &#10;          let hasErrors = false;&#10;          for (const commit of commits) {&#10;            const result = await validate(commit);&#10;            if (!result.valid) {&#10;              console.log('❌', commit);&#10;              result.errors.forEach(e => console.log('  ', e.message));&#10;              hasErrors = true;&#10;            }&#10;          }&#10;          if (hasErrors) process.exit(1);&#10;          \"">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <pre><code class="language-yaml">name: Validar Commits
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate-commits:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - run: npm install commitzero
+      
+      - name: Validar mensajes de commit
+        run: |
+          node -e "
+          import { validate } from 'commitzero';
+          import { execSync } from 'child_process';
+          
+          const commits = execSync('git log origin/main..HEAD --pretty=format:%s')
+            .toString().split('\n').filter(Boolean);
+          
+          let hasErrors = false;
+          for (const commit of commits) {
+            const result = await validate(commit);
+            if (!result.valid) {
+              console.log('❌', commit);
+              result.errors.forEach(e => console.log('  ', e.message));
+              hasErrors = true;
+            }
+          }
+          if (hasErrors) process.exit(1);
+          "</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Next Steps -->
+                    <section class="bg-gradient-to-r from-primary-50 to-primary-100 dark:from-primary-900/20 dark:to-primary-800/20 rounded-lg p-8">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Próximos Pasos</h2>
+                        <p class="text-gray-600 dark:text-gray-300 mb-6">
+                            ¿Listo para integrar CommitZero en su flujo de trabajo? Consulte estos recursos:
+                        </p>
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <a href="../es/examples.html" class="btn-primary">
+                                Ver Ejemplos
+                                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                                </svg>
+                            </a>
+                            <a href="../es/configuration.html" class="btn-secondary">
+                                Guía de Configuración
+                            </a>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <!-- Logo and Description -->
+                <div class="md:col-span-2">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                        <span class="text-xl font-bold">CommitZero</span>
+                    </div>
+                    <p class="text-gray-400 mb-4 max-w-md">
+                        Una poderosa herramienta CLI para validar y hacer cumplir los estándares de Conventional Commits en su flujo de trabajo de Git.
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="https://github.com/commitzero/commitzero" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                            </svg>
+                        </a>
+                        <a href="https://www.npmjs.com/package/commitzero" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M1.763 0C.786 0 0 .786 0 1.763v20.474C0 23.214.786 24 1.763 24h20.474c.977 0 1.763-.786 1.763-1.763V1.763C24 .786 23.214 0 22.237 0H1.763zM5.13 5.323l13.837.019-.009 13.836h-3.464l.01-10.382h-3.456L12.04 19.17H5.113L5.13 5.323z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Documentation -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Documentación</h3>
+                    <ul class="space-y-2">
+                        <li><a href="../es/installation.html" class="text-gray-400 hover:text-white transition-colors">Instalación</a></li>
+                        <li><a href="../es/configuration.html" class="text-gray-400 hover:text-white transition-colors">Configuración</a></li>
+                        <li><a href="../es/usage.html" class="text-gray-400 hover:text-white transition-colors">Uso</a></li>
+                        <li><a href="../es/api.html" class="text-gray-400 hover:text-white transition-colors">Referencia de API</a></li>
+                        <li><a href="../es/examples.html" class="text-gray-400 hover:text-white transition-colors">Ejemplos</a></li>
+                    </ul>
+                </div>
+
+                <!-- Resources -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Recursos</h3>
+                    <ul class="space-y-2">
+                        <li><a href="../es/contributing.html" class="text-gray-400 hover:text-white transition-colors">Contribuir</a></li>
+                        <li><a href="../es/faq.html" class="text-gray-400 hover:text-white transition-colors">FAQ</a></li>
+                        <li><a href="../es/changelog.html" class="text-gray-400 hover:text-white transition-colors">Changelog</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+                <p>&copy; 2024 CommitZero. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

@@ -51,10 +51,6 @@ function renderPrompt(prompt: string) {
   process.stdout.write(c.bold(prompt) + "\n");
 }
 
-function moveCursorUp(n: number) {
-  if (n > 0) process.stdout.write(`\x1b[${n}A`);
-}
-
 function renderItems(items: Item[], selected: number, maxVisible?: number): number {
   let lines = 0;
   const maxLabelLen = Math.max(...items.map((it) => (it.label ?? it.value).length));
@@ -110,7 +106,10 @@ export async function select(prompt: string, items: Item[], header?: string): Pr
     const overhead = (header ? 2 : 0) + 1; // header + blank + prompt
     let maxVisible: number | undefined = undefined;
     const recomputeMaxVisible = () => {
-      const rows = typeof (stdout as any).rows === "number" ? (stdout as any).rows : 0;
+      const rows =
+        typeof (stdout as { rows?: number }).rows === "number"
+          ? (stdout as { rows?: number }).rows!
+          : 0;
       maxVisible = rows > 0 ? Math.max(1, rows - overhead) : undefined;
     };
     recomputeMaxVisible();
@@ -123,6 +122,7 @@ export async function select(prompt: string, items: Item[], header?: string): Pr
     renderPrompt(prompt);
     // Anchor the cursor at the prompt line so we can clear/redraw
     saveCursor();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     renderedLines = overhead + renderItems(items, selected, maxVisible);
 
     const onResize = () => {
@@ -135,7 +135,7 @@ export async function select(prompt: string, items: Item[], header?: string): Pr
     };
     // Listen for dynamic terminal resize events
     try {
-      (stdout as any).on?.("resize", onResize);
+      (stdout as NodeJS.WriteStream).on?.("resize", onResize);
     } catch {}
 
     function cleanup() {
@@ -148,10 +148,10 @@ export async function select(prompt: string, items: Item[], header?: string): Pr
         stdin.off("data", onData);
       } catch {}
       try {
-        (stdout as any).off?.("resize", onResize);
+        (stdout as NodeJS.WriteStream).off?.("resize", onResize);
       } catch {}
       try {
-        (stdout as any).removeListener?.("resize", onResize);
+        (stdout as NodeJS.WriteStream).removeListener?.("resize", onResize);
       } catch {}
       try {
         stdin.pause?.();

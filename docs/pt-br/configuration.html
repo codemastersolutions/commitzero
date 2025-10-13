@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuração - CommitZero</title>
+    <meta name="description" content="Aprenda como configurar CommitZero para seu projeto. Guia completo de configuração, tipos de commit, escopos e regras de validação.">
+    <meta name="keywords" content="CommitZero, configuração, commit types, scopes, validação, conventional commits">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="Configuração - CommitZero">
+    <meta property="og:description" content="Aprenda como configurar CommitZero para seu projeto. Guia completo de configuração, tipos de commit, escopos e regras de validação.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://commitzero.github.io/commitzero/pt-br/configuration.html">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/commitzero/assets/images/favicon.svg">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="/commitzero/assets/css/main.css">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Source+Code+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+    <!-- Navigation -->
+    <nav class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <div class="flex items-center space-x-3">
+                    <a href="/commitzero/pt-br/" class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                        <span class="text-xl font-bold text-gray-900 dark:text-white">CommitZero</span>
+                    </a>
+                </div>
+
+                <!-- Desktop Navigation -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="/commitzero/pt-br/installation.html" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Instalação</a>
+                    <a href="/commitzero/pt-br/configuration.html" class="text-primary-600 dark:text-primary-400 font-medium">Configuração</a>
+                    <a href="/commitzero/pt-br/usage.html" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Uso</a>
+                    <a href="/commitzero/pt-br/api.html" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">API</a>
+                    <a href="/commitzero/pt-br/examples.html" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Exemplos</a>
+                </div>
+
+                <!-- Right side buttons -->
+                <div class="flex items-center space-x-4">
+                    <!-- Language Selector -->
+                    <div class="relative">
+                        <button id="language-selector" class="flex items-center space-x-1 text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path>
+                            </svg>
+                            <span class="text-sm">PT</span>
+                        </button>
+                        <div id="language-dropdown" class="absolute right-0 mt-2 w-32 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 hidden">
+                            <a href="/commitzero/configuration.html" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">English</a>
+                            <a href="/commitzero/pt-br/configuration.html" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Português</a>
+                            <a href="/commitzero/es/configuration.html" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Español</a>
+                        </div>
+                    </div>
+
+                    <!-- Theme Toggle -->
+                    <button id="theme-toggle" class="p-2 text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+                        <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                        </svg>
+                        <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path>
+                        </svg>
+                    </button>
+
+                    <!-- GitHub Link -->
+                    <a href="https://github.com/commitzero/commitzero" target="_blank" rel="noopener noreferrer" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                        </svg>
+                    </a>
+
+                    <!-- Mobile menu button -->
+                    <button id="mobile-menu-button" class="md:hidden p-2 text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile Navigation -->
+            <div id="mobile-menu" class="md:hidden hidden border-t border-gray-200 dark:border-gray-700 py-4">
+                <div class="flex flex-col space-y-4">
+                    <a href="/commitzero/pt-br/installation.html" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Instalação</a>
+                    <a href="/commitzero/pt-br/configuration.html" class="text-primary-600 dark:text-primary-400 font-medium">Configuração</a>
+                    <a href="/commitzero/pt-br/usage.html" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Uso</a>
+                    <a href="/commitzero/pt-br/api.html" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">API</a>
+                    <a href="/commitzero/pt-br/examples.html" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Exemplos</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-1">
+        <!-- Header -->
+        <section class="bg-gradient-to-br from-primary-50 via-white to-primary-100 dark:from-gray-900 dark:via-gray-800 dark:to-primary-900/20 py-16">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <h1 class="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+                        Configuração
+                    </h1>
+                    <p class="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+                        Configure CommitZero para atender às necessidades específicas do seu projeto e equipe
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Content -->
+        <section class="py-16">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                <!-- Getting Started -->
+                <div class="mb-12">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Primeiros Passos</h2>
+                    <p class="text-gray-600 dark:text-gray-300 mb-6">
+                        CommitZero pode ser configurado através de um arquivo de configuração no seu projeto. 
+                        Para criar uma configuração inicial, execute:
+                    </p>
+                    <div class="code-block mb-6">
+                        <pre><code class="language-bash">commitzero init</code></pre>
+                        <button class="copy-button" data-clipboard-text="commitzero init">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        Isso criará um arquivo <code class="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">.commitzero.json</code> 
+                        na raiz do seu projeto com configurações padrão.
+                    </p>
+                </div>
+
+                <!-- Configuration File -->
+                <div class="mb-12">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Arquivo de Configuração</h2>
+                    <p class="text-gray-600 dark:text-gray-300 mb-6">
+                        CommitZero procura por arquivos de configuração na seguinte ordem:
+                    </p>
+                    <ul class="list-disc list-inside text-gray-600 dark:text-gray-300 mb-6 space-y-2">
+                        <li><code class="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">.commitzero.json</code></li>
+                        <li><code class="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">.commitzero.js</code></li>
+                        <li><code class="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">commitzero.config.js</code></li>
+                        <li>Seção <code class="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">commitzero</code> no <code class="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">package.json</code></li>
+                    </ul>
+
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Estrutura Básica</h3>
+                    <div class="code-block mb-6">
+                        <pre><code class="language-json">{
+  "types": {
+    "feat": {
+      "description": "Uma nova funcionalidade",
+      "emoji": "✨"
+    },
+    "fix": {
+      "description": "Correção de bug",
+      "emoji": "🐛"
+    },
+    "docs": {
+      "description": "Mudanças na documentação",
+      "emoji": "📚"
+    },
+    "style": {
+      "description": "Mudanças que não afetam o significado do código",
+      "emoji": "💎"
+    },
+    "refactor": {
+      "description": "Mudança de código que não corrige bug nem adiciona funcionalidade",
+      "emoji": "📦"
+    },
+    "test": {
+      "description": "Adição ou correção de testes",
+      "emoji": "🚨"
+    },
+    "chore": {
+      "description": "Mudanças no processo de build ou ferramentas auxiliares",
+      "emoji": "🔧"
+    }
+  },
+  "scopes": ["api", "ui", "core", "docs"],
+  "rules": {
+    "type-required": true,
+    "type-case": "lower-case",
+    "subject-required": true,
+    "subject-case": "sentence-case",
+    "subject-max-length": 50,
+    "body-max-line-length": 72
+  }
+}</code></pre>
+                        <button class="copy-button" data-clipboard-text='{
+  "types": {
+    "feat": {
+      "description": "Uma nova funcionalidade",
+      "emoji": "✨"
+    },
+    "fix": {
+      "description": "Correção de bug",
+      "emoji": "🐛"
+    },
+    "docs": {
+      "description": "Mudanças na documentação",
+      "emoji": "📚"
+    },
+    "style": {
+      "description": "Mudanças que não afetam o significado do código",
+      "emoji": "💎"
+    },
+    "refactor": {
+      "description": "Mudança de código que não corrige bug nem adiciona funcionalidade",
+      "emoji": "📦"
+    },
+    "test": {
+      "description": "Adição ou correção de testes",
+      "emoji": "🚨"
+    },
+    "chore": {
+      "description": "Mudanças no processo de build ou ferramentas auxiliares",
+      "emoji": "🔧"
+    }
+  },
+  "scopes": ["api", "ui", "core", "docs"],
+  "rules": {
+    "type-required": true,
+    "type-case": "lower-case",
+    "subject-required": true,
+    "subject-case": "sentence-case",
+    "subject-max-length": 50,
+    "body-max-line-length": 72
+  }
+}'>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Types -->
+                <div class="mb-12">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Tipos de Commit</h2>
+                    <p class="text-gray-600 dark:text-gray-300 mb-6">
+                        Defina os tipos de commit permitidos no seu projeto. Cada tipo pode ter uma descrição e emoji opcional:
+                    </p>
+                    <div class="code-block mb-6">
+                        <pre><code class="language-json">{
+  "types": {
+    "feat": {
+      "description": "Uma nova funcionalidade para o usuário",
+      "emoji": "✨"
+    },
+    "fix": {
+      "description": "Correção de bug para o usuário",
+      "emoji": "🐛"
+    },
+    "perf": {
+      "description": "Mudança de código que melhora performance",
+      "emoji": "⚡"
+    },
+    "build": {
+      "description": "Mudanças que afetam o sistema de build",
+      "emoji": "🏗️"
+    },
+    "ci": {
+      "description": "Mudanças nos arquivos e scripts de CI",
+      "emoji": "👷"
+    },
+    "revert": {
+      "description": "Reverte um commit anterior",
+      "emoji": "⏪"
+    }
+  }
+}</code></pre>
+                        <button class="copy-button" data-clipboard-text='{
+  "types": {
+    "feat": {
+      "description": "Uma nova funcionalidade para o usuário",
+      "emoji": "✨"
+    },
+    "fix": {
+      "description": "Correção de bug para o usuário",
+      "emoji": "🐛"
+    },
+    "perf": {
+      "description": "Mudança de código que melhora performance",
+      "emoji": "⚡"
+    },
+    "build": {
+      "description": "Mudanças que afetam o sistema de build",
+      "emoji": "🏗️"
+    },
+    "ci": {
+      "description": "Mudanças nos arquivos e scripts de CI",
+      "emoji": "👷"
+    },
+    "revert": {
+      "description": "Reverte um commit anterior",
+      "emoji": "⏪"
+    }
+  }
+}'>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Scopes -->
+                <div class="mb-12">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Escopos</h2>
+                    <p class="text-gray-600 dark:text-gray-300 mb-6">
+                        Defina os escopos permitidos para organizar commits por área do projeto:
+                    </p>
+                    <div class="code-block mb-6">
+                        <pre><code class="language-json">{
+  "scopes": [
+    "auth",
+    "api",
+    "ui",
+    "database",
+    "config",
+    "tests",
+    "docs",
+    "deps"
+  ]
+}</code></pre>
+                        <button class="copy-button" data-clipboard-text='{
+  "scopes": [
+    "auth",
+    "api",
+    "ui",
+    "database",
+    "config",
+    "tests",
+    "docs",
+    "deps"
+  ]
+}'>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        Se não especificado, qualquer escopo será aceito. Para desabilitar escopos completamente, 
+                        defina como um array vazio: <code class="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">"scopes": []</code>
+                    </p>
+                </div>
+
+                <!-- Rules -->
+                <div class="mb-12">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Regras de Validação</h2>
+                    <p class="text-gray-600 dark:text-gray-300 mb-6">
+                        Configure regras específicas para validação de commits:
+                    </p>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+                            <thead class="bg-gray-50 dark:bg-gray-700">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Regra</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Tipo</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Padrão</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Descrição</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900 dark:text-gray-100">type-required</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">boolean</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">true</td>
+                                    <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-300">Tipo é obrigatório</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900 dark:text-gray-100">type-case</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">string</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">lower-case</td>
+                                    <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-300">Formato do tipo</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900 dark:text-gray-100">subject-required</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">boolean</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">true</td>
+                                    <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-300">Assunto é obrigatório</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900 dark:text-gray-100">subject-case</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">string</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">sentence-case</td>
+                                    <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-300">Formato do assunto</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900 dark:text-gray-100">subject-max-length</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">number</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">50</td>
+                                    <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-300">Tamanho máximo do assunto</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900 dark:text-gray-100">body-max-line-length</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">number</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">72</td>
+                                    <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-300">Tamanho máximo da linha do corpo</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Git Hooks -->
+                <div class="mb-12">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Integração com Git Hooks</h2>
+                    <p class="text-gray-600 dark:text-gray-300 mb-6">
+                        Para validação automática durante commits, instale os Git hooks:
+                    </p>
+                    <div class="code-block mb-6">
+                        <pre><code class="language-bash">commitzero install-hooks</code></pre>
+                        <button class="copy-button" data-clipboard-text="commitzero install-hooks">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-300 mb-4">
+                        Isso instalará hooks para:
+                    </p>
+                    <ul class="list-disc list-inside text-gray-600 dark:text-gray-300 mb-6 space-y-2">
+                        <li><strong>commit-msg:</strong> Valida a mensagem do commit antes de confirmar</li>
+                        <li><strong>pre-commit:</strong> Executa validações antes do commit (opcional)</li>
+                    </ul>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        Para remover os hooks, use: <code class="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">commitzero uninstall-hooks</code>
+                    </p>
+                </div>
+
+                <!-- Advanced Configuration -->
+                <div class="mb-12">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Configuração Avançada</h2>
+                    
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Configuração por Ambiente</h3>
+                    <p class="text-gray-600 dark:text-gray-300 mb-4">
+                        Você pode ter diferentes configurações para diferentes ambientes:
+                    </p>
+                    <div class="code-block mb-6">
+                        <pre><code class="language-json">{
+  "extends": ["@commitzero/config-conventional"],
+  "environments": {
+    "development": {
+      "rules": {
+        "subject-max-length": 100
+      }
+    },
+    "production": {
+      "rules": {
+        "subject-max-length": 50,
+        "body-required": true
+      }
+    }
+  }
+}</code></pre>
+                        <button class="copy-button" data-clipboard-text='{
+  "extends": ["@commitzero/config-conventional"],
+  "environments": {
+    "development": {
+      "rules": {
+        "subject-max-length": 100
+      }
+    },
+    "production": {
+      "rules": {
+        "subject-max-length": 50,
+        "body-required": true
+      }
+    }
+  }
+}'>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Configuração para Monorepo</h3>
+                    <p class="text-gray-600 dark:text-gray-300 mb-4">
+                        Para projetos monorepo, você pode definir escopos baseados em pacotes:
+                    </p>
+                    <div class="code-block mb-6">
+                        <pre><code class="language-json">{
+  "scopes": {
+    "packages": true,
+    "custom": ["shared", "tools", "docs"]
+  },
+  "rules": {
+    "scope-required": true,
+    "scope-case": "kebab-case"
+  }
+}</code></pre>
+                        <button class="copy-button" data-clipboard-text='{
+  "scopes": {
+    "packages": true,
+    "custom": ["shared", "tools", "docs"]
+  },
+  "rules": {
+    "scope-required": true,
+    "scope-case": "kebab-case"
+  }
+}'>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Configuration Examples -->
+                <div class="mb-12">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Exemplos de Configuração</h2>
+                    
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Projeto Frontend</h3>
+                    <div class="code-block mb-6">
+                        <pre><code class="language-json">{
+  "types": {
+    "feat": { "description": "Nova funcionalidade", "emoji": "✨" },
+    "fix": { "description": "Correção de bug", "emoji": "🐛" },
+    "style": { "description": "Mudanças de estilo/CSS", "emoji": "💄" },
+    "refactor": { "description": "Refatoração de código", "emoji": "♻️" },
+    "perf": { "description": "Melhoria de performance", "emoji": "⚡" },
+    "test": { "description": "Testes", "emoji": "✅" },
+    "build": { "description": "Build/bundling", "emoji": "📦" }
+  },
+  "scopes": ["components", "pages", "hooks", "utils", "styles", "assets"],
+  "rules": {
+    "type-required": true,
+    "subject-required": true,
+    "subject-max-length": 60,
+    "body-max-line-length": 80
+  }
+}</code></pre>
+                        <button class="copy-button" data-clipboard-text='{
+  "types": {
+    "feat": { "description": "Nova funcionalidade", "emoji": "✨" },
+    "fix": { "description": "Correção de bug", "emoji": "🐛" },
+    "style": { "description": "Mudanças de estilo/CSS", "emoji": "💄" },
+    "refactor": { "description": "Refatoração de código", "emoji": "♻️" },
+    "perf": { "description": "Melhoria de performance", "emoji": "⚡" },
+    "test": { "description": "Testes", "emoji": "✅" },
+    "build": { "description": "Build/bundling", "emoji": "📦" }
+  },
+  "scopes": ["components", "pages", "hooks", "utils", "styles", "assets"],
+  "rules": {
+    "type-required": true,
+    "subject-required": true,
+    "subject-max-length": 60,
+    "body-max-line-length": 80
+  }
+}'>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Projeto Full-Stack</h3>
+                    <div class="code-block mb-6">
+                        <pre><code class="language-json">{
+  "types": {
+    "feat": { "description": "Nova funcionalidade", "emoji": "✨" },
+    "fix": { "description": "Correção de bug", "emoji": "🐛" },
+    "docs": { "description": "Documentação", "emoji": "📚" },
+    "style": { "description": "Formatação de código", "emoji": "🎨" },
+    "refactor": { "description": "Refatoração", "emoji": "♻️" },
+    "test": { "description": "Testes", "emoji": "🧪" },
+    "chore": { "description": "Manutenção", "emoji": "🔧" },
+    "perf": { "description": "Performance", "emoji": "⚡" },
+    "ci": { "description": "CI/CD", "emoji": "👷" },
+    "build": { "description": "Build", "emoji": "📦" },
+    "revert": { "description": "Reverter", "emoji": "⏪" }
+  },
+  "scopes": [
+    "frontend", "backend", "api", "database", 
+    "auth", "ui", "config", "deps", "docker"
+  ],
+  "rules": {
+    "type-required": true,
+    "scope-required": true,
+    "subject-required": true,
+    "subject-max-length": 50,
+    "body-max-line-length": 72,
+    "footer-max-line-length": 72
+  }
+}</code></pre>
+                        <button class="copy-button" data-clipboard-text='{
+  "types": {
+    "feat": { "description": "Nova funcionalidade", "emoji": "✨" },
+    "fix": { "description": "Correção de bug", "emoji": "🐛" },
+    "docs": { "description": "Documentação", "emoji": "📚" },
+    "style": { "description": "Formatação de código", "emoji": "🎨" },
+    "refactor": { "description": "Refatoração", "emoji": "♻️" },
+    "test": { "description": "Testes", "emoji": "🧪" },
+    "chore": { "description": "Manutenção", "emoji": "🔧" },
+    "perf": { "description": "Performance", "emoji": "⚡" },
+    "ci": { "description": "CI/CD", "emoji": "👷" },
+    "build": { "description": "Build", "emoji": "📦" },
+    "revert": { "description": "Reverter", "emoji": "⏪" }
+  },
+  "scopes": [
+    "frontend", "backend", "api", "database", 
+    "auth", "ui", "config", "deps", "docker"
+  ],
+  "rules": {
+    "type-required": true,
+    "scope-required": true,
+    "subject-required": true,
+    "subject-max-length": 50,
+    "body-max-line-length": 72,
+    "footer-max-line-length": 72
+  }
+}'>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Next Steps -->
+                <div class="mt-16 bg-gradient-to-r from-primary-50 to-primary-100 dark:from-primary-900/20 dark:to-primary-800/20 rounded-lg p-8">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Próximos Passos</h2>
+                    <p class="text-gray-600 dark:text-gray-300 mb-6">
+                        Agora que você configurou CommitZero, aprenda como usá-lo no seu fluxo de trabalho diário:
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <a href="/commitzero/pt-br/usage.html" class="btn-primary">
+                            Guia de Uso
+                            <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                            </svg>
+                        </a>
+                        <a href="/commitzero/pt-br/examples.html" class="btn-secondary">
+                            Ver Exemplos
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <!-- Logo and Description -->
+                <div class="md:col-span-2">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                        <span class="text-xl font-bold">CommitZero</span>
+                    </div>
+                    <p class="text-gray-400 mb-4 max-w-md">
+                        Uma ferramenta CLI poderosa para validar e aplicar padrões de Conventional Commits no seu fluxo de trabalho Git.
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="https://github.com/commitzero/commitzero" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                            </svg>
+                        </a>
+                        <a href="https://www.npmjs.com/package/commitzero" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M1.763 0C.786 0 0 .786 0 1.763v20.474C0 23.214.786 24 1.763 24h20.474c.977 0 1.763-.786 1.763-1.763V1.763C24 .786 23.214 0 22.237 0H1.763zM5.13 5.323l13.837.019-.009 13.836h-3.464l.01-10.382h-3.456L12.04 19.17H5.113L5.13 5.323z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Documentation -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Documentação</h3>
+                    <ul class="space-y-2">
+                        <li><a href="/commitzero/pt-br/installation.html" class="text-gray-400 hover:text-white transition-colors">Instalação</a></li>
+                        <li><a href="/commitzero/pt-br/configuration.html" class="text-gray-400 hover:text-white transition-colors">Configuração</a></li>
+                        <li><a href="/commitzero/pt-br/usage.html" class="text-gray-400 hover:text-white transition-colors">Uso</a></li>
+                        <li><a href="/commitzero/pt-br/api.html" class="text-gray-400 hover:text-white transition-colors">Referência da API</a></li>
+                        <li><a href="/commitzero/pt-br/examples.html" class="text-gray-400 hover:text-white transition-colors">Exemplos</a></li>
+                    </ul>
+                </div>
+
+                <!-- Community -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Comunidade</h3>
+                    <ul class="space-y-2">
+                        <li><a href="/commitzero/pt-br/contributing.html" class="text-gray-400 hover:text-white transition-colors">Contribuir</a></li>
+                        <li><a href="/commitzero/pt-br/faq.html" class="text-gray-400 hover:text-white transition-colors">FAQ</a></li>
+                        <li><a href="/commitzero/pt-br/changelog.html" class="text-gray-400 hover:text-white transition-colors">Changelog</a></li>
+                        <li><a href="https://github.com/commitzero/commitzero/issues" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors">Issues</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-gray-400 text-sm">
+                    © 2024 CommitZero. Licenciado sob MIT License.
+                </p>
+                <div class="flex space-x-6 mt-4 md:mt-0">
+                    <a href="/commitzero/configuration.html" class="text-gray-400 hover:text-white transition-colors text-sm">English</a>
+                    <a href="/commitzero/es/configuration.html" class="text-gray-400 hover:text-white transition-colors text-sm">Español</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="/commitzero/assets/js/main.js"></script>
+</body>
+</html>
