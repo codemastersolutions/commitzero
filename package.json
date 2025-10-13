@@ -23,9 +23,11 @@
     "format:check": "prettier --check \"**/*.{ts,js,json,md}\"",
     "comments:strip": "node scripts/strip-comments.js && npm run format",
     "simulate:release": "node scripts/simulate-release.js",
-    "preuninstall": "node ./dist/cjs/hooks/cleanup.js || true",
-    "uninstall": "node ./dist/cjs/hooks/cleanup.js || true",
-    "postuninstall": "node ./dist/cjs/hooks/cleanup.js || true"
+    "postinstall": "node ./scripts/postinstall-shim.js",
+    "preuninstall": "node ./scripts/cleanup-shim.js || true",
+    "uninstall": "node ./scripts/cleanup-shim.js || true",
+    "postuninstall": "node ./scripts/cleanup-shim.js || true",
+    "commitzero": "commitzero"
   },
   "exports": {
     ".": {

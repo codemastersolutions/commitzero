@@ -4,6 +4,9 @@ export function commitMsgScript(): string {
   const lines: string[] = [
     "#!/bin/sh",
     "set -eu",
+    // Pre-define managed block markers to avoid unset var errors under `set -u`
+    "START_MARK='" + HOOK_HEADER + " START'",
+    "END_MARK='" + HOOK_HEADER + " END'",
     HOOK_HEADER + " START",
     "# Validate commit message using CommitZero",
     'if [ -x "./node_modules/.bin/commitzero" ]; then',
@@ -14,8 +17,6 @@ export function commitMsgScript(): string {
     '  node "$(node -p \'require.resolve("@codemastersolutions/commitzero/dist/cjs/cli/index.js")\')" check',
     "else",
     "  # Auto-clean managed blocks from hooks to avoid future interruptions",
-    "  START_MARK='" + HOOK_HEADER + " START'",
-    "  END_MARK='" + HOOK_HEADER + " END'",
     "  cleanup_file() {",
     '    F="$1"',
     '    if [ -f "$F" ]; then',
@@ -123,6 +124,9 @@ export function preCommitScript(): string {
   const lines: string[] = [
     "#!/bin/sh",
     "set -eu",
+    // Pre-define managed block markers to avoid unset var errors under `set -u`
+    "START_MARK='" + HOOK_HEADER + " START'",
+    "END_MARK='" + HOOK_HEADER + " END'",
     HOOK_HEADER + " START",
     "# Run pre-commit commands via CommitZero",
     'if [ -x "./node_modules/.bin/commitzero" ]; then',
@@ -133,8 +137,6 @@ export function preCommitScript(): string {
     '  node "$(node -p \'require.resolve("@codemastersolutions/commitzero/dist/cjs/cli/index.js")\')" pre-commit',
     "else",
     "  # Auto-clean managed blocks from hooks to avoid future interruptions",
-    "  START_MARK='" + HOOK_HEADER + " START'",
-    "  END_MARK='" + HOOK_HEADER + " END'",
     "  cleanup_file() {",
     '    F="$1"',
     '    if [ -f "$F" ]; then',
