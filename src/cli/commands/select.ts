@@ -107,9 +107,13 @@ export async function select(prompt: string, items: Item[], header?: string): Pr
       clearScreen();
     }
     // Compute max visible items based on terminal rows to avoid scroll duplication
-    const rows = typeof (stdout as any).rows === "number" ? (stdout as any).rows : 0;
     const overhead = (header ? 2 : 0) + 1; // header + blank + prompt
-    const maxVisible = rows > 0 ? Math.max(1, rows - overhead) : undefined;
+    let maxVisible: number | undefined = undefined;
+    const recomputeMaxVisible = () => {
+      const rows = typeof (stdout as any).rows === "number" ? (stdout as any).rows : 0;
+      maxVisible = rows > 0 ? Math.max(1, rows - overhead) : undefined;
+    };
+    recomputeMaxVisible();
     let renderedLines = 0;
     if (header) {
       clearLine();
@@ -121,6 +125,19 @@ export async function select(prompt: string, items: Item[], header?: string): Pr
     saveCursor();
     renderedLines = overhead + renderItems(items, selected, maxVisible);
 
+    const onResize = () => {
+      // Recalculate visible items based on new terminal height
+      recomputeMaxVisible();
+      // Redraw from the prompt downwards; header and prompt stay static
+      restoreCursor();
+      clearDown();
+      renderedLines = overhead + renderItems(items, selected, maxVisible);
+    };
+    // Listen for dynamic terminal resize events
+    try {
+      (stdout as any).on?.("resize", onResize);
+    } catch {}
+
     function cleanup() {
       if (cleaned) return;
       cleaned = true;
@@ -129,6 +146,12 @@ export async function select(prompt: string, items: Item[], header?: string): Pr
       } catch {}
       try {
         stdin.off("data", onData);
+      } catch {}
+      try {
+        (stdout as any).off?.("resize", onResize);
+      } catch {}
+      try {
+        (stdout as any).removeListener?.("resize", onResize);
       } catch {}
       try {
         stdin.pause?.();
