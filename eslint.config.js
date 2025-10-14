@@ -47,6 +47,6 @@ export default [
     },
   },
   {
-    ignores: ["dist/**", "node_modules/**", "tmp/**"],
+    ignores: ["dist/**", "node_modules/**", "tmp/**", "docs/**"],
   },
 ];
