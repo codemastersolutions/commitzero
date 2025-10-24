@@ -87,7 +87,7 @@ export function lintCommit(commit: ParsedCommit, opts: LintOptions = {}): LintRe
   }
 
   if (commit.scope) {
-    const scopeValid = /^[a-z0-9\- ]+$/.test(commit.scope);
+    const scopeValid = /^[\p{L}\p{N}\- .]+$/u.test(commit.scope);
     if (!scopeValid) {
       errors.push(t(lang, "rules.scopePattern"));
     }

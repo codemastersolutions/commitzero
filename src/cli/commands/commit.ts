@@ -273,6 +273,7 @@ export async function interactiveCommit(
   cfg?: Partial<typeof defaultOptions> & {
     autoAdd?: boolean;
     autoPush?: boolean;
+    pushProgress?: boolean;
   }
 ): Promise<number> {
   // Exibir header primeiro, antes de qualquer outra mensagem
@@ -517,7 +518,21 @@ export async function interactiveCommit(
     let breakingAns: string;
     let breakingDetails: string = "";
     try {
-      scope = await askWithCharacterCount(rl, c.cyan(t(lang, "commit.prompt.scope")), 20, testCtx);
+      const scopeValidator = (answer: string): boolean | string => {
+        const s = answer.trim();
+        if (s === "") return true; // escopo opcional
+        // aceita letras (Unicode, incluindo acentuação), números, hífen e espaço
+        const patternOk = /^[\p{L}\p{N}\- .]+$/u.test(s);
+        if (!patternOk) return t(lang, "rules.scopePattern");
+        if (s !== s.toLowerCase()) return t(lang, "rules.scopeLower");
+        return true;
+      };
+      scope = await askWithValidation(
+        rl,
+        c.cyan(t(lang, "commit.prompt.scope")),
+        scopeValidator,
+        testCtx
+      );
       subject = await askWithCharacterCount(
         rl,
         c.cyan(t(lang, "commit.prompt.subject")),
@@ -630,8 +645,10 @@ export async function interactiveCommit(
       if (cfg?.autoPush) {
         const stopPushSpinner = showSpinner(t(lang, "commit.pushing") || "Pushing to remote...");
         try {
-          const pushOut = execFileSync("git", ["push"], {
-            stdio: ["ignore", "pipe", "pipe"],
+          const useProgress = cfg?.pushProgress !== false;
+          const pushArgs = ["push", ...(useProgress ? ["--progress"] : [])];
+          const pushOut = execFileSync("git", pushArgs, {
+            stdio: ["ignore", "pipe", useProgress ? "inherit" : "pipe"],
             encoding: "utf8",
           });
           stopPushSpinner();
@@ -663,8 +680,16 @@ export async function interactiveCommit(
               return 1;
             }
             const stopUpSpinner = showSpinner("Setting upstream and pushing...");
-            const pushUpOut = execFileSync("git", ["push", "-u", remote, branch], {
-              stdio: ["ignore", "pipe", "pipe"],
+            const useProgress = cfg?.pushProgress !== false;
+            const pushUpArgs = [
+              "push",
+              ...(useProgress ? ["--progress"] : []),
+              "-u",
+              remote,
+              branch,
+            ];
+            const pushUpOut = execFileSync("git", pushUpArgs, {
+              stdio: ["ignore", "pipe", useProgress ? "inherit" : "pipe"],
               encoding: "utf8",
             });
             stopUpSpinner();

@@ -7,7 +7,7 @@ type Dict = Record<string, string>;
 const dicts: Record<Lang, Dict> = {
   en: {
     "cli.help":
-      "CommitZero CLI{version}\n\nCommands:\n  init\n  lint --file <path> | -m <message>\n  check\n  install-hooks\n  uninstall-hooks\n  cleanup\n  commit [-a|--add] [-p|--push]\n  pre-commit [add|remove] <command>\n\nOptions:\n  --help",
+      "CommitZero CLI{version}\n\nCommands:\n  init\n  lint --file <path> | -m <message>\n  check\n  install-hooks\n  uninstall-hooks\n  cleanup\n  commit [-a|--add] [-p|--push] [--progress-off]\n  pre-commit [add|remove] <command>\n\nOptions:\n  --help",
     "cli.provideInput": "Provide --file <path> or -m <message>",
     "cli.invalid": "Invalid commit:",
     "cli.warnings": "Warnings:",
@@ -20,7 +20,7 @@ const dicts: Record<Lang, Dict> = {
     "cli.exampleValid": "Valid example: {example}",
     "cli.exampleSubject": "add feature",
     "cli.flagsOnlyWithCommit":
-      "Flags -a/--add and -p/--push are only valid with the 'commit' subcommand.",
+      "Flags -a/--add, -p/--push and --progress-off are only valid with the 'commit' subcommand.",
     "cli.preCommitNone": "No pre-commit commands configured.",
     "cli.preCommitRun": "Running pre-commit: {cmd}",
     "cli.preCommitFail": "Pre-commit failed on: {cmd}",
@@ -44,6 +44,7 @@ const dicts: Record<Lang, Dict> = {
     "commit.prompt.breakingDetails": "Provide BREAKING CHANGE details (footer): ",
     "commit.created": "Commit message created at .git/COMMIT_EDITMSG:\n\n{msg}",
     "commit.committing": "Committing changes...",
+    "commit.pushing": "Pushing to remote...",
     "commit.git.askAdd": "No files are staged. Run 'git add -A' now? (y/N): ",
     "commit.git.abort": "Nothing to commit. Aborting.",
     "commit.cancelled": "Process cancelled by user.",
@@ -74,7 +75,7 @@ const dicts: Record<Lang, Dict> = {
     "rules.typeLower": "type must be lowercase",
     "rules.scopeRequired": "scope is required",
     "rules.scopeInvalid": "invalid scope: {scope}",
-    "rules.scopePattern": "scope must contain only a-z, 0-9, hyphen and space",
+    "rules.scopePattern": "scope must contain only letters (accents allowed), numbers, hyphen, dot and space",
     "rules.scopeLower": "scope must be lowercase",
     "rules.subjectEmpty": "subject must not be empty",
     "rules.subjectTooLong": "subject exceeds {max} characters",
@@ -88,8 +89,8 @@ const dicts: Record<Lang, Dict> = {
   },
   pt: {
     "cli.help":
-      "CommitZero CLI{version}\n\nComandos:\n  init\n  lint --file <path> | -m <message>\n  check\n  install-hooks\n  uninstall-hooks\n  cleanup\n  commit [-a|--add] [-p|--push]\n  pre-commit [add|remove] <comando>\n\nOpções:\n  --help",
-    "cli.provideInput": "Forneça --file <path> ou -m <message>",
+      "CommitZero CLI{version}\n\nComandos:\n  init\n  lint --file <caminho> | -m <mensagem>\n  check\n  install-hooks\n  uninstall-hooks\n  cleanup\n  commit [-a|--add] [-p|--push] [--progress-off]\n  pre-commit [add|remove] <comando>\n\nOpções:\n  --help",
+    "cli.provideInput": "Forneça --file <caminho> ou -m <mensagem>",
     "cli.invalid": "Commit inválido:",
     "cli.warnings": "Avisos:",
     "cli.warning": "Aviso: {msg}",
@@ -101,7 +102,7 @@ const dicts: Record<Lang, Dict> = {
     "cli.exampleValid": "Exemplo válido: {example}",
     "cli.exampleSubject": "adicionar recurso",
     "cli.flagsOnlyWithCommit":
-      "As flags -a/--add e -p/--push são válidas apenas com o subcomando 'commit'.",
+      "Flags -a/--add, -p/--push e --progress-off são válidas apenas com o subcomando 'commit'.",
     "cli.preCommitNone": "Nenhum comando de pre-commit configurado.",
     "cli.preCommitRun": "Executando pre-commit: {cmd}",
     "cli.preCommitFail": "Pre-commit falhou em: {cmd}",
@@ -112,7 +113,7 @@ const dicts: Record<Lang, Dict> = {
     "cli.preCommitAlreadyExists": "Comando já presente: {cmd}",
     "cli.preCommitNotFound": "Comando não encontrado: {cmd}",
     "cli.preCommitJsConfigUnsupported":
-      "Edição requer config JSON. Use commitzero init para criar JSON.",
+      "Edição requer configuração JSON. Use commitzero init para criar JSON.",
 
     "commit.select.type": "Selecione o tipo de commit:",
     "commit.library.header": "Biblioteca: {name}",
@@ -120,23 +121,24 @@ const dicts: Record<Lang, Dict> = {
     "commit.prompt.type": "Tipo ({types}): ",
     "commit.prompt.scope": "Escopo (opcional, vazio para nenhum): ",
     "commit.prompt.subject": "Assunto (curto, imperativo): ",
-    "commit.prompt.body": "Corpo (opcional, multi-linha não suportado; enter para pular): ",
-    "commit.prompt.breaking": "Breaking change? (y/N): ",
-    "commit.prompt.breakingDetails": "Informe detalhes do BREAKING CHANGE (footer): ",
+    "commit.prompt.body": "Corpo (opcional, sem suporte a múltiplas linhas; pressione Enter para pular): ",
+    "commit.prompt.breaking": "Mudança quebrando? (y/N): ",
+    "commit.prompt.breakingDetails": "Forneça detalhes de BREAKING CHANGE (rodapé): ",
     "commit.created": "Mensagem de commit criada em .git/COMMIT_EDITMSG:\n\n{msg}",
-    "commit.committing": "Fazendo commit das alterações...",
+    "commit.committing": "Realizando commit...",
+    "commit.pushing": "Fazendo push para o remoto...",
     "commit.git.askAdd": "Nenhum arquivo está staged. Executar 'git add -A' agora? (y/N): ",
-    "commit.git.abort": "Nada para cometer. Abortando.",
+    "commit.git.abort": "Nada para commit. Abortando.",
     "commit.cancelled": "Processo cancelado pelo usuário.",
-    "commit.validation.yesNo": "Por favor, responda com 'y' (sim) ou 'n' (não).",
+    "commit.validation.yesNo": "Responda com 'y' (sim) ou 'n' (não).",
 
-    "type.desc.feat": "Uma nova funcionalidade",
+    "type.desc.feat": "Um novo recurso",
     "type.desc.fix": "Correção de bug",
-    "type.desc.docs": "Alterações apenas de documentação",
+    "type.desc.docs": "Mudanças somente na documentação",
     "type.desc.style":
-      "Alterações que não afetam o significado do código (espaços, formatação, ponto e vírgula, etc)",
-    "type.desc.refactor": "Mudança de código que não corrige bug nem adiciona funcionalidade",
-    "type.desc.perf": "Mudança de código que melhora desempenho",
+      "Mudanças que não afetam o significado do código (espaço em branco, formatação, ponto e vírgula ausente, etc)",
+    "type.desc.refactor": "Mudanças que não corrigem bug nem adicionam funcionalidade",
+    "type.desc.perf": "Mudanças que melhoram desempenho",
     "type.desc.test": "Adicionar testes ausentes ou corrigir testes existentes",
     "type.desc.build": "Mudanças que afetam o sistema de build ou dependências externas",
     "type.desc.ci": "Mudanças na configuração e scripts de CI",
@@ -155,7 +157,7 @@ const dicts: Record<Lang, Dict> = {
     "rules.typeLower": "type deve ser minúsculo",
     "rules.scopeRequired": "scope é obrigatório",
     "rules.scopeInvalid": "scope inválido: {scope}",
-    "rules.scopePattern": "scope deve conter apenas a-z, 0-9, hífen e espaço",
+    "rules.scopePattern": "scope deve conter apenas letras (acentos permitidos), números, hífen, ponto e espaço",
     "rules.scopeLower": "scope deve ser minúsculo",
     "rules.subjectEmpty": "subject não pode ser vazio",
     "rules.subjectTooLong": "subject excede {max} caracteres",
@@ -169,8 +171,8 @@ const dicts: Record<Lang, Dict> = {
   },
   es: {
     "cli.help":
-      "CommitZero CLI{version}\n\nComandos:\n  init\n  lint --file <path> | -m <message>\n  check\n  install-hooks\n  uninstall-hooks\n  cleanup\n  commit [-a|--add] [-p|--push]\n  pre-commit [add|remove] <comando>\n\nOpciones:\n  --help",
-    "cli.provideInput": "Proporciona --file <path> o -m <message>",
+      "CommitZero CLI{version}\n\nComandos:\n  init\n  lint --file <ruta> | -m <mensaje>\n  check\n  install-hooks\n  uninstall-hooks\n  cleanup\n  commit [-a|--add] [-p|--push] [--progress-off]\n  pre-commit [add|remove] <comando>\n\nOpciones:\n  --help",
+    "cli.provideInput": "Proporciona --file <ruta> o -m <mensaje>",
     "cli.invalid": "Commit inválido:",
     "cli.warnings": "Advertencias:",
     "cli.warning": "Advertencia: {msg}",
@@ -182,18 +184,18 @@ const dicts: Record<Lang, Dict> = {
     "cli.exampleValid": "Ejemplo válido: {example}",
     "cli.exampleSubject": "agregar funcionalidad",
     "cli.flagsOnlyWithCommit":
-      "Las opciones -a/--add y -p/--push solo son válidas con el subcomando 'commit'.",
+      "Las flags -a/--add, -p/--push y --progress-off solo son válidas con el subcomando 'commit'.",
     "cli.preCommitNone": "No hay comandos de pre-commit configurados.",
     "cli.preCommitRun": "Ejecutando pre-commit: {cmd}",
     "cli.preCommitFail": "Pre-commit falló en: {cmd}",
-    "cli.preCommitOk": "Comandos de pre-commit completados con éxito.",
-    "cli.preCommitProvideCmd": "Proporciona un comando para agregar/quitar.",
+    "cli.preCommitOk": "Comandos de pre-commit completados exitosamente.",
+    "cli.preCommitProvideCmd": "Proporcione un comando para agregar/quitar.",
     "cli.preCommitAdded": "Comando de pre-commit agregado: {cmd}",
-    "cli.preCommitRemoved": "Comando de pre-commit quitado: {cmd}",
+    "cli.preCommitRemoved": "Comando de pre-commit eliminado: {cmd}",
     "cli.preCommitAlreadyExists": "Comando ya presente: {cmd}",
     "cli.preCommitNotFound": "Comando no encontrado: {cmd}",
     "cli.preCommitJsConfigUnsupported":
-      "La edición requiere configuración JSON. Usa commitzero init para crear JSON.",
+      "La edición requiere configuración JSON. Use commitzero init para crear JSON.",
 
     "commit.select.type": "Selecciona el tipo de commit:",
     "commit.library.header": "Biblioteca: {name}",
@@ -201,29 +203,29 @@ const dicts: Record<Lang, Dict> = {
     "commit.prompt.type": "Tipo ({types}): ",
     "commit.prompt.scope": "Alcance (opcional, vacío para ninguno): ",
     "commit.prompt.subject": "Asunto (corto, imperativo): ",
-    "commit.prompt.body":
-      "Cuerpo (opcional, multi-línea no soportada; presiona Enter para omitir): ",
+    "commit.prompt.body": "Cuerpo (opcional, sin soporte para múltiples líneas; presione Enter para omitir): ",
     "commit.prompt.breaking": "¿Cambio rompedor? (y/N): ",
-    "commit.prompt.breakingDetails": "Proporciona detalles del BREAKING CHANGE (footer): ",
+    "commit.prompt.breakingDetails": "Proporcione detalles de BREAKING CHANGE (pie de página): ",
     "commit.created": "Mensaje de commit creado en .git/COMMIT_EDITMSG:\n\n{msg}",
-    "commit.committing": "Haciendo commit de los cambios...",
-    "commit.git.askAdd": "No hay archivos staged. ¿Ejecutar 'git add -A' ahora? (y/N): ",
-    "commit.git.abort": "Nada para commitear. Abortando.",
+    "commit.committing": "Realizando commit...",
+    "commit.pushing": "Haciendo push al remoto...",
+    "commit.git.askAdd": "No hay archivos en stage. ¿Ejecutar 'git add -A' ahora? (y/N): ",
+    "commit.git.abort": "Nada para commit. Abortando.",
     "commit.cancelled": "Proceso cancelado por el usuario.",
-    "commit.validation.yesNo": "Por favor, responde con 'y' (sí) o 'n' (no).",
+    "commit.validation.yesNo": "Responda con 'y' (sí) o 'n' (no).",
 
-    "type.desc.feat": "Nueva funcionalidad",
-    "type.desc.fix": "Corrección de bug",
-    "type.desc.docs": "Cambios solo de documentación",
+    "type.desc.feat": "Una nueva funcionalidad",
+    "type.desc.fix": "Una corrección de bug",
+    "type.desc.docs": "Cambios solo en documentación",
     "type.desc.style":
-      "Cambios que no afectan el significado del código (espacios, formato, punto y coma, etc)",
-    "type.desc.refactor": "Cambio de código que no corrige un bug ni agrega funcionalidad",
-    "type.desc.perf": "Cambio de código que mejora el rendimiento",
-    "type.desc.test": "Añadir pruebas faltantes o corregir pruebas existentes",
-    "type.desc.build": "Cambios que afectan el sistema de build o dependencias externas",
-    "type.desc.ci": "Cambios en la configuración y scripts de CI",
-    "type.desc.chore": "Otros cambios que no modifican archivos de código o pruebas",
-    "type.desc.revert": "Revierte un commit previo",
+      "Cambios que no afectan el significado del código (espacios, formato, punto y coma faltante, etc)",
+    "type.desc.refactor": "Cambios rompedoras están permitidos.",
+    "type.desc.perf": "Cambios rompedoras están permitidos.",
+    "type.desc.test": "Cambios rompedoras están permitidos.",
+    "type.desc.build": "Cambios rompedoras están permitidos.",
+    "type.desc.ci": "Cambios rompedoras están permitidos.",
+    "type.desc.chore": "Cambios rompedoras están permitidos.",
+    "type.desc.revert": "Reverte um commit previo",
 
     "init.exists": "commitzero.config.json ya existe, nada que hacer.",
     "init.created": "Archivo commitzero.config.json creado con valores por defecto.",
@@ -238,7 +240,7 @@ const dicts: Record<Lang, Dict> = {
     "rules.typeLower": "type debe estar en minúsculas",
     "rules.scopeRequired": "scope es obligatorio",
     "rules.scopeInvalid": "scope inválido: {scope}",
-    "rules.scopePattern": "scope debe contener solo a-z, 0-9, guion y espacio",
+    "rules.scopePattern": "scope debe contener solo letras (acentos permitidos), números, guion, punto y espacio",
     "rules.scopeLower": "scope debe estar en minúsculas",
     "rules.subjectEmpty": "subject no puede estar vacío",
     "rules.subjectTooLong": "subject excede {max} caracteres",
@@ -253,12 +255,12 @@ const dicts: Record<Lang, Dict> = {
 };
 
 export function t(lang: Lang, key: string, params?: Record<string, string | number>): string {
-  const l = lang in dicts ? lang : DEFAULT_LANG;
-  let s = dicts[l][key] || key;
+  const l = (dicts as Record<string, Dict>)[lang] ? lang : DEFAULT_LANG;
+  let s = dicts[l as Lang][key] || key;
   if (params) {
-    for (const [k, v] of Object.entries(params)) {
-      s = s.replace(new RegExp(`\\{${k}\\}`, "g"), String(v));
-    }
+    s = s.replace(/\{(\w+)\}/g, (_, k) => String(params[k] ?? ""));
   }
   return s;
 }
+
+export { dicts };

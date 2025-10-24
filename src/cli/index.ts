@@ -49,7 +49,7 @@ async function main() {
 
   const cmd = args[0];
 
-  if (cmd === "-a" || cmd === "--add" || cmd === "-p" || cmd === "--push") {
+  if (cmd === "-a" || cmd === "--add" || cmd === "-p" || cmd === "--push" || cmd === "--progress-off") {
     console.error(c.red(t(lang, "cli.flagsOnlyWithCommit")));
     printHelp(lang);
     exit(2);
@@ -162,11 +162,21 @@ async function main() {
   }
 
   if (cmd === "commit") {
-    const cfg = { ...defaultOptions, ...userConfig, language: lang };
+    const cfg = { ...defaultOptions, ...userConfig, language: lang } as any;
 
     const autoAdd = args.includes("-a") || args.includes("--add");
     const autoPush = args.includes("-p") || args.includes("--push");
-    const code = await interactiveCommit(lang, { ...cfg, autoAdd, autoPush });
+    const progressOff = args.includes("--progress-off");
+    const nestedPushProgress = (userConfig as any)?.commitZero?.pushProgress;
+    const pushProgressCfg =
+      typeof (userConfig as any).pushProgress === "boolean"
+        ? (userConfig as any).pushProgress
+        : typeof nestedPushProgress === "boolean"
+        ? nestedPushProgress
+        : true;
+    const pushProgress = progressOff ? false : pushProgressCfg;
+
+    const code = await interactiveCommit(lang, { ...cfg, autoAdd, autoPush, pushProgress });
     exit(code);
     return;
   }
