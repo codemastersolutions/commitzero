@@ -157,7 +157,7 @@ commitzero cleanup
 - Orden de detección:
   - `language` en `commitzero.config.json`
   - Variable de entorno `COMMITZERO_LANG` (`en`, `pt`, `es`)
-  - Locale del SO (`LANG`), mapeando `pt_*` → `pt`, `es_*` → `es`, otros → `en`.
+  - Locale del SO (`LANG`), mapeando `pt_BR*` → `pt`, `es_*` → `es`, otros → `en`.
 - Ejemplo de override por repositorio:
 
 ```
