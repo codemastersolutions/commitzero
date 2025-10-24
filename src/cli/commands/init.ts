@@ -1,20 +1,42 @@
-import { writeFileSync, existsSync } from "node:fs";
-import * as readline from "node:readline";
+import { existsSync, writeFileSync } from "node:fs";
 import { stdin as input, stdout as output } from "node:process";
-import { t, DEFAULT_LANG } from "../../i18n/index.js";
+import * as readline from "node:readline";
+import { DEFAULT_LANG, t } from "../../i18n/index.js";
 import { c } from "../colors";
 
-function ask(rl: readline.Interface, q: string): Promise<string> {
+function askWithValidation(
+  rl: readline.Interface,
+  q: string,
+  validator?: (answer: string) => boolean | string
+): Promise<string> {
   return new Promise((resolve, reject) => {
     const onSigint = () => {
       rl.removeListener("SIGINT", onSigint);
       reject(new Error("cancelled"));
     };
-    rl.once("SIGINT", onSigint);
-    rl.question(q, (answer: string) => {
-      rl.removeListener("SIGINT", onSigint);
-      resolve(answer.trim());
-    });
+
+    const askQuestion = () => {
+      rl.once("SIGINT", onSigint);
+      rl.question(q, (answer: string) => {
+        rl.removeListener("SIGINT", onSigint);
+        const trimmedAnswer = answer.trim();
+
+        if (validator) {
+          const validationResult = validator(trimmedAnswer);
+          if (validationResult !== true) {
+            const errorMessage =
+              typeof validationResult === "string" ? validationResult : "Invalid input";
+            console.log(c.red(errorMessage));
+            askQuestion(); // Repetir a pergunta
+            return;
+          }
+        }
+
+        resolve(trimmedAnswer);
+      });
+    };
+
+    askQuestion();
   });
 }
 
@@ -30,14 +52,34 @@ export async function initConfig(lang: import("../../i18n").Lang = DEFAULT_LANG)
     let rl: readline.Interface | null = null;
     try {
       rl = readline.createInterface({ input, output });
-      const ans = await ask(rl, c.cyan(t(lang, "init.askOverwrite")));
+
+      // Validador para respostas y/N
+      const yesNoValidator = (answer: string): boolean | string => {
+        const trimmed = answer.trim().toLowerCase();
+        if (
+          trimmed === "" ||
+          trimmed === "n" ||
+          trimmed === "no" ||
+          trimmed === "y" ||
+          trimmed === "yes"
+        ) {
+          return true;
+        }
+        return t(lang, "commit.validation.yesNo") || "Please answer with 'y' or 'n'";
+      };
+
+      const ans = await askWithValidation(rl, c.cyan(t(lang, "init.askOverwrite")), yesNoValidator);
       const yes = /^y(es)?$/i.test(ans);
       if (!yes) {
         console.log(c.yellow(t(lang, "init.cancelled")));
         return;
       }
       console.log(c.yellow(t(lang, "init.willOverwrite")));
-      const confirm = await ask(rl, c.cyan(t(lang, "init.confirmOverwrite")));
+      const confirm = await askWithValidation(
+        rl,
+        c.cyan(t(lang, "init.confirmOverwrite")),
+        yesNoValidator
+      );
       const confirmed = /^y(es)?$/i.test(confirm);
       if (!confirmed) {
         console.log(c.yellow(t(lang, "init.cancelled")));

@@ -30,45 +30,52 @@ graph TD
 
 ## 2. Descrição das Tecnologias
 
-- Frontend: HTML5 + CSS3 + Vanilla JavaScript ES6+ + Vite
-- Styling: Tailwind CSS v3 + Custom CSS
-- Build Tool: Vite v4 para bundling e otimização
-- Hosting: GitHub Pages (site estático)
-- APIs Externas: npm Registry API, GitHub API v4
+* Frontend: HTML5 + CSS3 + Vanilla JavaScript ES6+ + Vite
+
+* Styling: Tailwind CSS v3 + Custom CSS
+
+* Build Tool: Vite v4 para bundling e otimização
+
+* Hosting: GitHub Pages (site estático)
+
+* APIs Externas: npm Registry API, GitHub API v4
 
 ## 3. Definições de Rotas
 
-| Rota | Propósito |
-|------|-----------|
-| / | Página inicial com visão geral da biblioteca |
-| /installation | Guia de instalação e configuração inicial |
-| /configuration | Documentação detalhada de configuração |
-| /usage | Instruções de uso do CLI e comandos |
-| /api-reference | Referência técnica da API |
-| /examples | Exemplos práticos e casos de uso |
-| /contributing | Guia para contribuidores |
-| /faq | Perguntas frequentes e troubleshooting |
-| /changelog | Histórico de versões e mudanças |
-| /pt-br/* | Versões em português de todas as páginas |
-| /es/* | Versões em espanhol de todas as páginas |
+| Rota           | Propósito                                    |
+| -------------- | -------------------------------------------- |
+| /              | Página inicial com visão geral da biblioteca |
+| /installation  | Guia de instalação e configuração inicial    |
+| /configuration | Documentação detalhada de configuração       |
+| /usage         | Instruções de uso do CLI e comandos          |
+| /api-reference | Referência técnica da API                    |
+| /examples      | Exemplos práticos e casos de uso             |
+| /contributing  | Guia para contribuidores                     |
+| /faq           | Perguntas frequentes e troubleshooting       |
+| /changelog     | Histórico de versões e mudanças              |
+| /pt-br/\*      | Versões em português de todas as páginas     |
+| /es/\*         | Versões em espanhol de todas as páginas      |
 
 ## 4. Definições da API
 
 ### 4.1 APIs Externas
 
 **npm Registry API**
+
 ```
 GET https://registry.npmjs.org/@codemastersolutions/commitzero
 ```
 
 Resposta:
-| Nome do Parâmetro | Tipo do Parâmetro | Descrição |
-|-------------------|-------------------|-----------|
-| version | string | Versão mais recente publicada |
-| downloads | object | Estatísticas de download |
-| license | string | Tipo de licença |
+
+| Nome do Parâmetro | Tipo do Parâmetro | Descrição                     |
+| ----------------- | ----------------- | ----------------------------- |
+| version           | string            | Versão mais recente publicada |
+| downloads         | object            | Estatísticas de download      |
+| license           | string            | Tipo de licença               |
 
 Exemplo:
+
 ```json
 {
   "name": "@codemastersolutions/commitzero",
@@ -79,16 +86,18 @@ Exemplo:
 ```
 
 **GitHub API**
+
 ```
 GET https://api.github.com/repos/codemastersolutions/commitzero
 ```
 
 Resposta:
-| Nome do Parâmetro | Tipo do Parâmetro | Descrição |
-|-------------------|-------------------|-----------|
-| stargazers_count | number | Número de stars no repositório |
-| forks_count | number | Número de forks |
-| open_issues_count | number | Issues abertas |
+
+| Nome do Parâmetro   | Tipo do Parâmetro | Descrição                      |
+| ------------------- | ----------------- | ------------------------------ |
+| stargazers\_count   | number            | Número de stars no repositório |
+| forks\_count        | number            | Número de forks                |
+| open\_issues\_count | number            | Issues abertas                 |
 
 ## 5. Arquitetura do Servidor
 
@@ -148,6 +157,7 @@ erDiagram
 ### 6.2 Linguagem de Definição de Dados
 
 **Estrutura de Configuração do Site**
+
 ```javascript
 // site.config.js
 const siteConfig = {
@@ -183,6 +193,7 @@ const siteConfig = {
 ```
 
 **Estrutura de Conteúdo das Páginas**
+
 ```javascript
 // content/pages/installation.js
 export const installationPage = {
@@ -212,6 +223,7 @@ export const installationPage = {
 ```
 
 **Search Index Structure**
+
 ```javascript
 // search/index.js
 const searchIndex = [
@@ -231,3 +243,4 @@ const searchIndex = [
   }
 ];
 ```
+

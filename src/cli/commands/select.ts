@@ -57,18 +57,20 @@ function renderItems(items: Item[], selected: number, maxVisible?: number): numb
   const total = items.length;
   let start = 0;
   let end = total;
-  if (typeof maxVisible === "number" && maxVisible > 0 && total > maxVisible) {
+  
+  // Only apply pagination if we have a reasonable maxVisible value
+  if (typeof maxVisible === "number" && maxVisible > 0 && total > maxVisible && maxVisible < total) {
     const half = Math.floor(maxVisible / 2);
     start = Math.min(Math.max(selected - half, 0), total - maxVisible);
     end = start + maxVisible;
   }
+  
   for (let i = start; i < end; i++) {
     const it = items[i];
     const pointer = i === selected ? c.cyan("❯") : " ";
     const baseLabel = `${it.label ?? it.value}`.padEnd(maxLabelLen + 1, " ");
     const label = i === selected ? c.bold(baseLabel) : baseLabel;
     const desc = it.description ? c.dim(it.description) : "";
-    clearLine();
     process.stdout.write(`${pointer} ${label}${desc ? "  " + desc : ""}\n`);
     lines++;
   }
@@ -92,6 +94,32 @@ export async function select(prompt: string, items: Item[], header?: string): Pr
     }
     let selected = 0;
     let cleaned = false;
+    
+    const onData = (data: Buffer) => {
+      const key = data.toString();
+      if (key === "\x03") {
+        // Ctrl+C
+        cleanup();
+        process.exit(0);
+      } else if (key === "\r" || key === "\n") {
+        // Enter
+        cleanup();
+        resolve(items[selected].value);
+      } else if (key === "\x1b[A" || key === "k") {
+        // Up arrow or k
+        selected = selected > 0 ? selected - 1 : items.length - 1;
+        restoreCursor();
+        clearDown();
+        renderItems(items, selected, maxVisible);
+      } else if (key === "\x1b[B" || key === "j") {
+        // Down arrow or j
+        selected = selected < items.length - 1 ? selected + 1 : 0;
+        restoreCursor();
+        clearDown();
+        renderItems(items, selected, maxVisible);
+      }
+    };
+
     stdin.setRawMode?.(true);
     stdin.resume();
     stdin.on("data", onData);
@@ -126,12 +154,23 @@ export async function select(prompt: string, items: Item[], header?: string): Pr
     renderedLines = overhead + renderItems(items, selected, maxVisible);
 
     const onResize = () => {
-      // Recalculate visible items based on new terminal height
       recomputeMaxVisible();
-      // Redraw from the prompt downwards; header and prompt stay static
-      restoreCursor();
-      clearDown();
-      renderedLines = overhead + renderItems(items, selected, maxVisible);
+      // Clear the entire screen and redraw everything to avoid duplication
+      if (useAlt) {
+        clearScreen();
+        cursorHome();
+        if (header) {
+          process.stdout.write(c.green(c.bold(header)) + "\n");
+          process.stdout.write("\n");
+        }
+        renderPrompt(prompt);
+        saveCursor();
+        renderItems(items, selected, maxVisible);
+      } else {
+        restoreCursor();
+        clearDown();
+        renderItems(items, selected, maxVisible);
+      }
     };
     // Listen for dynamic terminal resize events
     try {
@@ -168,46 +207,6 @@ export async function select(prompt: string, items: Item[], header?: string): Pr
       try {
         showCursor();
       } catch {}
-    }
-
-    function onData(buf: Buffer) {
-      const s = buf.toString("utf8");
-      if (s === "\x1b[A") {
-        selected = (selected - 1 + items.length) % items.length;
-        restoreCursor();
-        clearDown();
-        renderedLines = overhead + renderItems(items, selected, maxVisible);
-        return;
-      }
-      if (s === "\x1b[B") {
-        selected = (selected + 1) % items.length;
-        restoreCursor();
-        clearDown();
-        renderedLines = overhead + renderItems(items, selected, maxVisible);
-        return;
-      }
-      if (s === "\r" || s === "\n") {
-        cleanup();
-        return resolve(items[selected].value);
-      }
-      if (s === "\x03") {
-        cleanup();
-        return reject(new Error("cancelled"));
-      }
-      if (s === "j") {
-        selected = (selected + 1) % items.length;
-        restoreCursor();
-        clearDown();
-        renderedLines = overhead + renderItems(items, selected, maxVisible);
-        return;
-      }
-      if (s === "k") {
-        selected = (selected - 1 + items.length) % items.length;
-        restoreCursor();
-        clearDown();
-        renderedLines = overhead + renderItems(items, selected, maxVisible);
-        return;
-      }
     }
   });
 }
