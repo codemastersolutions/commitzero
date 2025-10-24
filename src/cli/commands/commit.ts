@@ -628,19 +628,53 @@ export async function interactiveCommit(
       if (commitOut) process.stdout.write(commitOut);
 
       if (cfg?.autoPush) {
+        const stopPushSpinner = showSpinner(t(lang, "commit.pushing") || "Pushing to remote...");
         try {
-          const stopPushSpinner = showSpinner(t(lang, "commit.pushing") || "Pushing to remote...");
           const pushOut = execFileSync("git", ["push"], {
             stdio: ["ignore", "pipe", "pipe"],
             encoding: "utf8",
           });
           stopPushSpinner();
           if (pushOut) process.stdout.write(pushOut);
-        } catch (err: unknown) {
-          const errOut = err && err instanceof Error ? err.message : "";
-          if (errOut) process.stderr.write(errOut);
-          console.error(c.red(String(err)));
-          return 1;
+        } catch {
+          stopPushSpinner();
+          // Attempt to set upstream if missing and push again
+          try {
+            const branch = execFileSync("git", ["rev-parse", "--abbrev-ref", "HEAD"], {
+              stdio: ["ignore", "pipe", "ignore"],
+              encoding: "utf8",
+            })
+              .toString()
+              .trim();
+            let remote = "origin";
+            try {
+              const remotes = execFileSync("git", ["remote"], {
+                stdio: ["ignore", "pipe", "ignore"],
+                encoding: "utf8",
+              })
+                .toString()
+                .trim()
+                .split("\n")
+                .filter(Boolean);
+              if (remotes.length > 0) remote = remotes[0];
+            } catch {}
+            if (!branch || branch === "HEAD") {
+              console.error(c.red("Current branch is detached; cannot push."));
+              return 1;
+            }
+            const stopUpSpinner = showSpinner("Setting upstream and pushing...");
+            const pushUpOut = execFileSync("git", ["push", "-u", remote, branch], {
+              stdio: ["ignore", "pipe", "pipe"],
+              encoding: "utf8",
+            });
+            stopUpSpinner();
+            if (pushUpOut) process.stdout.write(pushUpOut);
+          } catch (err2: unknown) {
+            const errOut = err2 && err2 instanceof Error ? err2.message : "";
+            if (errOut) process.stderr.write(errOut);
+            console.error(c.red(String(err2)));
+            return 1;
+          }
         }
       }
       return 0;
