@@ -27,7 +27,11 @@
     "preuninstall": "node ./scripts/cleanup-shim.js || true",
     "uninstall": "node ./scripts/cleanup-shim.js || true",
     "postuninstall": "node ./scripts/cleanup-shim.js || true",
-    "commitzero": "commitzero"
+    "commitzero": "commitzero",
+    "commitzero:install": "npm exec commitzero install-hooks",
+    "commitzero:uninstall": "npm exec commitzero uninstall-hooks",
+    "commit": "npm exec commitzero commit",
+    "commit:push": "npm exec commitzero commit --push"
   },
   "exports": {
     ".": {
@@ -54,6 +58,7 @@
     "CHANGELOG.md"
   ],
   "devDependencies": {
+    "@codemastersolutions/commitzero": "^0.0.24",
     "@eslint/js": "^9.37.0",
     "@types/node": "^24.7.2",
     "c8": "^10.1.3",
