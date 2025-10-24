@@ -59,51 +59,36 @@ function askWithCharacterCount(
 
     if (ctx?.answers && ctx.index < ctx.answers.length) {
       const answer = ctx.answers[ctx.index++];
+      if (answer === "__SIGINT__") {
+        return reject(new Error("SIGINT"));
+      }
       resolve(answer);
       return;
     }
 
     if (ctx?.raw) {
+      if (ctx.raw.includes("__SIGINT__")) {
+        return reject(new Error("SIGINT"));
+      }
       resolve(ctx.raw);
       return;
     }
 
     let currentInput = "";
 
-    // Verificar se estamos em um ambiente interativo
-    const isInteractive = !!process.stdin.isTTY && !process.env.NODE_TEST;
+    // Verificar se devemos forçar modo não-interativo (CI/testes)
+    const forceNonInteractive =
+      process.env.COMMITSKIP_INPUT_PROMPT === "1" ||
+      process.env.CI === "true" ||
+      process.env.NODE_TEST === "1";
+    const isInteractive = !!process.stdin.isTTY && !forceNonInteractive;
 
     if (!isInteractive) {
-      // Fallback para o comportamento original em ambientes não interativos
-      const prompt = () => {
-        rl.setPrompt(promptWithCount(currentInput) + " ");
-        rl.prompt();
-      };
-
-      const onLine = (input: string) => {
-        if (maxLength && input.length > maxLength) {
-          console.log(
-            c.red(`Entrada excede o limite de ${maxLength} caracteres. Tente novamente.`)
-          );
-          // Não limpar o input, manter o texto digitado e continuar perguntando
-          currentInput = input;
-          prompt();
-          return;
-        }
-        rl.removeListener("line", onLine);
-        rl.removeListener("SIGINT", onSigInt);
-        resolve(input);
-      };
-
-      const onSigInt = () => {
-        rl.removeListener("line", onLine);
-        rl.removeListener("SIGINT", onSigInt);
-        reject(new Error("SIGINT"));
-      };
-
-      rl.on("line", onLine);
-      rl.on("SIGINT", onSigInt);
-      prompt();
+      // Em ambientes não interativos, não bloquear esperando entrada
+      try {
+        input.pause?.();
+      } catch {}
+      resolve("");
       return;
     }
 
@@ -233,7 +218,12 @@ function askWithValidation(
         return resolve(ans);
       }
 
-      const isInteractive = !!input.isTTY;
+      // Respeitar CI/mode não-interativo: não abrir prompt
+      const forceNonInteractive =
+        process.env.COMMITSKIP_INPUT_PROMPT === "1" ||
+        process.env.CI === "true" ||
+        process.env.NODE_TEST === "1";
+      const isInteractive = !!input.isTTY && !forceNonInteractive;
       if (!isInteractive) {
         try {
           input.pause?.();
