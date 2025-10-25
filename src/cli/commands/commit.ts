@@ -42,6 +42,15 @@ function showSpinner(message: string): () => void {
   };
 }
 
+function sanitizeInputSafe(input: string): string {
+  // Remove caracteres de controle perigosos, mas preserva caracteres Unicode válidos
+  return input
+    .replace(/[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F]/g, "") // Remove caracteres de controle
+    .replace(/[\u0000-\u001F\u007F-\u009F]/g, "") // Remove caracteres de controle Unicode
+    .replace(/[\u2028\u2029]/g, "") // Remove separadores de linha Unicode
+    .trim();
+}
+
 function askWithCharacterCount(
   rl: readline.Interface,
   q: string,
@@ -49,12 +58,12 @@ function askWithCharacterCount(
   ctx?: TestAnswerCtx
 ): Promise<string> {
   return new Promise((resolve, reject) => {
-    const promptWithCount = (currentInput: string = "") => {
+    const promptWithCount = (currentInput: string = "", cursorPos: number = 0) => {
       const count = currentInput.length;
       const countDisplay = maxLength ? ` (${count}/${maxLength})` : ` (${count})`;
       const coloredCount =
         maxLength && count > maxLength ? c.red(countDisplay) : c.gray(countDisplay);
-      return q + coloredCount;
+      return { prompt: q + coloredCount, cursorPos };
     };
 
     if (ctx?.answers && ctx.index < ctx.answers.length) {
@@ -62,7 +71,7 @@ function askWithCharacterCount(
       if (answer === "__SIGINT__") {
         return reject(new Error("SIGINT"));
       }
-      resolve(answer);
+      resolve(sanitizeInputSafe(answer));
       return;
     }
 
@@ -70,11 +79,12 @@ function askWithCharacterCount(
       if (ctx.raw.includes("__SIGINT__")) {
         return reject(new Error("SIGINT"));
       }
-      resolve(ctx.raw);
+      resolve(sanitizeInputSafe(ctx.raw));
       return;
     }
 
     let currentInput = "";
+    let cursorPosition = 0;
 
     // Verificar se devemos forçar modo não-interativo (CI/testes)
     const forceNonInteractive =
@@ -92,7 +102,7 @@ function askWithCharacterCount(
       return;
     }
 
-    // Modo interativo com contador em tempo real
+    // Modo interativo com contador em tempo real e suporte a cursor
     const stdin = process.stdin;
     const wasRaw = stdin.isRaw;
     stdin.setRawMode(true);
@@ -103,8 +113,16 @@ function askWithCharacterCount(
       // Limpar linha atual
       process.stdout.write("\r\x1b[K");
       // Mostrar prompt atualizado
-      const prompt = promptWithCount(currentInput) + " " + currentInput;
-      process.stdout.write(prompt);
+      const { prompt } = promptWithCount(currentInput, cursorPosition);
+      const beforeCursor = currentInput.slice(0, cursorPosition);
+      const afterCursor = currentInput.slice(cursorPosition);
+      
+      process.stdout.write(prompt + " " + beforeCursor + afterCursor);
+      
+      // Mover cursor para a posição correta
+      if (afterCursor.length > 0) {
+        process.stdout.write(`\x1b[${afterCursor.length}D`);
+      }
     };
 
     const showErrorAndContinue = (message: string) => {
@@ -128,7 +146,8 @@ function askWithCharacterCount(
 
       if (key === "\r" || key === "\n") {
         // Enter
-        if (maxLength && currentInput.length > maxLength) {
+        const sanitizedInput = sanitizeInputSafe(currentInput);
+        if (maxLength && sanitizedInput.length > maxLength) {
           showErrorAndContinue(
             `Entrada excede o limite de ${maxLength} caracteres. Tente novamente.`
           );
@@ -136,27 +155,74 @@ function askWithCharacterCount(
         }
         process.stdout.write("\n");
         cleanup();
-        resolve(currentInput);
+        resolve(sanitizedInput);
         return;
       }
 
       if (key === "\u007f" || key === "\b") {
         // Backspace
-        if (currentInput.length > 0) {
-          currentInput = currentInput.slice(0, -1);
+        if (cursorPosition > 0) {
+          currentInput = currentInput.slice(0, cursorPosition - 1) + currentInput.slice(cursorPosition);
+          cursorPosition--;
           updatePrompt();
         }
         return;
       }
 
-      // Ignorar caracteres de controle (exceto os já tratados)
-      if (key.charCodeAt(0) < 32) {
+      if (key === "\u001b[D") {
+        // Seta esquerda
+        if (cursorPosition > 0) {
+          cursorPosition--;
+          updatePrompt();
+        }
         return;
       }
 
-      // Adicionar caractere ao input
-      currentInput += key;
-      updatePrompt();
+      if (key === "\u001b[C") {
+        // Seta direita
+        if (cursorPosition < currentInput.length) {
+          cursorPosition++;
+          updatePrompt();
+        }
+        return;
+      }
+
+      if (key === "\u001b[H" || key === "\u001b[1~") {
+        // Home
+        cursorPosition = 0;
+        updatePrompt();
+        return;
+      }
+
+      if (key === "\u001b[F" || key === "\u001b[4~") {
+        // End
+        cursorPosition = currentInput.length;
+        updatePrompt();
+        return;
+      }
+
+      if (key === "\u001b[3~") {
+        // Delete
+        if (cursorPosition < currentInput.length) {
+          currentInput = currentInput.slice(0, cursorPosition) + currentInput.slice(cursorPosition + 1);
+          updatePrompt();
+        }
+        return;
+      }
+
+      // Ignorar sequências de escape e caracteres de controle perigosos
+      if (key.startsWith("\u001b") || key.charCodeAt(0) < 32) {
+        return;
+      }
+
+      // Filtrar caracteres potencialmente perigosos antes de adicionar
+      const safeChar = sanitizeInputSafe(key);
+      if (safeChar && safeChar.length > 0) {
+        // Inserir caractere na posição do cursor
+        currentInput = currentInput.slice(0, cursorPosition) + safeChar + currentInput.slice(cursorPosition);
+        cursorPosition += safeChar.length;
+        updatePrompt();
+      }
     };
 
     const cleanup = () => {
@@ -199,13 +265,14 @@ function askWithValidation(
           return reject(new Error("cancelled"));
         }
 
+        const sanitizedAns = sanitizeInputSafe(ans);
         // Aplicar validação se fornecida
         if (validator) {
-          const validationResult = validator(ans);
+          const validationResult = validator(sanitizedAns);
           if (validationResult !== true) {
             // Em modo de teste, aceitar resposta inválida para não quebrar testes
             if (process.env.NODE_TEST === "1") {
-              return resolve(ans);
+              return resolve(sanitizedAns);
             }
             // Em modo normal, mostrar erro e perguntar novamente
             const errorMsg =
@@ -215,7 +282,7 @@ function askWithValidation(
           }
         }
 
-        return resolve(ans);
+        return resolve(sanitizedAns);
       }
 
       // Respeitar CI/mode não-interativo: não abrir prompt
@@ -239,7 +306,7 @@ function askWithValidation(
       rl.once("SIGINT", onSigint);
       rl.question(q, (answer: string) => {
         rl.removeListener("SIGINT", onSigint);
-        const trimmedAnswer = answer.trim();
+        const trimmedAnswer = sanitizeInputSafe(answer.trim());
 
         if (process.env.NODE_TEST === "1") {
           console.log(
@@ -522,8 +589,8 @@ export async function interactiveCommit(
       const scopeValidator = (answer: string): boolean | string => {
         const s = answer.trim();
         if (s === "") return true; // escopo opcional
-        // aceita letras (Unicode, incluindo acentuação), números, hífen e espaço
-        const patternOk = /^[\p{L}\p{N}\- .]+$/u.test(s);
+        // aceita letras (Unicode, incluindo acentuação), números, hífen, espaço e caracteres especiais seguros
+        const patternOk = /^[\p{L}\p{N}\p{M}\p{P}\p{S}\- .]+$/u.test(s);
         if (!patternOk) return t(lang, "rules.scopePattern");
         if (s !== s.toLowerCase()) return t(lang, "rules.scopeLower");
         return true;

@@ -3,7 +3,7 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { argv, exit } from "node:process";
-import { loadConfig } from "../config/load";
+import { loadConfig } from "../config/load.js";
 import { parseMessage } from "../core/parser";
 import { defaultOptions, lintCommit } from "../core/rules";
 import { cleanupHooks } from "../hooks/cleanup";
