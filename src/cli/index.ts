@@ -3,9 +3,9 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { argv, exit } from "node:process";
-import { loadConfig } from "../config/load";
+import { loadConfig, type UserConfig } from "../config/load.js";
 import { parseMessage } from "../core/parser";
-import { defaultOptions, lintCommit } from "../core/rules";
+import { defaultOptions, lintCommit, type LintOptions } from "../core/rules";
 import { cleanupHooks } from "../hooks/cleanup";
 import { installHooks, uninstallHooks } from "../hooks/install";
 import { DEFAULT_LANG, t } from "../i18n/index.js";
@@ -49,7 +49,13 @@ async function main() {
 
   const cmd = args[0];
 
-  if (cmd === "-a" || cmd === "--add" || cmd === "-p" || cmd === "--push") {
+  if (
+    cmd === "-a" ||
+    cmd === "--add" ||
+    cmd === "-p" ||
+    cmd === "--push" ||
+    cmd === "--progress-off"
+  ) {
     console.error(c.red(t(lang, "cli.flagsOnlyWithCommit")));
     printHelp(lang);
     exit(2);
@@ -162,13 +168,25 @@ async function main() {
   }
 
   if (cmd === "commit") {
-    const cfg = { ...defaultOptions, ...userConfig, language: lang };
+    const cfg: LintOptions & { autoAdd?: boolean; autoPush?: boolean; pushProgress?: boolean } = { 
+      ...defaultOptions, 
+      ...userConfig, 
+      language: lang 
+    };
 
     const autoAdd = args.includes("-a") || args.includes("--add");
     const autoPush = args.includes("-p") || args.includes("--push");
-    const code = await interactiveCommit(lang, { ...cfg, autoAdd, autoPush });
+    const progressOff = args.includes("--progress-off");
+    const nestedPushProgress = (userConfig as UserConfig & { commitZero?: { pushProgress?: boolean } })?.commitZero?.pushProgress;
+    const pushProgressCfg =
+      typeof (userConfig as UserConfig & { pushProgress?: boolean }).pushProgress === "boolean"
+        ? (userConfig as UserConfig & { pushProgress?: boolean }).pushProgress
+        : typeof nestedPushProgress === "boolean"
+          ? nestedPushProgress
+          : true;
+    const pushProgress = progressOff ? false : pushProgressCfg;
+    const code = await interactiveCommit(lang, { ...cfg, autoAdd, autoPush, pushProgress });
     exit(code);
-    return;
   }
 
   if (cmd === "pre-commit") {
