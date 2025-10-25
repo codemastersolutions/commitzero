@@ -488,96 +488,6 @@ export async function interactiveCommit(
       const autoAdd = cfg?.autoAdd === true;
       const autoPush = cfg?.autoPush === true;
 
-      // Se flag --add foi informada, sempre adicionar arquivos modificados
-      if (autoAdd && hasUnstagedChanges()) {
-        try {
-          const out = execFileSync("git", ["add", "-A"], {
-            stdio: ["ignore", "pipe", "pipe"],
-            encoding: "utf8",
-          });
-          if (out) process.stdout.write(out);
-          console.log(c.green(t(lang, "commit.git.added") || "Files added to staging area."));
-        } catch (err: unknown) {
-          const errOut = err && err instanceof Error ? err.message : "";
-          if (errOut) process.stderr.write(errOut);
-          console.error(c.red(String(err)));
-          return false;
-        }
-        return hasStaged();
-      }
-
-      // Se flag --push foi informada mas --add não, verificar se há arquivos modificados
-      if (autoPush && hasUnstagedChanges() && !autoAdd) {
-        const skipAddPrompt =
-          process.env.COMMITSKIP_ADD_PROMPT === "1" ||
-          process.env.CI === "true" ||
-          process.env.NODE_TEST === "1";
-        
-        if (skipAddPrompt) {
-          console.error(c.red(t(lang, "commit.git.abort")));
-          return false;
-        }
-
-        const isInteractive = !!input.isTTY && !!output.isTTY;
-        if (!isInteractive) {
-          console.error(c.red(t(lang, "commit.git.abort")));
-          return false;
-        }
-
-        rl = readline.createInterface({ input, output });
-        let addAns: string;
-        try {
-          const yesNoValidator = (answer: string): boolean | string => {
-            const trimmed = answer.trim().toLowerCase();
-            if (
-              trimmed === "" ||
-              trimmed === "n" ||
-              trimmed === "no" ||
-              trimmed === "y" ||
-              trimmed === "yes"
-            ) {
-              return true;
-            }
-            return t(lang, "commit.validation.yesNo") || "Please answer with 'y' or 'n'";
-          };
-
-          addAns = await askWithValidation(
-            rl,
-            c.cyan(t(lang, "commit.git.askAdd")),
-            yesNoValidator,
-            testCtx,
-            false,
-            lang
-          );
-        } catch {
-          console.log(c.yellow(t(lang, "commit.cancelled")));
-          return false;
-        } finally {
-          rl.close();
-          try {
-            input.pause?.();
-          } catch {}
-          rl = null;
-        }
-
-        const wantsAdd = /^y(es)?$/i.test(addAns);
-        if (wantsAdd) {
-          try {
-            const out = execFileSync("git", ["add", "-A"], {
-              stdio: ["ignore", "pipe", "pipe"],
-              encoding: "utf8",
-            });
-            if (out) process.stdout.write(out);
-            console.log(c.green(t(lang, "commit.git.added") || "Files added to staging area."));
-          } catch (err: unknown) {
-            const errOut = err && err instanceof Error ? err.message : "";
-            if (errOut) process.stderr.write(errOut);
-            console.error(c.red(String(err)));
-            return false;
-          }
-        }
-      }
-
       // Se não há arquivos staged e não há arquivos modificados
       if (!hasStaged() && !hasUnstagedChanges()) {
         if (process.env.NODE_TEST === "1") {
@@ -673,13 +583,103 @@ export async function interactiveCommit(
         return false;
       }
 
+      // Se flag --add foi informada, sempre adicionar arquivos modificados
+      if (autoAdd && hasUnstagedChanges()) {
+        try {
+          const out = execFileSync("git", ["add", "-A"], {
+            stdio: ["ignore", "pipe", "pipe"],
+            encoding: "utf8",
+          });
+          if (out) process.stdout.write(out);
+          console.log(c.green(t(lang, "commit.git.added") || "Files added to staging area."));
+        } catch (err: unknown) {
+          const errOut = err && err instanceof Error ? err.message : "";
+          if (errOut) process.stderr.write(errOut);
+          console.error(c.red(String(err)));
+          return false;
+        }
+        return hasStaged();
+      }
+
+      // Se flag --push foi informada mas --add não, verificar se há arquivos modificados
+      if (autoPush && hasUnstagedChanges() && !autoAdd) {
+        const skipAddPrompt =
+          process.env.COMMITSKIP_ADD_PROMPT === "1" ||
+          process.env.CI === "true" ||
+          process.env.NODE_TEST === "1";
+        
+        if (skipAddPrompt) {
+          console.error(c.red(t(lang, "commit.git.abort")));
+          return false;
+        }
+
+        const isInteractive = !!input.isTTY && !!output.isTTY;
+        if (!isInteractive) {
+          console.error(c.red(t(lang, "commit.git.abort")));
+          return false;
+        }
+
+        rl = readline.createInterface({ input, output });
+        let addAns: string;
+        try {
+          const yesNoValidator = (answer: string): boolean | string => {
+            const trimmed = answer.trim().toLowerCase();
+            if (
+              trimmed === "" ||
+              trimmed === "n" ||
+              trimmed === "no" ||
+              trimmed === "y" ||
+              trimmed === "yes"
+            ) {
+              return true;
+            }
+            return t(lang, "commit.validation.yesNo") || "Please answer with 'y' or 'n'";
+          };
+
+          addAns = await askWithValidation(
+            rl,
+            c.cyan(t(lang, "commit.git.askAdd")),
+            yesNoValidator,
+            testCtx,
+            false,
+            lang
+          );
+        } catch {
+          console.log(c.yellow(t(lang, "commit.cancelled")));
+          return false;
+        } finally {
+          rl.close();
+          try {
+            input.pause?.();
+          } catch {}
+          rl = null;
+        }
+
+        const wantsAdd = /^y(es)?$/i.test(addAns);
+        if (wantsAdd) {
+          try {
+            const out = execFileSync("git", ["add", "-A"], {
+              stdio: ["ignore", "pipe", "pipe"],
+              encoding: "utf8",
+            });
+            if (out) process.stdout.write(out);
+            console.log(c.green(t(lang, "commit.git.added") || "Files added to staging area."));
+          } catch (err: unknown) {
+            const errOut = err && err instanceof Error ? err.message : "";
+            if (errOut) process.stderr.write(errOut);
+            console.error(c.red(String(err)));
+            return false;
+          }
+        }
+      }
+
       // Se não há arquivos staged mas há arquivos modificados (e não é autoAdd)
       if (!hasStaged() && hasUnstagedChanges() && !autoAdd) {
         const skipAddPrompt =
           process.env.COMMITSKIP_ADD_PROMPT === "1" ||
           process.env.CI === "true" ||
           process.env.NODE_TEST === "1";
-        
+
         if (skipAddPrompt) {
           console.error(c.red(t(lang, "commit.git.abort")));
           return false;
