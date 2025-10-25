@@ -753,6 +753,9 @@ export async function interactiveCommit(
 
     // Verificar arquivos staged/modificados antes de iniciar o processo de commit
     const checkResult = await checkAndAskForAdd();
+    if (process.env.NODE_TEST === "1") {
+      console.log(c.yellow(`[TEST] checkResult: ${checkResult}`));
+    }
     if (checkResult === false) {
       return 1;
     }
