@@ -912,6 +912,7 @@ export async function interactiveCommit(
         isScopeRequired,
         lang
       );
+
       subject = await askWithCharacterCount(
         rl,
         c.cyan(t(lang, "commit.prompt.subject")),
