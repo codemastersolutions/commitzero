@@ -409,7 +409,7 @@ export async function interactiveCommit(
   let rl: readline.Interface | null = null;
   if (process.env.NODE_TEST === "1") {
     try {
-      const whichGit = execSync("which git", { stdio: ["ignore", "pipe", "ignore"] })
+      execSync("which git", { stdio: ["ignore", "pipe", "ignore"] })
         .toString()
         .trim();
     } catch {}
@@ -496,7 +496,7 @@ export async function interactiveCommit(
                 c.green(t(lang, "commit.git.pushed") || "Successfully pushed to remote.")
               );
               return "push_success"; // Retorna string para indicar sucesso do push
-            } catch (pushErr) {
+            } catch {
               stopPushSpinner();
               // Tentar configurar upstream se necessário
               try {
@@ -552,7 +552,7 @@ export async function interactiveCommit(
               }
             }
           }
-        } catch (err) {
+        } catch {
           // Se não conseguir verificar commits ahead, continuar com fluxo normal
         }
       }
@@ -571,7 +571,7 @@ export async function interactiveCommit(
               })
                 .toString()
                 .trim();
-            } catch (upstreamErr) {
+            } catch {
               // Se não há upstream, verificar se há commits locais
               try {
                 const localCommits = execFileSync("git", ["rev-list", "--count", "HEAD"], {
@@ -610,7 +610,7 @@ export async function interactiveCommit(
                   c.green(t(lang, "commit.git.pushed") || "Successfully pushed to remote.")
                 );
                 return "push_success"; // Retorna string para indicar sucesso do push
-              } catch (pushErr) {
+              } catch {
                 stopPushSpinner();
                 // Tentar configurar upstream se necessário
                 try {
@@ -666,7 +666,7 @@ export async function interactiveCommit(
                 }
               }
             }
-          } catch (err) {
+          } catch {
             // Se não conseguir verificar commits ahead, continuar com fluxo normal
           }
         }
