@@ -580,14 +580,26 @@ export async function interactiveCommit(
 
       // Se não há arquivos staged e não há arquivos modificados
       if (!hasStaged() && !hasUnstagedChanges()) {
+        if (process.env.NODE_TEST === "1") {
+          console.log(c.yellow(`[TEST] No staged and no unstaged changes. autoPush=${autoPush}`));
+        }
+        
         // Se flag --push foi informada e há commits para push, executar push direto
         if (autoPush) {
+          if (process.env.NODE_TEST === "1") {
+            console.log(c.yellow(`[TEST] Checking for commits ahead...`));
+          }
+          
           try {
             // Verificar se há commits para push
             const ahead = execFileSync("git", ["rev-list", "--count", "@{u}..HEAD"], {
               stdio: ["ignore", "pipe", "ignore"],
               encoding: "utf8",
             }).toString().trim();
+            
+            if (process.env.NODE_TEST === "1") {
+              console.log(c.yellow(`[TEST] Commits ahead: ${ahead}`));
+            }
             
             if (parseInt(ahead) > 0) {
               console.log(c.cyan(t(lang, "commit.git.nothingToCommit") || "Nothing to commit, but there are unpushed commits."));
@@ -646,11 +658,17 @@ export async function interactiveCommit(
                 }
               }
             }
-          } catch {
+          } catch (err) {
+            if (process.env.NODE_TEST === "1") {
+              console.log(c.yellow(`[TEST] Error checking commits ahead: ${err}`));
+            }
             // Se não conseguir verificar commits ahead, continuar com fluxo normal
           }
         }
         
+        if (process.env.NODE_TEST === "1") {
+          console.log(c.yellow(`[TEST] Aborting - no files to commit and no push needed`));
+        }
         console.error(c.red(t(lang, "commit.git.abort")));
         return false;
       }
