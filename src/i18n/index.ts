@@ -49,6 +49,9 @@ const dicts: Record<Lang, Dict> = {
     "commit.git.abort": "Nothing to commit. Aborting.",
     "commit.cancelled": "Process cancelled by user.",
     "commit.validation.yesNo": "Please answer with 'y' (yes) or 'n' (no).",
+    "commit.validation.required": "This field is required. Please provide a value.",
+    "commit.validation.scopeRequired": "Scope is required by configuration. Please provide a scope.",
+    "commit.validation.subjectRequired": "Subject is required. Please provide a subject.",
 
     "type.desc.feat": "A new feature",
     "type.desc.fix": "A bug fix",
@@ -131,6 +134,9 @@ const dicts: Record<Lang, Dict> = {
     "commit.git.abort": "Nada para commit. Abortando.",
     "commit.cancelled": "Processo cancelado pelo usuário.",
     "commit.validation.yesNo": "Responda com 'y' (sim) ou 'n' (não).",
+    "commit.validation.required": "Este campo é obrigatório. Por favor, forneça um valor.",
+    "commit.validation.scopeRequired": "Escopo é obrigatório pela configuração. Por favor, forneça um escopo.",
+    "commit.validation.subjectRequired": "Assunto é obrigatório. Por favor, forneça um assunto.",
 
     "type.desc.feat": "Um novo recurso",
     "type.desc.fix": "Correção de bug",
@@ -213,6 +219,9 @@ const dicts: Record<Lang, Dict> = {
     "commit.git.abort": "Nada para commit. Abortando.",
     "commit.cancelled": "Proceso cancelado por el usuario.",
     "commit.validation.yesNo": "Responda con 'y' (sí) o 'n' (no).",
+    "commit.validation.required": "Este campo es obligatorio. Por favor, proporcione un valor.",
+    "commit.validation.scopeRequired": "El alcance es obligatorio por configuración. Por favor, proporcione un alcance.",
+    "commit.validation.subjectRequired": "El asunto es obligatorio. Por favor, proporcione un asunto.",
 
     "type.desc.feat": "Una nueva funcionalidad",
     "type.desc.fix": "Una corrección de bug",

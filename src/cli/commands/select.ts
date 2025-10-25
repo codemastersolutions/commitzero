@@ -57,14 +57,19 @@ function renderItems(items: Item[], selected: number, maxVisible?: number): numb
   const total = items.length;
   let start = 0;
   let end = total;
-  
+
   // Only apply pagination if we have a reasonable maxVisible value
-  if (typeof maxVisible === "number" && maxVisible > 0 && total > maxVisible && maxVisible < total) {
+  if (
+    typeof maxVisible === "number" &&
+    maxVisible > 0 &&
+    total > maxVisible &&
+    maxVisible < total
+  ) {
     const half = Math.floor(maxVisible / 2);
     start = Math.min(Math.max(selected - half, 0), total - maxVisible);
     end = start + maxVisible;
   }
-  
+
   for (let i = start; i < end; i++) {
     const it = items[i];
     const pointer = i === selected ? c.cyan("❯") : " ";
@@ -78,7 +83,7 @@ function renderItems(items: Item[], selected: number, maxVisible?: number): numb
 }
 
 export async function select(prompt: string, items: Item[], header?: string): Promise<string> {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     const stdin = process.stdin;
     const stdout = process.stdout;
     const isTTY = !!stdin.isTTY;
@@ -94,7 +99,7 @@ export async function select(prompt: string, items: Item[], header?: string): Pr
     }
     let selected = 0;
     let cleaned = false;
-    
+
     const onData = (data: Buffer) => {
       const key = data.toString();
       if (key === "\x03") {
