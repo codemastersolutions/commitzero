@@ -499,6 +499,7 @@ export async function interactiveCommit(
         version = pkg2?.version ? ` v${pkg2.version}` : "";
       } catch {
         const envVersion = process.env.npm_package_version;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         if (envVersion) version = ` v${envVersion}`;
       }
     }

@@ -52,10 +52,10 @@
     "uninstall": "node ./scripts/cleanup-shim.js || true",
     "postuninstall": "node ./scripts/cleanup-shim.js || true",
     "commitzero": "commitzero",
-    "commitzero:install": "npm exec commitzero install-hooks",
-    "commitzero:uninstall": "npm exec commitzero uninstall-hooks",
-    "commit": "npm exec commitzero commit",
-    "commit:push": "npm exec commitzero commit --push"
+    "commitzero:install": "npm run commitzero install-hooks",
+    "commitzero:uninstall": "npm run commitzero uninstall-hooks",
+    "commit": "npm run commitzero commit",
+    "commit:push": "npm run commitzero commit --push"
   },
   "exports": {
     ".": {
