@@ -44,12 +44,14 @@ function showSpinner(message: string): () => void {
 }
 
 function sanitizeInputSafe(input: string): string {
-  // Remove caracteres de controle perigosos, mas preserva caracteres Unicode válidos
+  // Remove caracteres de controle perigosos, mas preserva caracteres Unicode válidos e espaços
   return input
     .replace(/[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F]/g, "") // Remove caracteres de controle
-    .replace(/[\u0000-\u001F\u007F-\u009F]/g, "") // Remove caracteres de controle Unicode
-    .replace(/[\u2028\u2029]/g, "") // Remove separadores de linha Unicode
-    .trim();
+    .replace(/[\u0000-\u001F\u007F-\u009F]/g, (match) => {
+      // Preserva espaços (0x20) e tabs (0x09) se necessário
+      return match === '\x20' ? match : '';
+    }) // Remove caracteres de controle Unicode mas preserva espaços
+    .replace(/[\u2028\u2029]/g, ""); // Remove separadores de linha Unicode
 }
 
 function askWithCharacterCount(
