@@ -746,9 +746,6 @@ export async function interactiveCommit(
             console.error(c.red(String(err)));
             return false;
           }
-        } else {
-          console.error(c.red(t(lang, "commit.git.abort")));
-          return false;
         }
       }
 
