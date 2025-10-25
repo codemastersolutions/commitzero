@@ -476,7 +476,7 @@ export async function interactiveCommit(
     }
 
     // Função para verificar e perguntar sobre git add -A
-    async function checkAndAskForAdd(): Promise<boolean> {
+    async function checkAndAskForAdd(): Promise<boolean | "push_success"> {
       if (process.env.NODE_TEST === "1") {
         console.log(
           c.yellow(
@@ -485,123 +485,262 @@ export async function interactiveCommit(
         );
       }
 
-      // Só perguntar se não há arquivos staged OU se há arquivos modificados não staged
-      if (!hasStaged() || hasUnstagedChanges()) {
-        const autoAdd = cfg?.autoAdd === true;
-        if (autoAdd) {
-          if (hasUnstagedChanges()) {
-            try {
-              const out = execFileSync("git", ["add", "-A"], {
-                stdio: ["ignore", "pipe", "pipe"],
-                encoding: "utf8",
-              });
-              if (out) process.stdout.write(out);
-            } catch (err: unknown) {
-              const errOut = err && err instanceof Error ? err.message : "";
-              if (errOut) process.stderr.write(errOut);
-              console.error(c.red(String(err)));
-              return false;
-            }
-            if (!hasStaged()) {
-              console.error(c.red(t(lang, "commit.git.abort")));
-              return false;
-            }
-          } else {
-            // Caso não tenha arquivos modificados, prosseguir com o commit mesmo assim
-            // para permitir commits vazios ou apenas com arquivos já staged
-          }
-        } else {
-          // Para comando commit -p, verificar se há arquivos staged primeiro
-          const autoPush = cfg?.autoPush === true;
-          if (autoPush && !hasUnstagedChanges()) {
-            // Se é commit -p e não há arquivos modificados, prosseguir com o commit
-            // (pode haver arquivos já staged)
-          } else if (hasUnstagedChanges()) {
-            const skipAddPrompt =
-              process.env.COMMITSKIP_ADD_PROMPT === "1" ||
-              process.env.CI === "true" ||
-              process.env.NODE_TEST === "1";
-            if (skipAddPrompt) {
-              console.error(c.red(t(lang, "commit.git.abort")));
-              return false;
-            }
+      const autoAdd = cfg?.autoAdd === true;
+      const autoPush = cfg?.autoPush === true;
 
-            const isInteractive = !!input.isTTY && !!output.isTTY;
-            if (!isInteractive) {
-              console.error(c.red(t(lang, "commit.git.abort")));
-              return false;
-            }
-            rl = readline.createInterface({ input, output });
-            let addAns: string;
-            try {
-              // Validador para respostas y/N
-              const yesNoValidator = (answer: string): boolean | string => {
-                const trimmed = answer.trim().toLowerCase();
-                if (
-                  trimmed === "" ||
-                  trimmed === "n" ||
-                  trimmed === "no" ||
-                  trimmed === "y" ||
-                  trimmed === "yes"
-                ) {
-                  return true;
-                }
-                return t(lang, "commit.validation.yesNo") || "Please answer with 'y' or 'n'";
-              };
+      // Se flag --add foi informada, sempre adicionar arquivos modificados
+      if (autoAdd && hasUnstagedChanges()) {
+        try {
+          const out = execFileSync("git", ["add", "-A"], {
+            stdio: ["ignore", "pipe", "pipe"],
+            encoding: "utf8",
+          });
+          if (out) process.stdout.write(out);
+          console.log(c.green(t(lang, "commit.git.added") || "Files added to staging area."));
+        } catch (err: unknown) {
+          const errOut = err && err instanceof Error ? err.message : "";
+          if (errOut) process.stderr.write(errOut);
+          console.error(c.red(String(err)));
+          return false;
+        }
+        return hasStaged();
+      }
 
-              addAns = await askWithValidation(
-                rl,
-                c.cyan(t(lang, "commit.git.askAdd")),
-                yesNoValidator,
-                testCtx,
-                false,
-                lang
-              );
-            } catch {
-              console.log(c.yellow(t(lang, "commit.cancelled")));
-              return false;
-            } finally {
-              rl.close();
-              try {
-                input.pause?.();
-              } catch {}
-              rl = null;
+      // Se flag --push foi informada mas --add não, verificar se há arquivos modificados
+      if (autoPush && hasUnstagedChanges() && !autoAdd) {
+        const skipAddPrompt =
+          process.env.COMMITSKIP_ADD_PROMPT === "1" ||
+          process.env.CI === "true" ||
+          process.env.NODE_TEST === "1";
+        
+        if (skipAddPrompt) {
+          console.error(c.red(t(lang, "commit.git.abort")));
+          return false;
+        }
+
+        const isInteractive = !!input.isTTY && !!output.isTTY;
+        if (!isInteractive) {
+          console.error(c.red(t(lang, "commit.git.abort")));
+          return false;
+        }
+
+        rl = readline.createInterface({ input, output });
+        let addAns: string;
+        try {
+          const yesNoValidator = (answer: string): boolean | string => {
+            const trimmed = answer.trim().toLowerCase();
+            if (
+              trimmed === "" ||
+              trimmed === "n" ||
+              trimmed === "no" ||
+              trimmed === "y" ||
+              trimmed === "yes"
+            ) {
+              return true;
             }
-            const wantsAdd = /^y(es)?$/i.test(addAns);
-            if (wantsAdd) {
-              try {
-                const out = execFileSync("git", ["add", "-A"], {
-                  stdio: ["ignore", "pipe", "pipe"],
-                  encoding: "utf8",
-                });
-                if (out) process.stdout.write(out);
-              } catch (err: unknown) {
-                const errOut = err && err instanceof Error ? err.message : "";
-                if (errOut) process.stderr.write(errOut);
-                console.error(c.red(String(err)));
-                return false;
-              }
-              if (!hasStaged()) {
-                console.error(c.red(t(lang, "commit.git.abort")));
-                return false;
-              }
-            } else {
-              console.error(c.red(t(lang, "commit.git.abort")));
-              return false;
-            }
-          } else if (!hasStaged()) {
-            // Se não há arquivos staged e não há arquivos modificados, abortar
-            console.error(c.red(t(lang, "commit.git.abort")));
+            return t(lang, "commit.validation.yesNo") || "Please answer with 'y' or 'n'";
+          };
+
+          addAns = await askWithValidation(
+            rl,
+            c.cyan(t(lang, "commit.git.askAdd")),
+            yesNoValidator,
+            testCtx,
+            false,
+            lang
+          );
+        } catch {
+          console.log(c.yellow(t(lang, "commit.cancelled")));
+          return false;
+        } finally {
+          rl.close();
+          try {
+            input.pause?.();
+          } catch {}
+          rl = null;
+        }
+
+        const wantsAdd = /^y(es)?$/i.test(addAns);
+        if (wantsAdd) {
+          try {
+            const out = execFileSync("git", ["add", "-A"], {
+              stdio: ["ignore", "pipe", "pipe"],
+              encoding: "utf8",
+            });
+            if (out) process.stdout.write(out);
+            console.log(c.green(t(lang, "commit.git.added") || "Files added to staging area."));
+          } catch (err: unknown) {
+            const errOut = err && err instanceof Error ? err.message : "";
+            if (errOut) process.stderr.write(errOut);
+            console.error(c.red(String(err)));
             return false;
           }
         }
       }
-      return true;
+
+      // Se não há arquivos staged e não há arquivos modificados
+      if (!hasStaged() && !hasUnstagedChanges()) {
+        // Se flag --push foi informada e há commits para push, executar push direto
+        if (autoPush) {
+          try {
+            // Verificar se há commits para push
+            const ahead = execFileSync("git", ["rev-list", "--count", "@{u}..HEAD"], {
+              stdio: ["ignore", "pipe", "ignore"],
+              encoding: "utf8",
+            }).toString().trim();
+            
+            if (parseInt(ahead) > 0) {
+              console.log(c.cyan(t(lang, "commit.git.nothingToCommit") || "Nothing to commit, but there are unpushed commits."));
+              
+              const stopPushSpinner = showSpinner(t(lang, "commit.pushing") || "Pushing to remote...");
+              try {
+                const useProgress = cfg?.pushProgress !== false;
+                const pushArgs = ["push", ...(useProgress ? ["--progress"] : [])];
+                const pushOut = execFileSync("git", pushArgs, {
+                  stdio: ["ignore", "pipe", useProgress ? "inherit" : "pipe"],
+                  encoding: "utf8",
+                });
+                stopPushSpinner();
+                if (pushOut) process.stdout.write(pushOut);
+                console.log(c.green(t(lang, "commit.git.pushed") || "Successfully pushed to remote."));
+                return "push_success"; // Retorna string para indicar sucesso do push
+              } catch (pushErr) {
+                stopPushSpinner();
+                // Tentar configurar upstream se necessário
+                try {
+                  const branch = execFileSync("git", ["rev-parse", "--abbrev-ref", "HEAD"], {
+                    stdio: ["ignore", "pipe", "ignore"],
+                    encoding: "utf8",
+                  }).toString().trim();
+                  
+                  let remote = "origin";
+                  try {
+                    const remotes = execFileSync("git", ["remote"], {
+                      stdio: ["ignore", "pipe", "ignore"],
+                      encoding: "utf8",
+                    }).toString().trim().split("\n").filter(Boolean);
+                    if (remotes.length > 0) remote = remotes[0];
+                  } catch {}
+                  
+                  if (!branch || branch === "HEAD") {
+                    console.error(c.red("Current branch is detached; cannot push."));
+                    return false;
+                  }
+                  
+                  const stopUpSpinner = showSpinner("Setting upstream and pushing...");
+                  const useProgress = cfg?.pushProgress !== false;
+                  const pushUpArgs = ["push", ...(useProgress ? ["--progress"] : []), "-u", remote, branch];
+                  const pushUpOut = execFileSync("git", pushUpArgs, {
+                    stdio: ["ignore", "pipe", useProgress ? "inherit" : "pipe"],
+                    encoding: "utf8",
+                  });
+                  stopUpSpinner();
+                  if (pushUpOut) process.stdout.write(pushUpOut);
+                  console.log(c.green(t(lang, "commit.git.pushed") || "Successfully pushed to remote."));
+                  return "push_success";
+                } catch (err2: unknown) {
+                  const errOut = err2 && err2 instanceof Error ? err2.message : "";
+                  if (errOut) process.stderr.write(errOut);
+                  console.error(c.red(String(err2)));
+                  return false;
+                }
+              }
+            }
+          } catch {
+            // Se não conseguir verificar commits ahead, continuar com fluxo normal
+          }
+        }
+        
+        console.error(c.red(t(lang, "commit.git.abort")));
+        return false;
+      }
+
+      // Se não há arquivos staged mas há arquivos modificados (e não é autoAdd)
+      if (!hasStaged() && hasUnstagedChanges() && !autoAdd) {
+        const skipAddPrompt =
+          process.env.COMMITSKIP_ADD_PROMPT === "1" ||
+          process.env.CI === "true" ||
+          process.env.NODE_TEST === "1";
+        
+        if (skipAddPrompt) {
+          console.error(c.red(t(lang, "commit.git.abort")));
+          return false;
+        }
+
+        const isInteractive = !!input.isTTY && !!output.isTTY;
+        if (!isInteractive) {
+          console.error(c.red(t(lang, "commit.git.abort")));
+          return false;
+        }
+
+        rl = readline.createInterface({ input, output });
+        let addAns: string;
+        try {
+          const yesNoValidator = (answer: string): boolean | string => {
+            const trimmed = answer.trim().toLowerCase();
+            if (
+              trimmed === "" ||
+              trimmed === "n" ||
+              trimmed === "no" ||
+              trimmed === "y" ||
+              trimmed === "yes"
+            ) {
+              return true;
+            }
+            return t(lang, "commit.validation.yesNo") || "Please answer with 'y' or 'n'";
+          };
+
+          addAns = await askWithValidation(
+            rl,
+            c.cyan(t(lang, "commit.git.askAdd")),
+            yesNoValidator,
+            testCtx,
+            false,
+            lang
+          );
+        } catch {
+          console.log(c.yellow(t(lang, "commit.cancelled")));
+          return false;
+        } finally {
+          rl.close();
+          try {
+            input.pause?.();
+          } catch {}
+          rl = null;
+        }
+
+        const wantsAdd = /^y(es)?$/i.test(addAns);
+        if (wantsAdd) {
+          try {
+            const out = execFileSync("git", ["add", "-A"], {
+              stdio: ["ignore", "pipe", "pipe"],
+              encoding: "utf8",
+            });
+            if (out) process.stdout.write(out);
+            console.log(c.green(t(lang, "commit.git.added") || "Files added to staging area."));
+          } catch (err: unknown) {
+            const errOut = err && err instanceof Error ? err.message : "";
+            if (errOut) process.stderr.write(errOut);
+            console.error(c.red(String(err)));
+            return false;
+          }
+        } else {
+          console.error(c.red(t(lang, "commit.git.abort")));
+          return false;
+        }
+      }
+
+      return hasStaged();
     }
 
     // Verificar arquivos staged/modificados antes de iniciar o processo de commit
-    if (!(await checkAndAskForAdd())) {
+    const checkResult = await checkAndAskForAdd();
+    if (checkResult === false) {
       return 1;
+    }
+    // Se checkResult for "push_success", significa que apenas o push foi executado
+    if (checkResult === "push_success") {
+      return 0;
     }
     const types = cfg?.types && cfg.types.length ? cfg.types : defaultOptions.types;
     const typeItems = types.map((ty) => ({
