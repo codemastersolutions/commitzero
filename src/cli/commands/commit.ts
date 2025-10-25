@@ -488,6 +488,10 @@ export async function interactiveCommit(
       const autoAdd = cfg?.autoAdd === true;
       const autoPush = cfg?.autoPush === true;
 
+      if (process.env.NODE_TEST === "1") {
+        console.log(c.yellow(`[TEST] autoAdd=${autoAdd} autoPush=${autoPush}`));
+      }
+
       // Se não há arquivos staged e não há arquivos modificados
       if (!hasStaged() && !hasUnstagedChanges()) {
         if (process.env.NODE_TEST === "1") {
