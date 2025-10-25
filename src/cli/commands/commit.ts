@@ -1,3 +1,4 @@
+/* eslint-disable no-control-regex */
 import { execFileSync, execSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -116,9 +117,9 @@ function askWithCharacterCount(
       const { prompt } = promptWithCount(currentInput, cursorPosition);
       const beforeCursor = currentInput.slice(0, cursorPosition);
       const afterCursor = currentInput.slice(cursorPosition);
-      
+
       process.stdout.write(prompt + " " + beforeCursor + afterCursor);
-      
+
       // Mover cursor para a posição correta
       if (afterCursor.length > 0) {
         process.stdout.write(`\x1b[${afterCursor.length}D`);
@@ -162,7 +163,8 @@ function askWithCharacterCount(
       if (key === "\u007f" || key === "\b") {
         // Backspace
         if (cursorPosition > 0) {
-          currentInput = currentInput.slice(0, cursorPosition - 1) + currentInput.slice(cursorPosition);
+          currentInput =
+            currentInput.slice(0, cursorPosition - 1) + currentInput.slice(cursorPosition);
           cursorPosition--;
           updatePrompt();
         }
@@ -204,7 +206,8 @@ function askWithCharacterCount(
       if (key === "\u001b[3~") {
         // Delete
         if (cursorPosition < currentInput.length) {
-          currentInput = currentInput.slice(0, cursorPosition) + currentInput.slice(cursorPosition + 1);
+          currentInput =
+            currentInput.slice(0, cursorPosition) + currentInput.slice(cursorPosition + 1);
           updatePrompt();
         }
         return;
@@ -219,7 +222,8 @@ function askWithCharacterCount(
       const safeChar = sanitizeInputSafe(key);
       if (safeChar && safeChar.length > 0) {
         // Inserir caractere na posição do cursor
-        currentInput = currentInput.slice(0, cursorPosition) + safeChar + currentInput.slice(cursorPosition);
+        currentInput =
+          currentInput.slice(0, cursorPosition) + safeChar + currentInput.slice(cursorPosition);
         cursorPosition += safeChar.length;
         updatePrompt();
       }
