@@ -16,9 +16,6 @@ function initTestAnswerCtx(): TestAnswerCtx {
     const raw = process.env.COMMITZERO_TEST_ANSWERS ?? null;
     if (raw) {
       const arr = JSON.parse(raw);
-      if (process.env.NODE_TEST === "1") {
-        console.log(c.yellow(`[TEST] Loaded COMMITZERO_TEST_ANSWERS: ${raw}`));
-      }
       return { answers: Array.isArray(arr) ? arr : null, index: 0, raw };
     }
     return { answers: null, index: 0, raw: null };
@@ -49,7 +46,7 @@ function sanitizeInputSafe(input: string): string {
     .replace(/[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F]/g, "") // Remove caracteres de controle
     .replace(/[\u0000-\u001F\u007F-\u009F]/g, (match) => {
       // Preserva espaços (0x20) e tabs (0x09) se necessário
-      return match === '\x20' ? match : '';
+      return match === "\x20" ? match : "";
     }) // Remove caracteres de controle Unicode mas preserva espaços
     .replace(/[\u2028\u2029]/g, ""); // Remove separadores de linha Unicode
 }
@@ -174,7 +171,8 @@ function askWithCharacterCount(
         // Validação imediata para campos obrigatórios
         if (isRequired && (!sanitizedInput || sanitizedInput.trim().length === 0)) {
           const errorMessage = lang
-            ? t(lang, "commit.validation.required") || "Este campo é obrigatório. Por favor, forneça uma resposta."
+            ? t(lang, "commit.validation.required") ||
+              "Este campo é obrigatório. Por favor, forneça uma resposta."
             : "Este campo é obrigatório. Por favor, forneça uma resposta.";
           showErrorAndContinue(errorMessage);
           return;
@@ -286,13 +284,6 @@ function askWithValidation(
     const askQuestion = () => {
       if (ctx && ctx.answers) {
         const ans = (ctx.answers[ctx.index++] ?? "").trim();
-        if (process.env.NODE_TEST === "1") {
-          console.log(
-            c.yellow(
-              `[TEST] ask -> using test answer: "${ans}" for question: ${q.replace(/\n/g, " ")}`
-            )
-          );
-        }
         if (ans === "__SIGINT__") {
           return reject(new Error("cancelled"));
         }
@@ -306,8 +297,9 @@ function askWithValidation(
             return resolve(sanitizedAns);
           }
           // Em modo normal, mostrar erro e perguntar novamente
-          const errorMessage = lang 
-            ? t(lang, "commit.validation.required") || "Este campo é obrigatório. Por favor, forneça uma resposta."
+          const errorMessage = lang
+            ? t(lang, "commit.validation.required") ||
+              "Este campo é obrigatório. Por favor, forneça uma resposta."
             : "Este campo é obrigatório. Por favor, forneça uma resposta.";
           console.log(c.red(errorMessage));
           return askQuestion();
@@ -355,18 +347,11 @@ function askWithValidation(
         rl.removeListener("SIGINT", onSigint);
         const trimmedAnswer = sanitizeInputSafe(answer.trim());
 
-        if (process.env.NODE_TEST === "1") {
-          console.log(
-            c.yellow(
-              `[TEST] ask -> readline answer: "${trimmedAnswer}" for question: ${q.replace(/\n/g, " ")}`
-            )
-          );
-        }
-
         // Validação imediata para campos obrigatórios
         if (isRequired && (!trimmedAnswer || trimmedAnswer.trim().length === 0)) {
-          const errorMessage = lang 
-            ? t(lang, "commit.validation.required") || "Este campo é obrigatório. Por favor, forneça uma resposta."
+          const errorMessage = lang
+            ? t(lang, "commit.validation.required") ||
+              "Este campo é obrigatório. Por favor, forneça uma resposta."
             : "Este campo é obrigatório. Por favor, forneça uma resposta.";
           console.log(c.red(errorMessage));
           return askQuestion();
@@ -423,13 +408,10 @@ export async function interactiveCommit(
   const testCtx = initTestAnswerCtx();
   let rl: readline.Interface | null = null;
   if (process.env.NODE_TEST === "1") {
-    console.log(c.yellow(`[TEST] PATH=${process.env.PATH}`));
-    console.log(c.yellow(`[TEST] GIT_STUB_MODE=${process.env.GIT_STUB_MODE}`));
     try {
       const whichGit = execSync("which git", { stdio: ["ignore", "pipe", "ignore"] })
         .toString()
         .trim();
-      console.log(c.yellow(`[TEST] which git -> ${whichGit}`));
     } catch {}
   }
   try {
@@ -440,16 +422,8 @@ export async function interactiveCommit(
         })
           .toString()
           .trim();
-        if (process.env.NODE_TEST === "1") {
-          console.log(c.yellow(`[TEST] hasStaged -> output: "${out}"`));
-        }
         return out.length > 0;
       } catch {
-        if (process.env.NODE_TEST === "1") {
-          console.log(
-            c.yellow(`[TEST] hasStaged -> error executing git diff --cached --name-only`)
-          );
-        }
         return false;
       }
     }
@@ -461,64 +435,168 @@ export async function interactiveCommit(
         })
           .toString()
           .trim();
-        if (process.env.NODE_TEST === "1") {
-          console.log(c.yellow(`[TEST] hasUnstagedChanges -> output: "${out}"`));
-        }
         return out.length > 0;
       } catch {
-        if (process.env.NODE_TEST === "1") {
-          console.log(
-            c.yellow(`[TEST] hasUnstagedChanges -> error executing git diff --name-only`)
-          );
-        }
         return false;
       }
     }
 
     // Função para verificar e perguntar sobre git add -A
     async function checkAndAskForAdd(): Promise<boolean | "push_success"> {
-      if (process.env.NODE_TEST === "1") {
-        console.log(
-          c.yellow(
-            `[TEST] checkAndAskForAdd -> hasStaged=${hasStaged()} hasUnstagedChanges=${hasUnstagedChanges()}`
-          )
-        );
-      }
-
       const autoAdd = cfg?.autoAdd === true;
       const autoPush = cfg?.autoPush === true;
 
-      if (process.env.NODE_TEST === "1") {
-        console.log(c.yellow(`[TEST] autoAdd=${autoAdd} autoPush=${autoPush} cfg.autoAdd=${cfg?.autoAdd} cfg.autoPush=${cfg?.autoPush}`));
+      if (!hasStaged() && hasUnstagedChanges() && autoPush) {
+        try {
+          // Verificar se há commits para push
+          let ahead = "0";
+          try {
+            ahead = execFileSync("git", ["rev-list", "--count", "@{u}..HEAD"], {
+              stdio: ["ignore", "pipe", "ignore"],
+              encoding: "utf8",
+            })
+              .toString()
+              .trim();
+          } catch {
+            // Se não há upstream, verificar se há commits locais
+            try {
+              const localCommits = execFileSync("git", ["rev-list", "--count", "HEAD"], {
+                stdio: ["ignore", "pipe", "ignore"],
+                encoding: "utf8",
+              })
+                .toString()
+                .trim();
+              ahead = localCommits;
+            } catch {
+              ahead = "0";
+            }
+          }
+
+          if (parseInt(ahead) > 0) {
+            console.log(
+              c.cyan(
+                t(lang, "commit.git.nothingToCommit") ||
+                  "Nothing to commit, but there are unpushed commits."
+              )
+            );
+
+            const stopPushSpinner = showSpinner(
+              t(lang, "commit.pushing") || "Pushing to remote..."
+            );
+            try {
+              const useProgress = cfg?.pushProgress !== false;
+              const pushArgs = ["push", ...(useProgress ? ["--progress"] : [])];
+              const pushOut = execFileSync("git", pushArgs, {
+                stdio: ["ignore", "pipe", useProgress ? "inherit" : "pipe"],
+                encoding: "utf8",
+              });
+              stopPushSpinner();
+              if (pushOut) process.stdout.write(pushOut);
+              console.log(
+                c.green(t(lang, "commit.git.pushed") || "Successfully pushed to remote.")
+              );
+              return "push_success"; // Retorna string para indicar sucesso do push
+            } catch (pushErr) {
+              stopPushSpinner();
+              // Tentar configurar upstream se necessário
+              try {
+                const branch = execFileSync("git", ["rev-parse", "--abbrev-ref", "HEAD"], {
+                  stdio: ["ignore", "pipe", "ignore"],
+                  encoding: "utf8",
+                })
+                  .toString()
+                  .trim();
+
+                let remote = "origin";
+                try {
+                  const remotes = execFileSync("git", ["remote"], {
+                    stdio: ["ignore", "pipe", "ignore"],
+                    encoding: "utf8",
+                  })
+                    .toString()
+                    .trim()
+                    .split("\n")
+                    .filter(Boolean);
+                  if (remotes.length > 0) remote = remotes[0];
+                } catch {}
+
+                if (!branch || branch === "HEAD") {
+                  console.error(c.red("Current branch is detached; cannot push."));
+                  return false;
+                }
+
+                const stopUpSpinner = showSpinner("Setting upstream and pushing...");
+                const useProgress = cfg?.pushProgress !== false;
+                const pushUpArgs = [
+                  "push",
+                  ...(useProgress ? ["--progress"] : []),
+                  "-u",
+                  remote,
+                  branch,
+                ];
+                const pushUpOut = execFileSync("git", pushUpArgs, {
+                  stdio: ["ignore", "pipe", useProgress ? "inherit" : "pipe"],
+                  encoding: "utf8",
+                });
+                stopUpSpinner();
+                if (pushUpOut) process.stdout.write(pushUpOut);
+                console.log(
+                  c.green(t(lang, "commit.git.pushed") || "Successfully pushed to remote.")
+                );
+                return "push_success";
+              } catch (err2: unknown) {
+                const errOut = err2 && err2 instanceof Error ? err2.message : "";
+                if (errOut) process.stderr.write(errOut);
+                console.error(c.red(String(err2)));
+                return false;
+              }
+            }
+          }
+        } catch (err) {
+          // Se não conseguir verificar commits ahead, continuar com fluxo normal
+        }
       }
 
       // Se não há arquivos staged e não há arquivos modificados
       if (!hasStaged() && !hasUnstagedChanges()) {
-        if (process.env.NODE_TEST === "1") {
-          console.log(c.yellow(`[TEST] No staged and no unstaged changes. autoPush=${autoPush}`));
-        }
-        
         // Se flag --push foi informada e há commits para push, executar push direto
         if (autoPush) {
-          if (process.env.NODE_TEST === "1") {
-            console.log(c.yellow(`[TEST] Checking for commits ahead...`));
-          }
-          
           try {
             // Verificar se há commits para push
-            const ahead = execFileSync("git", ["rev-list", "--count", "@{u}..HEAD"], {
-              stdio: ["ignore", "pipe", "ignore"],
-              encoding: "utf8",
-            }).toString().trim();
-            
-            if (process.env.NODE_TEST === "1") {
-              console.log(c.yellow(`[TEST] Commits ahead: ${ahead}`));
+            let ahead = "0";
+            try {
+              ahead = execFileSync("git", ["rev-list", "--count", "@{u}..HEAD"], {
+                stdio: ["ignore", "pipe", "ignore"],
+                encoding: "utf8",
+              })
+                .toString()
+                .trim();
+            } catch (upstreamErr) {
+              // Se não há upstream, verificar se há commits locais
+              try {
+                const localCommits = execFileSync("git", ["rev-list", "--count", "HEAD"], {
+                  stdio: ["ignore", "pipe", "ignore"],
+                  encoding: "utf8",
+                })
+                  .toString()
+                  .trim();
+                ahead = localCommits;
+              } catch {
+                ahead = "0";
+              }
             }
-            
+
             if (parseInt(ahead) > 0) {
-              console.log(c.cyan(t(lang, "commit.git.nothingToCommit") || "Nothing to commit, but there are unpushed commits."));
-              
-              const stopPushSpinner = showSpinner(t(lang, "commit.pushing") || "Pushing to remote...");
+              console.log(
+                c.cyan(
+                  t(lang, "commit.git.nothingToCommit") ||
+                    "Nothing to commit, but there are unpushed commits."
+                )
+              );
+
+              const stopPushSpinner = showSpinner(
+                t(lang, "commit.pushing") || "Pushing to remote..."
+              );
               try {
                 const useProgress = cfg?.pushProgress !== false;
                 const pushArgs = ["push", ...(useProgress ? ["--progress"] : [])];
@@ -528,7 +606,9 @@ export async function interactiveCommit(
                 });
                 stopPushSpinner();
                 if (pushOut) process.stdout.write(pushOut);
-                console.log(c.green(t(lang, "commit.git.pushed") || "Successfully pushed to remote."));
+                console.log(
+                  c.green(t(lang, "commit.git.pushed") || "Successfully pushed to remote.")
+                );
                 return "push_success"; // Retorna string para indicar sucesso do push
               } catch (pushErr) {
                 stopPushSpinner();
@@ -537,32 +617,46 @@ export async function interactiveCommit(
                   const branch = execFileSync("git", ["rev-parse", "--abbrev-ref", "HEAD"], {
                     stdio: ["ignore", "pipe", "ignore"],
                     encoding: "utf8",
-                  }).toString().trim();
-                  
+                  })
+                    .toString()
+                    .trim();
+
                   let remote = "origin";
                   try {
                     const remotes = execFileSync("git", ["remote"], {
                       stdio: ["ignore", "pipe", "ignore"],
                       encoding: "utf8",
-                    }).toString().trim().split("\n").filter(Boolean);
+                    })
+                      .toString()
+                      .trim()
+                      .split("\n")
+                      .filter(Boolean);
                     if (remotes.length > 0) remote = remotes[0];
                   } catch {}
-                  
+
                   if (!branch || branch === "HEAD") {
                     console.error(c.red("Current branch is detached; cannot push."));
                     return false;
                   }
-                  
+
                   const stopUpSpinner = showSpinner("Setting upstream and pushing...");
                   const useProgress = cfg?.pushProgress !== false;
-                  const pushUpArgs = ["push", ...(useProgress ? ["--progress"] : []), "-u", remote, branch];
+                  const pushUpArgs = [
+                    "push",
+                    ...(useProgress ? ["--progress"] : []),
+                    "-u",
+                    remote,
+                    branch,
+                  ];
                   const pushUpOut = execFileSync("git", pushUpArgs, {
                     stdio: ["ignore", "pipe", useProgress ? "inherit" : "pipe"],
                     encoding: "utf8",
                   });
                   stopUpSpinner();
                   if (pushUpOut) process.stdout.write(pushUpOut);
-                  console.log(c.green(t(lang, "commit.git.pushed") || "Successfully pushed to remote."));
+                  console.log(
+                    c.green(t(lang, "commit.git.pushed") || "Successfully pushed to remote.")
+                  );
                   return "push_success";
                 } catch (err2: unknown) {
                   const errOut = err2 && err2 instanceof Error ? err2.message : "";
@@ -573,16 +667,10 @@ export async function interactiveCommit(
               }
             }
           } catch (err) {
-            if (process.env.NODE_TEST === "1") {
-              console.log(c.yellow(`[TEST] Error checking commits ahead: ${err}`));
-            }
             // Se não conseguir verificar commits ahead, continuar com fluxo normal
           }
         }
-        
-        if (process.env.NODE_TEST === "1") {
-          console.log(c.yellow(`[TEST] Aborting - no files to commit and no push needed`));
-        }
+
         console.error(c.red(t(lang, "commit.git.abort")));
         return false;
       }
@@ -602,7 +690,7 @@ export async function interactiveCommit(
           console.error(c.red(String(err)));
           return false;
         }
-        return hasStaged();
+        return hasStaged() || autoPush;
       }
 
       // Se flag --push foi informada mas --add não, verificar se há arquivos modificados
@@ -611,10 +699,11 @@ export async function interactiveCommit(
           process.env.COMMITSKIP_ADD_PROMPT === "1" ||
           process.env.CI === "true" ||
           process.env.NODE_TEST === "1";
-        
+
         if (skipAddPrompt) {
-          console.error(c.red(t(lang, "commit.git.abort")));
-          return false;
+          // Quando autoPush está ativo, não abortar - apenas continuar sem adicionar arquivos
+          // pois o objetivo é fazer push dos commits existentes
+          return hasStaged() || autoPush;
         }
 
         const isInteractive = !!input.isTTY && !!output.isTTY;
@@ -678,7 +767,7 @@ export async function interactiveCommit(
       }
 
       // Se não há arquivos staged mas há arquivos modificados (e não é autoAdd)
-      if (!hasStaged() && hasUnstagedChanges() && !autoAdd) {
+      if (!hasStaged() && hasUnstagedChanges() && !autoAdd && !autoPush) {
         const skipAddPrompt =
           process.env.COMMITSKIP_ADD_PROMPT === "1" ||
           process.env.CI === "true" ||
@@ -753,13 +842,7 @@ export async function interactiveCommit(
     }
 
     // Verificar arquivos staged/modificados antes de iniciar o processo de commit
-    if (process.env.NODE_TEST === "1") {
-      console.log(c.yellow(`[TEST] About to call checkAndAskForAdd`));
-    }
     const checkResult = await checkAndAskForAdd();
-    if (process.env.NODE_TEST === "1") {
-      console.log(c.yellow(`[TEST] checkResult: ${checkResult}`));
-    }
     if (checkResult === false) {
       return 1;
     }
@@ -916,13 +999,6 @@ export async function interactiveCommit(
       language: lang,
     });
     if (!result.valid) {
-      if (process.env.NODE_TEST === "1") {
-        console.log(
-          c.yellow(
-            `[TEST] lint invalid. Subject="${commit.subject}", Scope="${commit.scope ?? ""}", Body length=${commit.body?.length ?? 0}`
-          )
-        );
-      }
       console.error(
         c.red(t(lang, "cli.invalid")) + "\n" + result.errors.map((e) => c.red(`- ${e}`)).join("\n")
       );
