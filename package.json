@@ -7,6 +7,30 @@
   "engines": {
     "node": ">=16"
   },
+  "homepage": "https://github.com/codemastersolutions/commitzero#readme",
+  "bugs": {
+    "url": "https://github.com/codemastersolutions/commitzero/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/codemastersolutions/commitzero.git"
+  },
+  "keywords": [
+    "conventional commits",
+    "conventional",
+    "commits",
+    "commitizen",
+    "commitlint",
+    "git hooks",
+    "cli",
+    "codemastersolutions",
+    "codemaster",
+    "commitzero",
+    "code",
+    "codemaster solutions",
+    "codemaster solucoes",
+    "solucoes"
+  ],
   "scripts": {
     "build:esm": "tsc -p tsconfig.esm.json",
     "build:cjs": "tsc -p tsconfig.cjs.json",
