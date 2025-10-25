@@ -14,12 +14,20 @@ Conventional Commits validator with a friendly CLI, Git hooks, and an internal r
 ## Installation
 
 - Local project (dev dependency):
-- `npm i -D @codemastersolutions/commitzero`
-- `pnpm add -D @codemastersolutions/commitzero`
-- `yarn add -D @codemastersolutions/commitzero`
+
+```sh
+npm i -D @codemastersolutions/commitzero
+# or
+pnpm add -D @codemastersolutions/commitzero
+# or
+yarn add -D @codemastersolutions/commitzero
+```
 
 - One-off run (no install):
-  - `npx commitzero --help`
+
+```sh
+npx commitzero --help
+```
 
 ## CLI Usage
 
@@ -37,11 +45,49 @@ Conventional Commits validator with a friendly CLI, Git hooks, and an internal r
   - Auto stage changes: `commitzero commit -a` or `commitzero commit --add`
   - Commit and push: `commitzero commit -p` or `commitzero commit --push`
 
+## Special notes
+
+### If command `commitzero` return not found, use a package manager to run it. This is because it is a development dependency and some package managers do not install the executable globally.
+
+```sh
+# npm
+npm run commitzero --help
+# or
+# pnpm
+pnpm commitzero --help
+# or
+# yarn
+yarn commitzero --help
+```
+
+### If you're using Windows
+
+- The hooks must be runnable in Git Bash.
+- Pre-commit commands must be runnable in Git Bash.
+
 ### Hook installation example
 
-```
+#### Initialize a git repository
+
+```sh
 git init
+```
+
+#### Install commit hooks
+
+```sh
 commitzero install-hooks
+# or
+npm run commitzero install-hooks
+# or
+pnpm commitzero install-hooks
+# or
+yarn commitzero install-hooks
+```
+
+#### Check commit hooks
+
+```sh
 ls -l .git/hooks/commit-msg
 # Should be executable and include the CommitZero-managed block
 ```
@@ -50,15 +96,28 @@ ls -l .git/hooks/commit-msg
 
 - Prefer `--file` for messages with body/footers:
 
-```
+```sh
 printf "feat(core): change\n\nBody text\n\nRefs: 123" > tmp/commit.txt
+
 commitzero lint --file tmp/commit.txt
+# or
+npm run commitzero lint --file tmp/commit.txt
+# or
+pnpm commitzero lint --file tmp/commit.txt
+# or
+yarn commitzero lint --file tmp/commit.txt
 ```
 
 - Alternative with `$'...'` to expand `\n` in the shell:
 
-```
+```sh
 commitzero lint -m $'feat(core): change\n\nBody text\n\nRefs: 123'
+# or
+npm run commitzero lint -m $'feat(core): change\n\nBody text\n\nRefs: 123'
+# or
+pnpm commitzero lint -m $'feat(core): change\n\nBody text\n\nRefs: 123'
+# or
+yarn commitzero lint -m $'feat(core): change\n\nBody text\n\nRefs: 123'
 ```
 
 ## Core rules
@@ -77,11 +136,20 @@ commitzero lint -m $'feat(core): change\n\nBody text\n\nRefs: 123'
 
 ### Full example
 
-```
+```json
 {
   "types": [
-    "feat", "fix", "docs", "style", "refactor", "perf",
-    "test", "build", "ci", "chore", "revert"
+    "feat",
+    "fix",
+    "docs",
+    "style",
+    "refactor",
+    "perf",
+    "test",
+    "build",
+    "ci",
+    "chore",
+    "revert"
   ],
   "scopes": [],
   "requireScope": false,
@@ -109,9 +177,28 @@ commitzero lint -m $'feat(core): change\n\nBody text\n\nRefs: 123'
 ### Commands that populate `preCommitCommands`
 
 - Add a command:
-  - `commitzero pre-commit add "npm run lint"`
+
+```sh
+commitzero pre-commit add "npm run lint"
+# or
+npm run commitzero pre-commit add "npm run lint"
+# or
+pnpm commitzero pre-commit add "npm run lint"
+# or
+yarn commitzero pre-commit add "npm run lint"
+```
+
 - Remove a command:
-  - `commitzero pre-commit remove "npm run lint"`
+
+```sh
+commitzero pre-commit remove "npm run lint"
+# or
+npm run commitzero pre-commit remove "npm run lint"
+# or
+pnpm commitzero pre-commit remove "npm run lint"
+# or
+yarn commitzero pre-commit remove "npm run lint"
+```
 
 Tip: keep `preCommitCommands` as an empty array if you don't need pre-commit checks.
 
@@ -147,8 +234,14 @@ Tip: keep `preCommitCommands` as an empty array if you don't need pre-commit che
   - `.git/hooks/prepare-commit-msg`
 - Or run manually:
 
-```
+```sh
 commitzero cleanup
+# or
+npm run commitzero cleanup
+# or
+pnpm commitzero cleanup
+# or
+yarn commitzero cleanup
 ```
 
 ### Hook language
@@ -160,6 +253,6 @@ commitzero cleanup
   - OS locale (`LANG`), mapping `pt_BR*` → `pt`, `es_*` → `es`, others → `en`.
 - Example override per repo:
 
-```
+```sh
 export COMMITZERO_LANG=es
 ```
