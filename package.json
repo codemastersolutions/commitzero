@@ -55,7 +55,7 @@
     "commitzero:install": "npm run commitzero install-hooks",
     "commitzero:uninstall": "npm run commitzero uninstall-hooks",
     "commit": "npm run commitzero commit",
-    "commit:push": "npm run commitzero commit --push"
+    "commit:push": "npm run commitzero -- commit --push"
   },
   "exports": {
     ".": {
