@@ -124,10 +124,21 @@ function askWithCharacterCount(
     stdin.setEncoding("utf8");
 
     const updatePrompt = () => {
-      // Limpar linha atual
-      process.stdout.write("\r\x1b[K");
-      // Mostrar prompt atualizado
+      // Calcular quantas linhas o prompt atual pode ocupar
       const { prompt } = promptWithCount(currentInput, cursorPosition);
+      const fullLine = prompt + " " + currentInput;
+      const terminalWidth = process.stdout.columns || 80;
+      const linesUsed = Math.ceil(fullLine.length / terminalWidth);
+      
+      // Limpar todas as linhas que podem ter sido usadas
+      for (let i = 0; i < linesUsed; i++) {
+        if (i > 0) {
+          process.stdout.write("\x1b[1A"); // Mover cursor uma linha para cima
+        }
+        process.stdout.write("\r\x1b[K"); // Limpar linha atual
+      }
+      
+      // Mostrar prompt atualizado
       const beforeCursor = currentInput.slice(0, cursorPosition);
       const afterCursor = currentInput.slice(cursorPosition);
 
@@ -140,6 +151,20 @@ function askWithCharacterCount(
     };
 
     const showErrorAndContinue = (message: string) => {
+      // Calcular quantas linhas o prompt atual pode ocupar
+      const { prompt } = promptWithCount(currentInput, cursorPosition);
+      const fullLine = prompt + " " + currentInput;
+      const terminalWidth = process.stdout.columns || 80;
+      const linesUsed = Math.ceil(fullLine.length / terminalWidth);
+      
+      // Limpar todas as linhas que podem ter sido usadas
+      for (let i = 0; i < linesUsed; i++) {
+        if (i > 0) {
+          process.stdout.write("\x1b[1A"); // Mover cursor uma linha para cima
+        }
+        process.stdout.write("\r\x1b[K"); // Limpar linha atual
+      }
+      
       // Mover cursor para nova linha e mostrar erro
       process.stdout.write("\n");
       console.log(c.red(message));
