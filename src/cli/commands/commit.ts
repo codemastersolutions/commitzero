@@ -908,7 +908,13 @@ export async function interactiveCommit(
       return 130;
     }
 
+    // Adicionar linha em branco antes da confirmação do commit type
+    console.log();
     console.log(c.green(c.bold(t(lang, "commit.chosen.type", { type }))));
+    
+    // Adicionar linha em branco antes da pergunta do Scope
+    console.log();
+    
     rl = readline.createInterface({ input, output });
     let scope: string;
     let subject: string;
@@ -937,6 +943,9 @@ export async function interactiveCommit(
         isScopeRequired,
         lang
       );
+
+      // Adicionar linha em branco antes da pergunta do Subject
+      console.log();
 
       subject = await askWithCharacterCount(
         rl,
