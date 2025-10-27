@@ -1,6 +1,6 @@
 {
   "name": "@codemastersolutions/commitzero",
-  "version": "0.0.27",
+  "version": "0.0.30",
   "description": "Conventional Commits validator with a friendly CLI, Git hooks, and an internal rule engine — zero runtime dependencies.",
   "license": "MIT",
   "type": "module",
@@ -82,7 +82,7 @@
     "CHANGELOG.md"
   ],
   "devDependencies": {
-    "@codemastersolutions/commitzero": "^0.0.27",
+    "@codemastersolutions/commitzero": "^0.0.30",
     "@eslint/js": "^9.37.0",
     "@types/node": "^24.7.2",
     "c8": "^10.1.3",

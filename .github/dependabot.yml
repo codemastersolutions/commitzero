@@ -1,11 +1,16 @@
 version: 2
 updates:
+  # Configuração para NPM - apenas atualizações de segurança
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 10
+    # Desabilita atualizações de versão, mantendo apenas atualizações de segurança
+    open-pull-requests-limit: 0
+  # Configuração para GitHub Actions - apenas atualizações de segurança  
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+    # Desabilita atualizações de versão, mantendo apenas atualizações de segurança
+    open-pull-requests-limit: 0
