@@ -224,19 +224,46 @@
                                     <div>
                                         <h4 class="font-medium text-gray-900 dark:text-white mb-2">Install Hooks</h4>
                                         <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
-                                            <code class="text-sm text-gray-800 dark:text-gray-200">commitzero install</code>
+                                            <code class="text-sm text-gray-800 dark:text-gray-200">commitzero install-hooks</code>
                                         </div>
                                     </div>
                                     <div>
                                         <h4 class="font-medium text-gray-900 dark:text-white mb-2">Uninstall Hooks</h4>
                                         <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
-                                            <code class="text-sm text-gray-800 dark:text-gray-200">commitzero uninstall</code>
+                                            <code class="text-sm text-gray-800 dark:text-gray-200">commitzero uninstall-hooks</code>
                                         </div>
+                                    </div>
+                                </div>
+                                <div class="mt-4">
+                                    <h4 class="font-medium text-gray-900 dark:text-white mb-2">Check Hooks Status</h4>
+                                    <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
+                                        <code class="text-sm text-gray-800 dark:text-gray-200">commitzero hooks-status</code>
                                     </div>
                                 </div>
                                 <p class="text-gray-600 dark:text-gray-300 mt-3">
                                     Manually install or remove Git hooks for commit validation.
                                 </p>
+                                <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mt-3">
+                                    <p class="text-sm text-blue-800 dark:text-blue-200"><strong>Note:</strong> uninstall-hooks and cleanup do not remove <code>package.json</code> scripts; the scripts <code>commitzero</code>, <code>commitzero:install</code>, and <code>commitzero:uninstall</code> are preserved. Installation respects Git's <code>core.hooksPath</code> and defaults to <code>.git/hooks</code> when not set; the CLI <code>commitzero install-hooks</code> configures <code>core.hooksPath</code> to <code>.commitzero/hooks</code> so hooks are version controlled.</p>
+                                </div>
+                                <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mt-3">
+                                    <h4 class="font-medium text-yellow-900 dark:text-yellow-100 mb-2">Manual cleanup if <code>postuninstall</code> is not run</h4>
+                                    <p class="text-sm text-yellow-800 dark:text-yellow-200 mb-2">If your package manager does not run <code>postuninstall</code>, remove lines between <code># CommitZero managed block START</code> and <code># CommitZero managed block END</code> in:</p>
+                                    <ul class="text-sm text-yellow-800 dark:text-yellow-200 list-disc list-inside">
+                                        <li><code>.commitzero/hooks/commit-msg</code> or <code>.git/hooks/commit-msg</code></li>
+                                        <li><code>.commitzero/hooks/prepare-commit-msg</code> or <code>.git/hooks/prepare-commit-msg</code></li>
+                                    </ul>
+                                    <p class="text-sm text-yellow-800 dark:text-yellow-200 mt-2">Or run manually:</p>
+                                    <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 mt-2">
+                                        <pre class="text-sm text-gray-800 dark:text-gray-200"><code>commitzero cleanup
+# or
+npm run commitzero cleanup
+# or
+pnpm commitzero cleanup
+# or
+yarn commitzero cleanup</code></pre>
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- Help -->
@@ -419,6 +446,72 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- Navigation & Display Options -->
+                            <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                    <h4 class="font-medium text-gray-900 dark:text-white mb-3">Navigation Tips</h4>
+                                    <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-300">
+                                        <li class="flex items-start">
+                                            <svg class="w-4 h-4 text-blue-500 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4l-4 4m0 0l4 4m-4-4h8"/></svg>
+                                            Use Up/Down arrows to move, Enter to confirm
+                                        </li>
+                                        <li class="flex items-start">
+                                            <svg class="w-4 h-4 text-blue-500 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                            Press Esc to cancel and return to the shell
+                                        </li>
+                                        <li class="flex items-start">
+                                            <svg class="w-4 h-4 text-blue-500 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14"/></svg>
+                                            Type to filter options where supported
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                    <h4 class="font-medium text-gray-900 dark:text-white mb-3">Display & Terminal Options</h4>
+                                    <div class="space-y-3">
+                                        <div>
+                                            <p class="text-sm text-gray-600 dark:text-gray-300 mb-1">Disable progress spinner/output:</p>
+                                            <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
+                                                <code class="text-sm text-gray-800 dark:text-gray-200">commitzero commit --progress-off</code>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-600 dark:text-gray-300 mb-1">Run without alternate screen (stay on the main terminal):</p>
+                                            <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 mb-2">
+                                                <code class="text-sm text-gray-800 dark:text-gray-200">commitzero commit --no-alt-screen</code>
+                                            </div>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400">You can also set <code>NO_ALT_SCREEN=1</code> to disable it by default.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Environment Variables -->
+                    <section id="environment" class="mb-12">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Environment Variables</h2>
+                        <p class="text-gray-600 dark:text-gray-300 mb-6">Configure default behavior via environment variables. CLI flags take precedence over configuration and environment settings.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Language</h3>
+                                <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">Set UI language for prompts and messages:</p>
+                                <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 mb-2">
+                                    <code class="text-sm text-gray-800 dark:text-gray-200">export COMMITZERO_LANG=en</code>
+                                </div>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Supported values: <code>en</code>, <code>pt</code>, <code>es</code>.</p>
+                            </div>
+                            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Alternate Screen</h3>
+                                <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">Disable interactive alternate screen globally:</p>
+                                <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 mb-2">
+                                    <code class="text-sm text-gray-800 dark:text-gray-200">export NO_ALT_SCREEN=1</code>
+                                </div>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Unset or set to <code>0</code> to enable. For per-command, use <code>--no-alt-screen</code>.</p>
+                            </div>
+                        </div>
+                        <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mt-6">
+                            <p class="text-sm text-blue-800 dark:text-blue-200"><strong>Note:</strong> You can also configure defaults in <code>.commitzero.json</code>, including <code>uiAltScreen</code>. See Configuration &rarr; UI Settings.</p>
                         </div>
                     </section>
 
@@ -877,6 +970,6 @@ jobs:
     </footer>
 
     <!-- Scripts -->
-    <script src="/commitzero/assets/js/main.js"></script>
+    <script type="module" src="assets/js/main.js"></script>
 </body>
 </html>

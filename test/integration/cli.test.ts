@@ -91,14 +91,14 @@ test("flag guard: -a and --push only valid with commit", () => {
     assert.fail("expected CLI to reject -a without commit");
   } catch (err: any) {
     const output = String((err.stdout || "") + (err.stderr || ""));
-    assert.match(output, /Flags -a\/--add, -p\/--push and --progress-off are only valid|Flags -a\/--add and -p\/--push are only valid/);
+    assert.match(output, /Flags -a\/--add, -p\/--push(?:, --progress-off(?: and --no-alt-screen)?)? are only valid|Flags -a\/--add and -p\/--push are only valid/);
   }
   try {
     execSync(`node ${CLI} --push`, { encoding: "utf8" });
     assert.fail("expected CLI to reject --push without commit");
   } catch (err: any) {
     const output = String((err.stdout || "") + (err.stderr || ""));
-    assert.match(output, /Flags -a\/--add, -p\/--push and --progress-off are only valid|Flags -a\/--add and -p\/--push are only valid/);
+    assert.match(output, /Flags -a\/--add, -p\/--push(?:, --progress-off(?: and --no-alt-screen)?)? are only valid|Flags -a\/--add and -p\/--push are only valid/);
   }
 });
 
@@ -190,12 +190,12 @@ test("install-hooks and uninstall-hooks manage hooks content", () => {
     assert.doesNotMatch(cmAfter, /CommitZero managed block/);
     assert.doesNotMatch(prepAfter, /CommitZero managed block/);
 
-    // Verify that package.json scripts were removed
+    // Verify that package.json scripts are preserved
     const pkg = JSON.parse(readFileSync(packageJsonPath, "utf8"));
     const scripts = pkg.scripts || {};
-    assert.ok(!("commitzero" in scripts));
-    assert.ok(!("commitzero:install" in scripts));
-    assert.ok(!("commitzero:uninstall" in scripts));
+    assert.ok("commitzero" in scripts);
+    assert.ok("commitzero:install" in scripts);
+    assert.ok("commitzero:uninstall" in scripts);
   } finally {
     rmSync(tmp, { recursive: true, force: true });
   }

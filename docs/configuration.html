@@ -197,31 +197,7 @@
                         <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
                             <div class="flex items-center justify-between mb-4">
                                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Default Configuration</h3>
-                                <button class="copy-button p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors" data-copy='{
-  "types": [
-    { "type": "feat", "description": "A new feature" },
-    { "type": "fix", "description": "A bug fix" },
-    { "type": "docs", "description": "Documentation only changes" },
-    { "type": "style", "description": "Changes that do not affect the meaning of the code" },
-    { "type": "refactor", "description": "A code change that neither fixes a bug nor adds a feature" },
-    { "type": "perf", "description": "A code change that improves performance" },
-    { "type": "test", "description": "Adding missing tests or correcting existing tests" },
-    { "type": "build", "description": "Changes that affect the build system or external dependencies" },
-    { "type": "ci", "description": "Changes to our CI configuration files and scripts" },
-    { "type": "chore", "description": "Other changes that don\'t modify src or test files" },
-    { "type": "revert", "description": "Reverts a previous commit" }
-  ],
-  "scopes": [],
-  "subjectMaxLength": 100,
-  "subjectMinLength": 1,
-  "allowBreakingChanges": true,
-  "allowCustomScopes": true,
-  "footerMaxLength": 100,
-  "bodyMaxLength": 500,
-  "preCommitCommand": null,
-  "hookPath": ".git/hooks",
-  "language": "en"
-}'>
+                                <button class="copy-button p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors" data-copy="{&#10;  &quot;types&quot;: [&#10;    { &quot;type&quot;: &quot;feat&quot;, &quot;description&quot;: &quot;A new feature&quot; },&#10;    { &quot;type&quot;: &quot;fix&quot;, &quot;description&quot;: &quot;A bug fix&quot; },&#10;    { &quot;type&quot;: &quot;docs&quot;, &quot;description&quot;: &quot;Documentation only changes&quot; },&#10;    { &quot;type&quot;: &quot;style&quot;, &quot;description&quot;: &quot;Changes that do not affect the meaning of the code&quot; },&#10;    { &quot;type&quot;: &quot;refactor&quot;, &quot;description&quot;: &quot;A code change that neither fixes a bug nor adds a feature&quot; },&#10;    { &quot;type&quot;: &quot;perf&quot;, &quot;description&quot;: &quot;A code change that improves performance&quot; },&#10;    { &quot;type&quot;: &quot;test&quot;, &quot;description&quot;: &quot;Adding missing tests or correcting existing tests&quot; },&#10;    { &quot;type&quot;: &quot;build&quot;, &quot;description&quot;: &quot;Changes that affect the build system or external dependencies&quot; },&#10;    { &quot;type&quot;: &quot;ci&quot;, &quot;description&quot;: &quot;Changes to our CI configuration files and scripts&quot; },&#10;    { &quot;type&quot;: &quot;chore&quot;, &quot;description&quot;: &quot;Other changes that don't modify src or test files&quot; },&#10;    { &quot;type&quot;: &quot;revert&quot;, &quot;description&quot;: &quot;Reverts a previous commit&quot; }&#10;  ],&#10;  &quot;scopes&quot;: [],&#10;  &quot;subjectMaxLength&quot;: 100,&#10;  &quot;subjectMinLength&quot;: 1,&#10;  &quot;allowBreakingChanges&quot;: true,&#10;  &quot;allowCustomScopes&quot;: true,&#10;  &quot;footerMaxLength&quot;: 100,&#10;  &quot;bodyMaxLength&quot;: 500,&#10;  &quot;preCommitCommand&quot;: null,&#10;  &quot;hookPath&quot;: &quot;.git/hooks&quot;,&#10;  &quot;language&quot;: &quot;en&quot;&#10;}">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
                                     </svg>
@@ -427,6 +403,22 @@
                                     </p>
                                 </div>
                             </div>
+
+                            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">UI Settings</h3>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Alternate Screen</label>
+                                        <pre class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 text-sm"><code class="text-gray-800 dark:text-gray-200">"uiAltScreen": true // default; set false to stay on main terminal</code></pre>
+                                    </div>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                                        Controls whether interactive commits use the terminal's alternate screen. Set <code>uiAltScreen</code> to <code>false</code> to render the interactive UI on the main screen (useful for terminals that don't handle alternate buffers well).
+                                    </p>
+                                    <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                                        <p class="text-sm text-blue-800 dark:text-blue-200"><strong>Note:</strong> The CLI flag <code>--no-alt-screen</code> takes precedence over configuration and environment variables. You can also use <code>NO_ALT_SCREEN=1</code> to disable alternate screen via environment.</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </section>
 
@@ -444,15 +436,24 @@
                                     <div>
                                         <h4 class="font-medium text-gray-900 dark:text-white mb-2">Install Hooks</h4>
                                         <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
-                                            <code class="text-sm text-gray-800 dark:text-gray-200">commitzero install</code>
+                                            <code class="text-sm text-gray-800 dark:text-gray-200">commitzero install-hooks</code>
                                         </div>
                                     </div>
                                     <div>
                                         <h4 class="font-medium text-gray-900 dark:text-white mb-2">Uninstall Hooks</h4>
                                         <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
-                                            <code class="text-sm text-gray-800 dark:text-gray-200">commitzero uninstall</code>
+                                            <code class="text-sm text-gray-800 dark:text-gray-200">commitzero uninstall-hooks</code>
                                         </div>
                                     </div>
+                                </div>
+                                <div class="mt-4">
+                                    <h4 class="font-medium text-gray-900 dark:text-white mb-2">Check Hooks Status</h4>
+                                    <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
+                                        <code class="text-sm text-gray-800 dark:text-gray-200">commitzero hooks-status</code>
+                                    </div>
+                                </div>
+                                <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mt-4">
+                                    <p class="text-sm text-blue-800 dark:text-blue-200"><strong>Note:</strong> uninstall-hooks and cleanup do not remove <code>package.json</code> scripts; the scripts <code>commitzero</code>, <code>commitzero:install</code>, and <code>commitzero:uninstall</code> are preserved.</p>
                                 </div>
                             </div>
 
@@ -486,6 +487,9 @@
   // or
   "hookPath": ".githooks"   // Custom path
 }</code></pre>
+                                <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mt-4">
+                                    <p class="text-sm text-blue-800 dark:text-blue-200"><strong>Note:</strong> CommitZero respects Git's <code>core.hooksPath</code>. The CLI <code>commitzero install-hooks</code> configures <code>core.hooksPath</code> to <code>.commitzero/hooks</code> so hooks are version controlled; otherwise the default <code>.git/hooks</code> is used.</p>
+                                </div>
                             </div>
                         </div>
                     </section>
@@ -703,6 +707,6 @@
     </footer>
 
     <!-- Scripts -->
-    <script src="/commitzero/assets/js/main.js"></script>
+    <script type="module" src="assets/js/main.js"></script>
 </body>
 </html>
