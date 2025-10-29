@@ -5,13 +5,17 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
+    sourcemap: false,
+    minify: 'esbuild',
+    target: 'es2018',
+    cssCodeSplit: true,
     rollupOptions: {
       input: {
         main: 'index.html',
         installation: 'installation.html',
         configuration: 'configuration.html',
         usage: 'usage.html',
-        'api-reference': 'api-reference.html',
+        api: 'api.html',
         examples: 'examples.html',
         contributing: 'contributing.html',
         faq: 'faq.html',
@@ -21,7 +25,7 @@ export default defineConfig({
         'pt-br/installation': 'pt-br/installation.html',
         'pt-br/configuration': 'pt-br/configuration.html',
         'pt-br/usage': 'pt-br/usage.html',
-        'pt-br/api-reference': 'pt-br/api-reference.html',
+        'pt-br/api': 'pt-br/api.html',
         'pt-br/examples': 'pt-br/examples.html',
         'pt-br/contributing': 'pt-br/contributing.html',
         'pt-br/faq': 'pt-br/faq.html',
@@ -31,13 +35,22 @@ export default defineConfig({
         'es/installation': 'es/installation.html',
         'es/configuration': 'es/configuration.html',
         'es/usage': 'es/usage.html',
-        'es/api-reference': 'es/api-reference.html',
+        'es/api': 'es/api.html',
         'es/examples': 'es/examples.html',
         'es/contributing': 'es/contributing.html',
         'es/faq': 'es/faq.html',
         'es/changelog': 'es/changelog.html'
-      }
+      },
+      output: {
+        manualChunks(id) {
+          if (id.includes('prismjs')) return 'prism';
+        }
+      },
+      treeshake: true
     }
+  },
+  esbuild: {
+    drop: ['console', 'debugger']
   },
   server: {
     port: 3000,
