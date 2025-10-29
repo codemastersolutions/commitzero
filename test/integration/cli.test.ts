@@ -148,6 +148,8 @@ test("install-hooks and uninstall-hooks manage hooks content", () => {
   
   // Initialize git repository
   execSync("git init", { cwd: tmp, stdio: "ignore" });
+  // Configure hooks path to .commitzero/hooks so install respects configured path
+  execSync("git config core.hooksPath .commitzero/hooks", { cwd: tmp, stdio: "ignore" });
   
   try {
     const outInstall = execSync(`node ${CLI} install-hooks`, {
