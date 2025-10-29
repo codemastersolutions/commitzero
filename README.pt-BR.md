@@ -169,7 +169,6 @@ yarn commitzero lint -m $'feat(core): change\n\nBody text\n\nRefs: 123'
   "allowBreaking": true,
   "footerKeywords": ["BREAKING CHANGE", "Closes", "Refs"],
   "preCommitCommands": [],
-  "hookInstallPath": ".git/hooks",
   "language": "en"
 }
 ```
@@ -183,8 +182,13 @@ yarn commitzero lint -m $'feat(core): change\n\nBody text\n\nRefs: 123'
 - `allowBreaking`: Quando `false`, não permite `feat!` e exige footer `BREAKING CHANGE` quando houver breaking changes.
 - `footerKeywords`: Palavras-chave reconhecidas como footers de commit (ex.: referências, breaking changes).
 - `preCommitCommands`: Array de comandos de shell para rodar antes do commit.
-- `hookInstallPath`: Onde os hooks do Git são instalados. Padrão: `.git/hooks`.
 - `language`: Idioma de saída da CLI e das regras. Valores aceitos: `en`, `pt`, `es`. Padrão: `en`.
+
+### Caminho dos hooks
+
+- Respeita a configuração do Git `core.hooksPath`, quando presente.
+- Usa `.git/hooks` por padrão quando `core.hooksPath` não está configurado.
+- `commitzero install-hooks` configura `core.hooksPath` para `.commitzero/hooks` para que os hooks sejam versionados no repositório.
 
 ### Comandos que alimentam `preCommitCommands`
 

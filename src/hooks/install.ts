@@ -126,8 +126,28 @@ export function installHooks(opts: HookOptions = {}) {
 
   if (!hookDir) {
     const currentHooksPath = getCurrentHooksPath();
-    // If core.hooksPath is configured, respect it; otherwise use default .git/hooks
-    hookDir = currentHooksPath || join(".git", "hooks");
+    const wantCommitZeroPath = ".commitzero/hooks";
+    if (!currentHooksPath) {
+      // Configure hooks path to CommitZero-managed directory when not set
+      try {
+        execSync(`git config core.hooksPath ${wantCommitZeroPath}`, { stdio: "ignore" });
+        hookDir = wantCommitZeroPath;
+      } catch {
+        // Fallback to default
+        hookDir = join(".git", "hooks");
+      }
+    } else if (opts.forceOverride && !isCommitZeroHooksPath(currentHooksPath)) {
+      // Override existing hooks path to CommitZero-managed directory if forced
+      try {
+        execSync(`git config core.hooksPath ${wantCommitZeroPath}`, { stdio: "ignore" });
+        hookDir = wantCommitZeroPath;
+      } catch {
+        hookDir = currentHooksPath;
+      }
+    } else {
+      // Respect configured hooks path
+      hookDir = currentHooksPath || join(".git", "hooks");
+    }
   }
 
   ensureDir(hookDir);

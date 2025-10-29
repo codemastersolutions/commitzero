@@ -115,8 +115,6 @@ export async function initConfig(lang: import("../../i18n").Lang = DEFAULT_LANG)
     allowBreaking: true,
     footerKeywords: ["BREAKING CHANGE", "Closes", "Refs"],
     preCommitCommands: [],
-    hookInstallPath: ".git/hooks",
-
     language: existed ? DEFAULT_LANG : lang,
   };
   writeFileSync(path, JSON.stringify(tpl, null, 2) + "\n", "utf8");

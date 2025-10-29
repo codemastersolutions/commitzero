@@ -10,7 +10,6 @@ export interface UserConfig {
   allowBreaking?: boolean;
   footerKeywords?: string[];
   preCommitCommands?: string[];
-  hookInstallPath?: string;
   language?: Lang;
 }
 
