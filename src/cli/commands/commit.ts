@@ -703,11 +703,18 @@ export async function interactiveCommit(
       // Se flag --add foi informada, sempre adicionar arquivos modificados
       if (autoAdd && hasUnstagedChanges()) {
         try {
+          console.error("DEBUG: Executando git add -A");
           const out = execFileSync("git", ["add", "-A"], {
             stdio: ["ignore", "pipe", "pipe"],
             encoding: "utf8",
           });
           if (out) process.stdout.write(out);
+          console.error(`DEBUG: lang = ${lang}, key = commit.git.added`);
+          console.error("DEBUG: typeof lang =", typeof lang);
+          console.error("DEBUG: JSON.stringify(lang) =", JSON.stringify(lang));
+          console.error(`DEBUG: t(lang, "commit.git.added") = ${t(lang, "commit.git.added")}`);
+          console.error(`DEBUG: t('pt', "commit.git.added") = ${t('pt', "commit.git.added")}`);
+          console.error(`DEBUG: t('en', "commit.git.added") = ${t('en', "commit.git.added")}`);
           console.log(c.green(t(lang, "commit.git.added") || "Files added to staging area."));
         } catch (err: unknown) {
           const errOut = err && err instanceof Error ? err.message : "";
