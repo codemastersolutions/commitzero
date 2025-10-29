@@ -224,19 +224,28 @@
                                     <div>
                                         <h4 class="font-medium text-gray-900 dark:text-white mb-2">Instalar Hooks</h4>
                                         <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
-                                            <code class="text-sm text-gray-800 dark:text-gray-200">commitzero install</code>
+                                            <code class="text-sm text-gray-800 dark:text-gray-200">commitzero install-hooks</code>
                                         </div>
                                     </div>
                                     <div>
                                         <h4 class="font-medium text-gray-900 dark:text-white mb-2">Desinstalar Hooks</h4>
                                         <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
-                                            <code class="text-sm text-gray-800 dark:text-gray-200">commitzero uninstall</code>
+                                            <code class="text-sm text-gray-800 dark:text-gray-200">commitzero uninstall-hooks</code>
                                         </div>
+                                    </div>
+                                </div>
+                                <div class="mt-4">
+                                    <h4 class="font-medium text-gray-900 dark:text-white mb-2">Verificar Estado de Hooks</h4>
+                                    <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
+                                        <code class="text-sm text-gray-800 dark:text-gray-200">commitzero hooks-status</code>
                                     </div>
                                 </div>
                                 <p class="text-gray-600 dark:text-gray-300 mt-3">
                                     Instala o elimina manualmente Git hooks para validación de commits.
                                 </p>
+                                <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mt-3">
+                                    <p class="text-sm text-blue-800 dark:text-blue-200"><strong>Nota:</strong> <code>uninstall-hooks</code> y <code>cleanup</code> no eliminan los scripts de <code>package.json</code>; los scripts <code>commitzero</code>, <code>commitzero:install</code> y <code>commitzero:uninstall</code> se conservan. La instalación respeta <code>core.hooksPath</code> de Git y usa <code>.git/hooks</code> cuando no está configurado; el CLI <code>commitzero install-hooks</code> configura <code>core.hooksPath</code> a <code>.commitzero/hooks</code> para que los hooks estén bajo control de versiones.</p>
+                                </div>
                             </div>
 
                             <!-- Help -->
@@ -731,7 +740,7 @@ jobs:
                                             <li>No hay errores de sintaxis en los scripts de hook</li>
                                         </ul>
                                         <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 mt-2">
-                                            <code class="text-sm text-gray-800 dark:text-gray-200">commitzero install --force</code>
+                                            <code class="text-sm text-gray-800 dark:text-gray-200">commitzero install-hooks --force</code>
                                         </div>
                                     </div>
 

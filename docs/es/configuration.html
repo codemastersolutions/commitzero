@@ -444,15 +444,24 @@
                                     <div>
                                         <h4 class="font-medium text-gray-900 dark:text-white mb-2">Instalar Hooks</h4>
                                         <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
-                                            <code class="text-sm text-gray-800 dark:text-gray-200">commitzero install</code>
+                                            <code class="text-sm text-gray-800 dark:text-gray-200">commitzero install-hooks</code>
                                         </div>
                                     </div>
                                     <div>
                                         <h4 class="font-medium text-gray-900 dark:text-white mb-2">Desinstalar Hooks</h4>
                                         <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
-                                            <code class="text-sm text-gray-800 dark:text-gray-200">commitzero uninstall</code>
+                                            <code class="text-sm text-gray-800 dark:text-gray-200">commitzero uninstall-hooks</code>
                                         </div>
                                     </div>
+                                </div>
+                                <div class="mt-4">
+                                    <h4 class="font-medium text-gray-900 dark:text-white mb-2">Verificar Estado de Hooks</h4>
+                                    <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
+                                        <code class="text-sm text-gray-800 dark:text-gray-200">commitzero hooks-status</code>
+                                    </div>
+                                </div>
+                                <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mt-4">
+                                    <p class="text-sm text-blue-800 dark:text-blue-200"><strong>Nota:</strong> <code>uninstall-hooks</code> y <code>cleanup</code> no eliminan los scripts de <code>package.json</code>; los scripts <code>commitzero</code>, <code>commitzero:install</code> y <code>commitzero:uninstall</code> se conservan.</p>
                                 </div>
                             </div>
 
@@ -486,6 +495,9 @@
   // o
   "hookPath": ".githooks"   // Ruta personalizada
 }</code></pre>
+                                <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mt-4">
+                                    <p class="text-sm text-blue-800 dark:text-blue-200"><strong>Nota:</strong> CommitZero respeta <code>core.hooksPath</code> de Git. El CLI <code>commitzero install-hooks</code> configura <code>core.hooksPath</code> a <code>.commitzero/hooks</code> para que los hooks estén versionados; de lo contrario se usa <code>.git/hooks</code>.</p>
+                                </div>
                             </div>
                         </div>
                     </section>

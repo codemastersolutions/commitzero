@@ -193,6 +193,10 @@ commitzero hooks-status'>
                         </button>
                     </div>
 
+                    <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+                        <p class="text-sm text-blue-800 dark:text-blue-200"><strong>Observação:</strong> <code>uninstall-hooks</code> e <code>cleanup</code> não removem scripts do <code>package.json</code>; os scripts <code>commitzero</code>, <code>commitzero:install</code> e <code>commitzero:uninstall</code> são preservados. A instalação respeita o <code>core.hooksPath</code> do Git e usa <code>.git/hooks</code> quando não definido; o CLI <code>commitzero install-hooks</code> configura <code>core.hooksPath</code> para <code>.commitzero/hooks</code> para que os hooks sejam versionados.</p>
+                    </div>
+
                     <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Ajuda</h3>
                     <div class="code-block mb-6">
                         <pre><code class="language-bash"># Ver todos os comandos disponíveis

@@ -508,9 +508,12 @@ await installHooks();
 await installHooks({
   hooks: ['commit-msg', 'pre-commit'],
   gitDir: './.git',
-  force: true
+      force: true
 });</code></pre>
+                            <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mt-4">
+                                <p class="text-sm text-blue-800 dark:text-blue-200"><strong>Nota:</strong> <code>installHooks</code> respeta <code>core.hooksPath</code> de Git. El CLI <code>commitzero install-hooks</code> establece <code>core.hooksPath</code> en <code>.commitzero/hooks</code> para que los hooks estén versionados; de lo contrario se usa <code>.git/hooks</code>. Use <code>force: true</code> para sobrescribir bloques gestionados existentes o actualizar la configuración de los hooks.</p>
                             </div>
+                        </div>
                         </div>
 
                         <!-- uninstallHooks() -->
@@ -539,7 +542,10 @@ await uninstallHooks({
   hooks: ['commit-msg'],
   gitDir: './.git'
 });</code></pre>
+                            <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mt-4">
+                                <p class="text-sm text-blue-800 dark:text-blue-200"><strong>Nota:</strong> <code>uninstallHooks</code> elimina únicamente los bloques gestionados por CommitZero en los archivos de hooks y preserva el resto del contenido. No elimina los scripts de <code>package.json</code>; los scripts <code>commitzero</code>, <code>commitzero:install</code> y <code>commitzero:uninstall</code> se conservan.</p>
                             </div>
+                        </div>
                         </div>
                     </section>
 
