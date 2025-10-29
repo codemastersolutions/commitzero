@@ -139,8 +139,16 @@ test("check without COMMIT_EDITMSG prints error", () => {
 
 test("install-hooks and uninstall-hooks manage hooks content", () => {
   const tmp = join(process.cwd(), "tmp-wd-hooks");
-  const hooksDir = join(tmp, ".git", "hooks");
+  const hooksDir = join(tmp, ".commitzero", "hooks");
+  const packageJsonPath = join(tmp, "package.json");
   mkdirSync(hooksDir, { recursive: true });
+  
+  // Create a package.json file to satisfy the project root check
+  writeFileSync(packageJsonPath, JSON.stringify({ name: "test-project" }, null, 2));
+  
+  // Initialize git repository
+  execSync("git init", { cwd: tmp, stdio: "ignore" });
+  
   try {
     const outInstall = execSync(`node ${CLI} install-hooks`, {
       encoding: "utf8",
