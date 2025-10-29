@@ -1,7 +1,7 @@
-import { mkdirSync, existsSync, writeFileSync, readFileSync, rmSync } from "node:fs";
-import { join } from "node:path";
-import { commitMsgScript, prepareCommitMsgScript, preCommitScript, HOOK_HEADER } from "./scripts";
 import { execSync } from "node:child_process";
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+import { commitMsgScript, HOOK_HEADER, preCommitScript, prepareCommitMsgScript } from "./scripts";
 
 export interface HookOptions {
   hookDir?: string;
@@ -63,10 +63,6 @@ export function getCurrentHooksPath(): string | null {
   }
 }
 
-function setHooksPath(path: string): void {
-  execSync(`git config core.hooksPath "${path}"`, { stdio: "ignore" });
-}
-
 function removeHooksPath(): void {
   try {
     execSync("git config --unset core.hooksPath", { stdio: "ignore" });
@@ -94,11 +90,11 @@ function hasOnlyCommitZeroHooks(dir: string): boolean {
   try {
     const files = require("node:fs").readdirSync(dir);
     const hookFiles = ["commit-msg", "prepare-commit-msg", "pre-commit"];
-    
+
     // Check if all files are CommitZero hooks
     for (const file of files) {
       if (!hookFiles.includes(file)) return false;
-      
+
       const filePath = join(dir, file);
       try {
         const content = readFileSync(filePath, "utf8");
@@ -121,33 +117,17 @@ export function installHooks(opts: HookOptions = {}) {
 
   // Validate git repository
   if (!isGitRepository()) {
-    throw new Error("Git repository not initialized. Run 'git init' first or use the --init-git flag");
+    throw new Error(
+      "Git repository not initialized. Run 'git init' first or use the --init-git flag"
+    );
   }
 
-  const COMMITZERO_HOOKS_PATH = ".commitzero/hooks";
   let hookDir = opts.hookDir;
-  
+
   if (!hookDir) {
     const currentHooksPath = getCurrentHooksPath();
-    
-    if (currentHooksPath) {
-      // If current path is not CommitZero's and forceOverride is not set, ask for confirmation
-      if (!isCommitZeroHooksPath(currentHooksPath) && !opts.forceOverride) {
-        throw new Error(`Hooks path already configured: ${currentHooksPath}. Use --force to override`);
-      }
-      
-      if (isCommitZeroHooksPath(currentHooksPath)) {
-        hookDir = currentHooksPath;
-      } else {
-        // Override existing path
-        hookDir = COMMITZERO_HOOKS_PATH;
-        setHooksPath(hookDir);
-      }
-    } else {
-      // No hooks path configured, set CommitZero's path
-      hookDir = COMMITZERO_HOOKS_PATH;
-      setHooksPath(hookDir);
-    }
+    // If core.hooksPath is configured, respect it; otherwise use default .git/hooks
+    hookDir = currentHooksPath || join(".git", "hooks");
   }
 
   ensureDir(hookDir);
@@ -161,13 +141,14 @@ export function installHooks(opts: HookOptions = {}) {
 }
 
 export function uninstallHooks(opts: HookOptions = {}) {
-  const COMMITZERO_HOOKS_PATH = ".commitzero/hooks";
   let hookDir = opts.hookDir;
-  
+
   if (!hookDir) {
     const currentHooksPath = getCurrentHooksPath();
     if (currentHooksPath) {
-      hookDir = currentHooksPath.startsWith("/") ? currentHooksPath : join(process.cwd(), currentHooksPath);
+      hookDir = currentHooksPath.startsWith("/")
+        ? currentHooksPath
+        : join(process.cwd(), currentHooksPath);
     } else {
       hookDir = join(".git", "hooks");
     }

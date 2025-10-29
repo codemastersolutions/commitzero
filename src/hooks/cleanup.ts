@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { HOOK_HEADER } from "./scripts";
+import { getCurrentHooksPath } from "./install";
 
 function removeManagedBlock(original: string): string {
   const start = `${HOOK_HEADER} START`;
@@ -38,7 +39,10 @@ function findProjectRoot(start: string): string {
 export function cleanupHooks(cwd?: string) {
   const start = cwd || process.env.INIT_CWD || process.cwd();
   const root = findProjectRoot(start);
-  const hookDir = join(root, ".git", "hooks");
+  const configured = getCurrentHooksPath();
+  const hookDir = configured
+    ? (configured.startsWith("/") ? configured : join(root, configured))
+    : join(root, ".git", "hooks");
   const commitMsgPath = join(hookDir, "commit-msg");
   const prepareMsgPath = join(hookDir, "prepare-commit-msg");
   const preCommitPath = join(hookDir, "pre-commit");
