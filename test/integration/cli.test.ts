@@ -190,12 +190,12 @@ test("install-hooks and uninstall-hooks manage hooks content", () => {
     assert.doesNotMatch(cmAfter, /CommitZero managed block/);
     assert.doesNotMatch(prepAfter, /CommitZero managed block/);
 
-    // Verify that package.json scripts were removed
+    // Verify that package.json scripts are preserved
     const pkg = JSON.parse(readFileSync(packageJsonPath, "utf8"));
     const scripts = pkg.scripts || {};
-    assert.ok(!("commitzero" in scripts));
-    assert.ok(!("commitzero:install" in scripts));
-    assert.ok(!("commitzero:uninstall" in scripts));
+    assert.ok("commitzero" in scripts);
+    assert.ok("commitzero:install" in scripts);
+    assert.ok("commitzero:uninstall" in scripts);
   } finally {
     rmSync(tmp, { recursive: true, force: true });
   }

@@ -73,35 +73,8 @@ export function cleanupHooks(cwd?: string) {
     }
   } catch {}
 
-  // Remove CommitZero helper scripts from package.json if present
-  try {
-    const pkgPath = join(root, "package.json");
-    if (existsSync(pkgPath)) {
-      const raw = readFileSync(pkgPath, "utf8");
-      let pkg: Record<string, unknown> | null = null;
-      try {
-        pkg = JSON.parse(raw);
-      } catch {
-        pkg = null;
-      }
-      if (pkg && typeof pkg === "object" && pkg.name !== "@codemastersolutions/commitzero") {
-        const scripts = pkg.scripts && typeof pkg.scripts === "object" ? pkg.scripts : null;
-        if (scripts) {
-          let changed = false;
-          for (const key of ["commitzero", "commitzero:install", "commitzero:uninstall"]) {
-            if (key in scripts) {
-              delete (scripts as Record<string, unknown>)[key];
-              changed = true;
-            }
-          }
-          if (changed) {
-            pkg.scripts = scripts;
-            writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + "\n", "utf8");
-          }
-        }
-      }
-    }
-  } catch {}
+  // Intencionalmente não remove scripts do package.json.
+  // A desinstalação dos hooks deve apenas limpar os blocos gerenciados nos arquivos de hook.
 }
 
 if (require.main === module) {

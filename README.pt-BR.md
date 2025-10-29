@@ -7,7 +7,7 @@
 [![CI](https://github.com/codemastersolutions/commitzero/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/codemastersolutions/commitzero/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/codemastersolutions/commitzero/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/codemastersolutions/commitzero/actions/workflows/codeql.yml)
 
-Idiomas: [English](./README.md) | Português Brasil | [Español](./README.es.md)
+Idiomas: [English](./README.md) | Português 🇧🇷 | [Español](./README.es.md)
 
 Validador de Conventional Commits com uma CLI amigável, hooks Git e motor de regras interno — sem dependências de runtime.
 
@@ -91,10 +91,12 @@ yarn commitzero install-hooks
 ```
 
 **Opções:**
+
 - `--force`: Sobrescrever configuração de caminho de hooks existente sem confirmação
 - `--init-git`: Inicializar repositório git se ainda não inicializado
 
 **Prompts interativos:**
+
 - Se o Git não estiver inicializado, você será solicitado a inicializá-lo
 - Se um caminho de hooks diferente já estiver configurado, você será perguntado para confirmar a sobrescrita
 
@@ -259,6 +261,8 @@ pnpm commitzero cleanup
 # ou
 yarn commitzero cleanup
 ```
+
+Observação: `uninstall-hooks` e `cleanup` não removem os scripts do `package.json`. Os scripts `commitzero`, `commitzero:install` e `commitzero:uninstall` são preservados para conveniência.
 
 ### Idioma dos hooks
 
