@@ -1,6 +1,6 @@
 /* eslint-disable no-useless-escape */
 import assert from "node:assert";
-import { chmodSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { chmodSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync, rmSync } from "node:fs";
 import os from "node:os";
 import { join } from "node:path";
 import test from "node:test";
@@ -27,6 +27,9 @@ echo \"Unknown command: $@\" 1>&2\nexit 1\n`;
     process.env.PATH = prevPath;
     if (prevMode === undefined) delete (process.env as any).GIT_STUB_MODE;
     else process.env.GIT_STUB_MODE = prevMode as string;
+    try {
+      rmSync(tmp, { recursive: true, force: true });
+    } catch {}
   }
 }
 
@@ -87,6 +90,9 @@ test("interactiveCommit fluxo feliz cria mensagem e commita (autoPush)", async (
       if (prevSkip === undefined) delete (process.env as any).COMMITSKIP_SELECT_PROMPT;
       else process.env.COMMITSKIP_SELECT_PROMPT = prevSkip as string;
       process.chdir(prevCwd);
+      try {
+        rmSync(tmp, { recursive: true, force: true });
+      } catch {}
     }
   });
 });

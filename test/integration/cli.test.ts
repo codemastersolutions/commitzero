@@ -144,7 +144,21 @@ test("install-hooks and uninstall-hooks manage hooks content", () => {
   mkdirSync(hooksDir, { recursive: true });
   
   // Create a package.json file to satisfy the project root check
-  writeFileSync(packageJsonPath, JSON.stringify({ name: "test-project" }, null, 2));
+  writeFileSync(
+    packageJsonPath,
+    JSON.stringify(
+      {
+        name: "test-project",
+        scripts: {
+          commitzero: "commitzero",
+          "commitzero:install": "yarn run commitzero install-hooks",
+          "commitzero:uninstall": "yarn run commitzero uninstall-hooks",
+        },
+      },
+      null,
+      2
+    )
+  );
   
   // Initialize git repository
   execSync("git init", { cwd: tmp, stdio: "ignore" });
@@ -175,6 +189,13 @@ test("install-hooks and uninstall-hooks manage hooks content", () => {
     const prepAfter = readFileSync(preparePath, "utf8");
     assert.doesNotMatch(cmAfter, /CommitZero managed block/);
     assert.doesNotMatch(prepAfter, /CommitZero managed block/);
+
+    // Verify that package.json scripts were removed
+    const pkg = JSON.parse(readFileSync(packageJsonPath, "utf8"));
+    const scripts = pkg.scripts || {};
+    assert.ok(!("commitzero" in scripts));
+    assert.ok(!("commitzero:install" in scripts));
+    assert.ok(!("commitzero:uninstall" in scripts));
   } finally {
     rmSync(tmp, { recursive: true, force: true });
   }
