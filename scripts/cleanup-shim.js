@@ -6,7 +6,13 @@ import { pathToFileURL } from "node:url";
 const target = join(process.cwd(), "dist", "cjs", "hooks", "cleanup.js");
 if (existsSync(target)) {
   try {
-    await import(pathToFileURL(target).href);
+    const mod = await import(pathToFileURL(target).href);
+    const fn = (mod && mod.cleanupHooks) || (mod && mod.default && mod.default.cleanupHooks);
+    if (typeof fn === "function") {
+      try {
+        await fn();
+      } catch {}
+    }
   } catch {
     // swallow errors to avoid breaking uninstall
   }

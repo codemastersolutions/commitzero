@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import { join, dirname } from "node:path";
-import { HOOK_HEADER } from "./scripts";
+import { dirname, join } from "node:path";
 import { getCurrentHooksPath } from "./install";
+import { HOOK_HEADER } from "./scripts";
 
 function removeManagedBlock(original: string): string {
   const start = `${HOOK_HEADER} START`;
@@ -41,7 +41,9 @@ export function cleanupHooks(cwd?: string) {
   const root = findProjectRoot(start);
   const configured = getCurrentHooksPath();
   const hookDir = configured
-    ? (configured.startsWith("/") ? configured : join(root, configured))
+    ? configured.startsWith("/")
+      ? configured
+      : join(root, configured)
     : join(root, ".git", "hooks");
   const commitMsgPath = join(hookDir, "commit-msg");
   const prepareMsgPath = join(hookDir, "prepare-commit-msg");
@@ -68,6 +70,36 @@ export function cleanupHooks(cwd?: string) {
       const pc = readFileSync(preCommitPath, "utf8");
       const cleaned = removeManagedBlock(pc);
       writeFileSync(preCommitPath, cleaned, { encoding: "utf8", mode: 0o755 });
+    }
+  } catch {}
+
+  // Remove CommitZero helper scripts from package.json if present
+  try {
+    const pkgPath = join(root, "package.json");
+    if (existsSync(pkgPath)) {
+      const raw = readFileSync(pkgPath, "utf8");
+      let pkg: Record<string, unknown> | null = null;
+      try {
+        pkg = JSON.parse(raw);
+      } catch {
+        pkg = null;
+      }
+      if (pkg && typeof pkg === "object" && pkg.name !== "@codemastersolutions/commitzero") {
+        const scripts = pkg.scripts && typeof pkg.scripts === "object" ? pkg.scripts : null;
+        if (scripts) {
+          let changed = false;
+          for (const key of ["commitzero", "commitzero:install", "commitzero:uninstall"]) {
+            if (key in scripts) {
+              delete (scripts as Record<string, unknown>)[key];
+              changed = true;
+            }
+          }
+          if (changed) {
+            pkg.scripts = scripts;
+            writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + "\n", "utf8");
+          }
+        }
+      }
     }
   } catch {}
 }
