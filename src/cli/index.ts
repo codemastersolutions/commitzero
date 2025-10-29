@@ -55,7 +55,8 @@ async function main() {
     cmd === "--add" ||
     cmd === "-p" ||
     cmd === "--push" ||
-    cmd === "--progress-off"
+    cmd === "--progress-off" ||
+    cmd === "--no-alt-screen"
   ) {
     console.error(c.red(t(lang, "cli.flagsOnlyWithCommit")));
     printHelp(lang);
@@ -224,7 +225,12 @@ async function main() {
   }
 
   if (cmd === "commit") {
-    const cfg: LintOptions & { autoAdd?: boolean; autoPush?: boolean; pushProgress?: boolean } = {
+    const cfg: LintOptions & {
+      autoAdd?: boolean;
+      autoPush?: boolean;
+      pushProgress?: boolean;
+      uiAltScreen?: boolean;
+    } = {
       ...defaultOptions,
       ...userConfig,
       language: lang,
@@ -233,6 +239,7 @@ async function main() {
     const autoAdd = args.includes("-a") || args.includes("--add");
     const autoPush = args.includes("-p") || args.includes("--push");
     const progressOff = args.includes("--progress-off");
+    const noAltScreen = args.includes("--no-alt-screen");
     const nestedPushProgress = (
       userConfig as UserConfig & { commitZero?: { pushProgress?: boolean } }
     )?.commitZero?.pushProgress;
@@ -243,7 +250,23 @@ async function main() {
           ? nestedPushProgress
           : true;
     const pushProgress = progressOff ? false : pushProgressCfg;
-    const code = await interactiveCommit(lang, { ...cfg, autoAdd, autoPush, pushProgress });
+    const nestedUiAltScreen = (
+      userConfig as UserConfig & { commitZero?: { uiAltScreen?: boolean } }
+    )?.commitZero?.uiAltScreen;
+    const uiAltScreenCfg =
+      typeof (userConfig as UserConfig & { uiAltScreen?: boolean }).uiAltScreen === "boolean"
+        ? (userConfig as UserConfig & { uiAltScreen?: boolean }).uiAltScreen
+        : typeof nestedUiAltScreen === "boolean"
+          ? nestedUiAltScreen
+          : true;
+    const uiAltScreen = noAltScreen ? false : uiAltScreenCfg;
+    const code = await interactiveCommit(lang, {
+      ...cfg,
+      autoAdd,
+      autoPush,
+      pushProgress,
+      uiAltScreen,
+    });
     exit(code);
   }
 

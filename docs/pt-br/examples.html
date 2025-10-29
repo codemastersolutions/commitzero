@@ -434,9 +434,9 @@ jobs:
         
         # Validar cada commit
         for commit in $COMMITS; do
-          echo \"Validando commit: $commit\"
+          echo &quot;Validando commit: $commit&quot;
           MESSAGE=$(git log --format=%B -n 1 $commit)
-          echo \"$MESSAGE\" | commitzero validate --stdin
+          echo &quot;$MESSAGE&quot; | commitzero validate --stdin
         done
     
     - name: Comentar no PR se houver erros
@@ -499,9 +499,9 @@ validate-commits:
       
       # Validar cada commit
       for commit in $COMMITS; do
-        echo \"Validando commit: $commit\"
+        echo &quot;Validando commit: $commit&quot;
         MESSAGE=$(git log --format=%B -n 1 $commit)
-        echo \"$MESSAGE\" | commitzero validate --stdin
+        echo &quot;$MESSAGE&quot; | commitzero validate --stdin
       done
   allow_failure: false">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -593,79 +593,79 @@ validate-commits:
     "skipQuestions": ["scope", "body", "footer"]
   }
 }</code></pre>
-                        <button class="copy-button" data-clipboard-text="{
-  \"extends\": [\"@commitlint/config-conventional\"],
-  \"types\": {
-    \"feat\": {
-      \"description\": \"Nova funcionalidade\",
-      \"emoji\": \"✨\"
+                        <button class="copy-button" data-clipboard-text='{
+  "extends": ["@commitlint/config-conventional"],
+  "types": {
+    "feat": {
+      "description": "Nova funcionalidade",
+      "emoji": "✨"
     },
-    \"fix\": {
-      \"description\": \"Correção de bug\",
-      \"emoji\": \"🐛\"
+    "fix": {
+      "description": "Correção de bug",
+      "emoji": "🐛"
     },
-    \"docs\": {
-      \"description\": \"Documentação\",
-      \"emoji\": \"📚\"
+    "docs": {
+      "description": "Documentação",
+      "emoji": "📚"
     },
-    \"style\": {
-      \"description\": \"Formatação, ponto e vírgula, etc\",
-      \"emoji\": \"💄\"
+    "style": {
+      "description": "Formatação, ponto e vírgula, etc",
+      "emoji": "💄"
     },
-    \"refactor\": {
-      \"description\": \"Refatoração de código\",
-      \"emoji\": \"♻️\"
+    "refactor": {
+      "description": "Refatoração de código",
+      "emoji": "♻️"
     },
-    \"test\": {
-      \"description\": \"Adição ou correção de testes\",
-      \"emoji\": \"🧪\"
+    "test": {
+      "description": "Adição ou correção de testes",
+      "emoji": "🧪"
     },
-    \"chore\": {
-      \"description\": \"Tarefas de build, configurações, etc\",
-      \"emoji\": \"🔧\"
+    "chore": {
+      "description": "Tarefas de build, configurações, etc",
+      "emoji": "🔧"
     },
-    \"perf\": {
-      \"description\": \"Melhoria de performance\",
-      \"emoji\": \"⚡\"
+    "perf": {
+      "description": "Melhoria de performance",
+      "emoji": "⚡"
     },
-    \"ci\": {
-      \"description\": \"Configuração de CI/CD\",
-      \"emoji\": \"👷\"
+    "ci": {
+      "description": "Configuração de CI/CD",
+      "emoji": "👷"
     },
-    \"build\": {
-      \"description\": \"Sistema de build\",
-      \"emoji\": \"📦\"
+    "build": {
+      "description": "Sistema de build",
+      "emoji": "📦"
     },
-    \"revert\": {
-      \"description\": \"Reverter commit anterior\",
-      \"emoji\": \"⏪\"
+    "revert": {
+      "description": "Reverter commit anterior",
+      "emoji": "⏪"
     }
   },
-  \"scopes\": {
-    \"frontend\": \"Interface do usuário\",
-    \"backend\": \"Lógica do servidor\",
-    \"api\": \"Endpoints da API\",
-    \"db\": \"Banco de dados\",
-    \"auth\": \"Autenticação e autorização\",
-    \"config\": \"Configurações\",
-    \"deps\": \"Dependências\"
+  "scopes": {
+    "frontend": "Interface do usuário",
+    "backend": "Lógica do servidor",
+    "api": "Endpoints da API",
+    "db": "Banco de dados",
+    "auth": "Autenticação e autorização",
+    "config": "Configurações",
+    "deps": "Dependências"
   },
-  \"rules\": {
-    \"type-required\": true,
-    \"type-case\": \"lower-case\",
-    \"subject-required\": true,
-    \"subject-case\": \"lower-case\",
-    \"subject-max-length\": 50,
-    \"subject-full-stop\": false,
-    \"body-max-line-length\": 72,
-    \"footer-max-line-length\": 72
+  "rules": {
+    "type-required": true,
+    "type-case": "lower-case",
+    "subject-required": true,
+    "subject-case": "lower-case",
+    "subject-max-length": 50,
+    "subject-full-stop": false,
+    "body-max-line-length": 72,
+    "footer-max-line-length": 72
   },
-  \"useEmojis\": true,
-  \"interactive\": {
-    \"enabled\": true,
-    \"skipQuestions\": [\"scope\", \"body\", \"footer\"]
+  "useEmojis": true,
+  "interactive": {
+    "enabled": true,
+    "skipQuestions": ["scope", "body", "footer"]
   }
-}">
+}'>
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
                             </svg>
@@ -695,8 +695,8 @@ commitzero install
 
 # Configurar Git template (opcional)
 echo "📝 Configurando template de commit..."
-cat > .gitmessage << 'EOF'
-# <tipo>[escopo opcional]: <descrição>
+cat > .gitmessage &lt;&lt; 'EOF'
+# &lt;tipo&gt;[escopo opcional]: &lt;descrição&gt;
 #
 # [corpo opcional]
 #
@@ -727,24 +727,24 @@ echo "  - Veja exemplos em: https://commitzero.github.io/commitzero/pt-br/exampl
                         <button class="copy-button" data-clipboard-text="#!/bin/bash
 # setup-commitzero.sh
 
-echo \"🚀 Configurando CommitZero para o projeto...\"
+echo &quot;🚀 Configurando CommitZero para o projeto...&quot;
 
 # Instalar CommitZero globalmente
-echo \"📦 Instalando CommitZero...\"
+echo &quot;📦 Instalando CommitZero...&quot;
 npm install -g commitzero
 
 # Verificar se já existe configuração
-if [ ! -f \".commitzero.json\" ]; then
-  echo \"⚙️ Criando configuração padrão...\"
+if [ ! -f &quot;.commitzero.json&quot; ]; then
+echo &quot;⚙️ Criando configuração padrão...&quot;
   commitzero init --preset=team
 fi
 
 # Instalar hooks Git
-echo \"🪝 Instalando hooks Git...\"
+echo &quot;🪝 Instalando hooks Git...&quot;
 commitzero install
 
 # Configurar Git template (opcional)
-echo \"📝 Configurando template de commit...\"
+echo &quot;📝 Configurando template de commit...&quot;
 cat > .gitmessage << 'EOF'
 # <tipo>[escopo opcional]: <descrição>
 #
@@ -768,12 +768,12 @@ EOF
 
 git config commit.template .gitmessage
 
-echo \"✅ CommitZero configurado com sucesso!\"
-echo \"\"
-echo \"💡 Dicas:\"
-echo \"  - Use 'commitzero' para commits interativos\"
-echo \"  - Use 'git commit' normalmente (validação automática)\"
-echo \"  - Veja exemplos em: https://commitzero.github.io/commitzero/pt-br/examples\"">
+echo &quot;✅ CommitZero configurado com sucesso!&quot;
+echo &quot;&quot;
+echo &quot;💡 Dicas:&quot;
+echo &quot;  - Use 'commitzero' para commits interativos&quot;
+echo &quot;  - Use 'git commit' normalmente (validação automática)&quot;
+echo &quot;  - Veja exemplos em: https://commitzero.github.io/commitzero/pt-br/examples&quot;">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
                             </svg>
@@ -871,6 +871,6 @@ echo \"  - Veja exemplos em: https://commitzero.github.io/commitzero/pt-br/examp
     </footer>
 
     <!-- Scripts -->
-    <script src="/commitzero/assets/js/main.js"></script>
+    <script type="module" src="../assets/js/main.js"></script>
 </body>
 </html>

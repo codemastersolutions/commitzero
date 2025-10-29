@@ -7,9 +7,18 @@
 [![CI](https://github.com/codemastersolutions/commitzero/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/codemastersolutions/commitzero/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/codemastersolutions/commitzero/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/codemastersolutions/commitzero/actions/workflows/codeql.yml)
 
-Idiomas: [English](./README.md) | [Português Brasil](./README.pt-BR.md) | Español
+Idiomas: [English](./README.md) | [Português 🇧🇷](./README.pt-BR.md) | Español
 
 Validador de Conventional Commits con una CLI amigable, hooks de Git y un motor de reglas interno — sin dependencias de runtime.
+
+## Características
+
+- Sin dependencias de runtime; liviano y rápido.
+- CLI amigable con flujo de commit interactivo.
+- Instalación/eliminación de hooks de Git con ruta versionada (`.commitzero/hooks`).
+- Motor de reglas interno que aplica Conventional Commits.
+- Internacionalización: `en`, `pt-BR`, `es`.
+- Runner y gestión de comandos de pre-commit.
 
 ## Instalación
 
@@ -29,6 +38,15 @@ yarn add -D @codemastersolutions/commitzero
 npx commitzero --help
 ```
 
+## Guía rápida
+
+- Inicializar configuración: `commitzero init`
+- Instalar hooks versionados: `commitzero install-hooks`
+- Hacer un commit interactivo: `commitzero commit`
+  - Agregar automáticamente: `commitzero commit -a`
+  - Hacer push después del commit: `commitzero commit -p` (desactiva el progreso con `--progress-off`)
+  - Usar el buffer principal en lugar de la pantalla alternativa: `commitzero commit --no-alt-screen`
+
 ## Uso del CLI
 
 - Ayuda: `commitzero --help`
@@ -47,6 +65,15 @@ npx commitzero --help
 - Commit interactivo: `commitzero commit`
   - Agregar cambios automáticamente: `commitzero commit -a` o `commitzero commit --add`
   - Commit y push: `commitzero commit -p` o `commitzero commit --push`
+  - Desactivar animación de progreso del push: `commitzero commit --progress-off`
+  - Desactivar pantalla alternativa (usar buffer principal): `commitzero commit --no-alt-screen`
+
+### Commit interactivo: navegación y visualización
+
+- Navega con `↑`/`↓` o `j`/`k` (con wrap-around).
+- Confirma con `Enter`. Cancela con `Ctrl+C`.
+- Usa la pantalla alternativa del terminal por defecto para paginación estable.
+- Opt-out vía `--no-alt-screen` o configura `uiAltScreen: false`.
 
 ## Notas especiales
 
@@ -91,10 +118,12 @@ yarn commitzero install-hooks
 ```
 
 **Opciones:**
+
 - `--force`: Sobrescribir configuración de ruta de hooks existente sin confirmación
 - `--init-git`: Inicializar repositorio git si aún no está inicializado
 
 **Prompts interactivos:**
+
 - Si Git no está inicializado, se te pedirá que lo inicialices
 - Si ya hay una ruta de hooks diferente configurada, se te preguntará para confirmar la sobrescritura
 
@@ -169,7 +198,8 @@ yarn commitzero lint -m $'feat(core): change\n\nBody text\n\nRefs: 123'
   "allowBreaking": true,
   "footerKeywords": ["BREAKING CHANGE", "Closes", "Refs"],
   "preCommitCommands": [],
-  "language": "en"
+  "language": "en",
+  "uiAltScreen": true
 }
 ```
 
@@ -183,6 +213,12 @@ yarn commitzero lint -m $'feat(core): change\n\nBody text\n\nRefs: 123'
 - `footerKeywords`: Palabras clave reconocidas como footers del commit (por ejemplo, referencias, cambios rompientes).
 - `preCommitCommands`: Array de comandos de shell para ejecutar antes del commit.
 - `language`: Idioma de salida de la CLI y de las reglas. Valores aceptados: `en`, `pt`, `es`. Por defecto: `en`.
+- `uiAltScreen`: Cuando `true`, los prompts interactivos se renderizan en la pantalla alternativa del terminal para una visualización estable. Desactívalo con `--no-alt-screen` o configúralo en `false`.
+
+### Variables de entorno
+
+- `COMMITZERO_LANG`: Sobrescribe idioma (`en`, `pt`, `es`).
+- `NO_ALT_SCREEN=1`: Desactiva pantalla alternativa para prompts interactivos.
 
 ### Ruta de los hooks
 
@@ -246,8 +282,8 @@ Consejo: mantén `preCommitCommands` como un array vacío si no necesitas cheque
 
 - Al desinstalar, CommitZero intenta eliminar automáticamente su bloque gestionado de los hooks de Git.
 - Si el gestor de paquetes no ejecuta `postuninstall`, elimina las líneas entre `# CommitZero managed block START` y `# CommitZero managed block END` en:
-  - `.git/hooks/commit-msg`
-  - `.git/hooks/prepare-commit-msg`
+  - `.commitzero/hooks/commit-msg` or `.git/hooks/commit-msg`
+  - `.commitzero/hooks/prepare-commit-msg` or `.git/hooks/prepare-commit-msg`
 - O ejecuta manualmente:
 
 ```sh
@@ -259,6 +295,8 @@ pnpm commitzero cleanup
 # o
 yarn commitzero cleanup
 ```
+
+Nota: `uninstall-hooks` y `cleanup` no eliminan los scripts del `package.json`. Los scripts `commitzero`, `commitzero:install` y `commitzero:uninstall` se conservan por conveniencia.
 
 ### Idioma de los hooks
 

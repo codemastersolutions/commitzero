@@ -420,6 +420,29 @@
                     </div>
                 </div>
 
+                <!-- Configurações de UI -->
+                <div class="mb-12">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Configurações de UI</h2>
+                    <p class="text-gray-600 dark:text-gray-300 mb-4">
+                        Controle o uso da tela alternada no modo interativo. Defina <code class="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">uiAltScreen</code> para <code>false</code> para manter a UI interativa na tela principal do terminal.
+                    </p>
+                    <div class="code-block mb-6">
+                        <pre><code class="language-json">{
+  "uiAltScreen": false
+}</code></pre>
+                        <button class="copy-button" data-clipboard-text='{
+  "uiAltScreen": false
+}'>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                        <p class="text-sm text-blue-800 dark:text-blue-200"><strong>Nota:</strong> A flag <code>--no-alt-screen</code> no CLI tem precedência sobre configuração e variáveis de ambiente. Você também pode usar <code>NO_ALT_SCREEN=1</code> para desabilitar a tela alternada via ambiente.</p>
+                    </div>
+                </div>
+
                 <!-- Git Hooks -->
                 <div class="mb-12">
                     <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Integração com Git Hooks</h2>
@@ -726,6 +749,6 @@
     </footer>
 
     <!-- Scripts -->
-    <script src="/commitzero/assets/js/main.js"></script>
+    <script type="module" src="../assets/js/main.js"></script>
 </body>
 </html>
