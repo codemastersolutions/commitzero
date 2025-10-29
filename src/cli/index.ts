@@ -8,6 +8,7 @@ import { parseMessage } from "../core/parser";
 import { defaultOptions, lintCommit, type LintOptions } from "../core/rules";
 import { cleanupHooks } from "../hooks/cleanup";
 import { installHooks, uninstallHooks } from "../hooks/install";
+import { updateScripts as ensureScripts } from "../hooks/postinstall";
 import { DEFAULT_LANG, t } from "../i18n/index.js";
 import { c } from "./colors";
 import { interactiveCommit } from "./commands/commit";
@@ -146,6 +147,7 @@ async function main() {
 
   if (cmd === "install-hooks") {
     const initGit = args.includes("--init-git");
+    const force = args.includes("--force");
 
     try {
       // Check if git is initialized
@@ -187,7 +189,11 @@ async function main() {
         require("node:child_process").execSync("git init", { stdio: "inherit" });
         console.log(t(lang, "cli.gitInitialized"));
       }
-      installHooks();
+      installHooks({ forceOverride: force });
+      // Ensure package.json scripts exist even if postinstall didn't run
+      try {
+        ensureScripts(process.cwd());
+      } catch {}
       console.log(t(lang, "cli.hooksInstalled"));
     } catch (err: unknown) {
       console.error(
