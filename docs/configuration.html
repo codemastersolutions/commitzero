@@ -427,6 +427,22 @@
                                     </p>
                                 </div>
                             </div>
+
+                            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">UI Settings</h3>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Alternate Screen</label>
+                                        <pre class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 text-sm"><code class="text-gray-800 dark:text-gray-200">"uiAltScreen": true // default; set false to stay on main terminal</code></pre>
+                                    </div>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                                        Controls whether interactive commits use the terminal's alternate screen. Set <code>uiAltScreen</code> to <code>false</code> to render the interactive UI on the main screen (useful for terminals that don't handle alternate buffers well).
+                                    </p>
+                                    <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                                        <p class="text-sm text-blue-800 dark:text-blue-200"><strong>Note:</strong> The CLI flag <code>--no-alt-screen</code> takes precedence over configuration and environment variables. You can also use <code>NO_ALT_SCREEN=1</code> to disable alternate screen via environment.</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </section>
 

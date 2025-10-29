@@ -91,14 +91,14 @@ test("flag guard: -a and --push only valid with commit", () => {
     assert.fail("expected CLI to reject -a without commit");
   } catch (err: any) {
     const output = String((err.stdout || "") + (err.stderr || ""));
-    assert.match(output, /Flags -a\/--add, -p\/--push and --progress-off are only valid|Flags -a\/--add and -p\/--push are only valid/);
+    assert.match(output, /Flags -a\/--add, -p\/--push(?:, --progress-off(?: and --no-alt-screen)?)? are only valid|Flags -a\/--add and -p\/--push are only valid/);
   }
   try {
     execSync(`node ${CLI} --push`, { encoding: "utf8" });
     assert.fail("expected CLI to reject --push without commit");
   } catch (err: any) {
     const output = String((err.stdout || "") + (err.stderr || ""));
-    assert.match(output, /Flags -a\/--add, -p\/--push and --progress-off are only valid|Flags -a\/--add and -p\/--push are only valid/);
+    assert.match(output, /Flags -a\/--add, -p\/--push(?:, --progress-off(?: and --no-alt-screen)?)? are only valid|Flags -a\/--add and -p\/--push are only valid/);
   }
 });
 

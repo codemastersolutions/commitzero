@@ -82,7 +82,12 @@ function renderItems(items: Item[], selected: number, maxVisible?: number): numb
   return lines;
 }
 
-export async function select(prompt: string, items: Item[], header?: string): Promise<string> {
+export async function select(
+  prompt: string,
+  items: Item[],
+  header?: string,
+  opts?: { useAltScreen?: boolean }
+): Promise<string> {
   return new Promise((resolve) => {
     const stdin = process.stdin;
     const stdout = process.stdout;
@@ -128,7 +133,12 @@ export async function select(prompt: string, items: Item[], header?: string): Pr
     stdin.setRawMode?.(true);
     stdin.resume();
     stdin.on("data", onData);
-    const useAlt = !!stdout.isTTY && process.env.USE_ALT_SCREEN === "1";
+    // Use alternate screen by default to ensure stable rendering regardless of
+    // current terminal scroll/backbuffer. Allow opt-out via NO_ALT_SCREEN=1 or option.
+    let useAlt = !!stdout.isTTY && process.env.NO_ALT_SCREEN !== "1";
+    if (typeof opts?.useAltScreen === "boolean") {
+      useAlt = !!opts.useAltScreen;
+    }
     if (useAlt) enterAltScreen();
     hideCursor();
     if (useAlt) {
@@ -143,7 +153,8 @@ export async function select(prompt: string, items: Item[], header?: string): Pr
         typeof (stdout as { rows?: number }).rows === "number"
           ? (stdout as { rows?: number }).rows!
           : 0;
-      maxVisible = rows > 0 ? Math.max(1, rows - overhead) : undefined;
+      // Clamp to avoid rendering more lines than available and keep within list size
+      maxVisible = rows > 0 ? Math.max(1, Math.min(items.length, rows - overhead)) : undefined;
     };
     recomputeMaxVisible();
     let renderedLines = 0;

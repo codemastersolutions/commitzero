@@ -421,6 +421,7 @@ export async function interactiveCommit(
     autoAdd?: boolean;
     autoPush?: boolean;
     pushProgress?: boolean;
+    uiAltScreen?: boolean;
   }
 ): Promise<number> {
   // Exibir header primeiro, antes de qualquer outra mensagem
@@ -932,7 +933,12 @@ export async function interactiveCommit(
     }
     let type: string;
     try {
-      type = await select(c.bold(t(lang, "commit.select.type")), typeItems);
+      type = await select(
+        c.bold(t(lang, "commit.select.type")),
+        typeItems,
+        undefined,
+        { useAltScreen: cfg?.uiAltScreen }
+      );
     } catch {
       console.log(c.yellow(t(lang, "commit.cancelled")));
       return 130;

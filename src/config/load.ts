@@ -11,6 +11,11 @@ export interface UserConfig {
   footerKeywords?: string[];
   preCommitCommands?: string[];
   language?: Lang;
+  uiAltScreen?: boolean;
+  commitZero?: {
+    uiAltScreen?: boolean;
+    pushProgress?: boolean;
+  };
 }
 
 export function loadConfig(cwd: string = process.cwd()): UserConfig {

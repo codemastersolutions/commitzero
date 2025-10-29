@@ -11,6 +11,15 @@ Languages: English | [Português 🇧🇷](./README.pt-BR.md) | [Español](./REA
 
 Conventional Commits validator with a friendly CLI, Git hooks, and an internal rule engine — zero runtime dependencies.
 
+## Features
+
+- Zero runtime dependencies; lightweight and fast.
+- Friendly CLI with interactive commit flow.
+- Git hooks install/uninstall with versioned hooks path (`.commitzero/hooks`).
+- Internal rules engine enforcing Conventional Commits.
+- Internationalization: `en`, `pt-BR`, `es`.
+- Pre-commit commands runner and management.
+
 ## Installation
 
 - Local project (dev dependency):
@@ -28,6 +37,15 @@ yarn add -D @codemastersolutions/commitzero
 ```sh
 npx commitzero --help
 ```
+
+## Quickstart
+
+- Initialize configuration: `commitzero init`
+- Install versioned hooks: `commitzero install-hooks`
+- Make an interactive commit: `commitzero commit`
+  - Auto stage: `commitzero commit -a`
+  - Push after commit: `commitzero commit -p` (disable progress with `--progress-off`)
+  - Use main buffer instead of alternate screen: `commitzero commit --no-alt-screen`
 
 ## CLI Usage
 
@@ -47,6 +65,15 @@ npx commitzero --help
 - Interactive commit: `commitzero commit`
   - Auto stage changes: `commitzero commit -a` or `commitzero commit --add`
   - Commit and push: `commitzero commit -p` or `commitzero commit --push`
+  - Disable push progress animation: `commitzero commit --progress-off`
+  - Disable alternate screen (use main buffer): `commitzero commit --no-alt-screen`
+
+### Interactive commit: navigation and display
+
+- Navigate with `↑`/`↓` or `j`/`k` (wrap-around).
+- Confirm with `Enter`. Cancel with `Ctrl+C`.
+- Uses the terminal’s alternate screen by default for stable pagination.
+- Opt-out via `--no-alt-screen` or set `uiAltScreen: false` in config.
 
 ## Special notes
 
@@ -172,7 +199,8 @@ yarn commitzero lint -m $'feat(core): change\n\nBody text\n\nRefs: 123'
   "allowBreaking": true,
   "footerKeywords": ["BREAKING CHANGE", "Closes", "Refs"],
   "preCommitCommands": [],
-  "language": "en"
+  "language": "en",
+  "uiAltScreen": true
 }
 ```
 
@@ -186,6 +214,12 @@ yarn commitzero lint -m $'feat(core): change\n\nBody text\n\nRefs: 123'
 - `footerKeywords`: Keywords recognized as commit footers (e.g., references, breaking changes).
 - `preCommitCommands`: Array of shell commands to run before committing.
 - `language`: CLI and rules output language. Accepted values: `en`, `pt`, `es`. Default: `en`.
+- `uiAltScreen`: When `true`, interactive prompts render in the terminal's alternate screen for stable display. Disable with `--no-alt-screen` or set to `false`.
+
+### Environment variables
+
+- `COMMITZERO_LANG`: Override language (`en`, `pt`, `es`).
+- `NO_ALT_SCREEN=1`: Disable alternate screen for interactive prompts.
 
 ### Hooks path
 
@@ -249,8 +283,8 @@ Tip: keep `preCommitCommands` as an empty array if you don't need pre-commit che
 
 - On uninstall, CommitZero attempts to remove its managed block from Git hooks automatically.
 - If your package manager does not run `postuninstall`, remove lines between `# CommitZero managed block START` and `# CommitZero managed block END` in:
-  - `.git/hooks/commit-msg`
-  - `.git/hooks/prepare-commit-msg`
+  - `.commitzero/hooks/commit-msg` or `.git/hooks/commit-msg`
+  - `.commitzero/hooks/prepare-commit-msg` or `.git/hooks/prepare-commit-msg`
 - Or run manually:
 
 ```sh

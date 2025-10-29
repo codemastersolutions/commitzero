@@ -427,6 +427,22 @@
                                     </p>
                                 </div>
                             </div>
+
+                            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Ajustes de UI</h3>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Pantalla alternativa</label>
+                                        <pre class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 text-sm"><code class="text-gray-800 dark:text-gray-200">"uiAltScreen": true // por defecto; establece false para permanecer en la pantalla principal</code></pre>
+                                    </div>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                                        Controla si los commits interactivos usan la pantalla alternativa del terminal. Establece <code>uiAltScreen</code> a <code>false</code> para renderizar la UI interactiva en la pantalla principal (útil para terminales que no manejan bien el búfer alterno).
+                                    </p>
+                                    <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                                        <p class="text-sm text-blue-800 dark:text-blue-200"><strong>Nota:</strong> La bandera del CLI <code>--no-alt-screen</code> tiene precedencia sobre la configuración y las variables de entorno. También puedes usar <code>NO_ALT_SCREEN=1</code> para deshabilitar la pantalla alternativa vía entorno.</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </section>
 

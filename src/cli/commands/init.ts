@@ -116,6 +116,7 @@ export async function initConfig(lang: import("../../i18n").Lang = DEFAULT_LANG)
     footerKeywords: ["BREAKING CHANGE", "Closes", "Refs"],
     preCommitCommands: [],
     language: existed ? DEFAULT_LANG : lang,
+    uiAltScreen: true,
   };
   writeFileSync(path, JSON.stringify(tpl, null, 2) + "\n", "utf8");
   if (existed) {

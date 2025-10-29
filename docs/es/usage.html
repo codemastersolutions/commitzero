@@ -246,6 +246,24 @@
                                 <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mt-3">
                                     <p class="text-sm text-blue-800 dark:text-blue-200"><strong>Nota:</strong> <code>uninstall-hooks</code> y <code>cleanup</code> no eliminan los scripts de <code>package.json</code>; los scripts <code>commitzero</code>, <code>commitzero:install</code> y <code>commitzero:uninstall</code> se conservan. La instalación respeta <code>core.hooksPath</code> de Git y usa <code>.git/hooks</code> cuando no está configurado; el CLI <code>commitzero install-hooks</code> configura <code>core.hooksPath</code> a <code>.commitzero/hooks</code> para que los hooks estén bajo control de versiones.</p>
                                 </div>
+                                <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mt-3">
+                                    <h4 class="font-medium text-yellow-900 dark:text-yellow-100 mb-2">Limpieza manual si <code>postuninstall</code> no se ejecuta</h4>
+                                    <p class="text-sm text-yellow-800 dark:text-yellow-200 mb-2">Si tu gestor de paquetes no ejecuta <code>postuninstall</code>, elimina las líneas entre <code># CommitZero managed block START</code> y <code># CommitZero managed block END</code> en:</p>
+                                    <ul class="text-sm text-yellow-800 dark:text-yellow-200 list-disc list-inside">
+                                        <li><code>.commitzero/hooks/commit-msg</code> o <code>.git/hooks/commit-msg</code></li>
+                                        <li><code>.commitzero/hooks/prepare-commit-msg</code> o <code>.git/hooks/prepare-commit-msg</code></li>
+                                    </ul>
+                                    <p class="text-sm text-yellow-800 dark:text-yellow-200 mt-2">O ejecuta manualmente:</p>
+                                    <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 mt-2">
+                                        <pre class="text-sm text-gray-800 dark:text-gray-200"><code>commitzero cleanup
+# o
+npm run commitzero cleanup
+# o
+pnpm commitzero cleanup
+# o
+yarn commitzero cleanup</code></pre>
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- Help -->
@@ -556,6 +574,71 @@
                                     </div>
                                 </div>
                             </div>
+                            <!-- Navigation & Display Options -->
+                            <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                    <h4 class="font-medium text-gray-900 dark:text-white mb-3">Consejos de Navegación</h4>
+                                    <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-300">
+                                        <li class="flex items-start">
+                                            <svg class="w-4 h-4 text-blue-500 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4l-4 4m0 0l4 4m-4-4h8"/></svg>
+                                            Usa flechas arriba/abajo para moverte; Enter para confirmar
+                                        </li>
+                                        <li class="flex items-start">
+                                            <svg class="w-4 h-4 text-blue-500 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                            Presiona Esc para cancelar y volver a la terminal
+                                        </li>
+                                        <li class="flex items-start">
+                                            <svg class="w-4 h-4 text-blue-500 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14"/></svg>
+                                            Escribe para filtrar opciones donde esté soportado
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                    <h4 class="font-medium text-gray-900 dark:text-white mb-3">Opciones de Visualización y Terminal</h4>
+                                    <div class="space-y-3">
+                                        <div>
+                                            <p class="text-sm text-gray-600 dark:text-gray-300 mb-1">Desactivar spinner/salida de progreso:</p>
+                                            <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
+                                                <code class="text-sm text-gray-800 dark:text-gray-200">commitzero commit --progress-off</code>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-600 dark:text-gray-300 mb-1">Ejecutar sin pantalla alternativa (mantenerse en la terminal principal):</p>
+                                            <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 mb-2">
+                                                <code class="text-sm text-gray-800 dark:text-gray-200">commitzero commit --no-alt-screen</code>
+                                            </div>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400">También puedes definir <code>NO_ALT_SCREEN=1</code> para desactivarla por defecto.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Environment Variables -->
+                    <section id="environment" class="mb-12">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Variables de Entorno</h2>
+                        <p class="text-gray-600 dark:text-gray-300 mb-6">Configura el comportamiento predeterminado mediante variables de entorno. Las flags de CLI tienen prioridad sobre la configuración y el entorno.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Idioma</h3>
+                                <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">Define el idioma de la interfaz para prompts y mensajes:</p>
+                                <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 mb-2">
+                                    <code class="text-sm text-gray-800 dark:text-gray-200">export COMMITZERO_LANG=es</code>
+                                </div>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Valores soportados: <code>en</code>, <code>pt</code>, <code>es</code>.</p>
+                            </div>
+                            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Pantalla Alternativa</h3>
+                                <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">Desactivar el uso de pantalla alternativa globalmente:</p>
+                                <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 mb-2">
+                                    <code class="text-sm text-gray-800 dark:text-gray-200">export NO_ALT_SCREEN=1</code>
+                                </div>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Desactiva por defecto; desactiva o define <code>0</code> para habilitar. Para un solo comando, usa <code>--no-alt-screen</code>.</p>
+                            </div>
+                        </div>
+                        <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mt-6">
+                            <p class="text-sm text-blue-800 dark:text-blue-200"><strong>Nota:</strong> También puedes configurar valores predeterminados en <code>.commitzero.json</code>, incluyendo <code>uiAltScreen</code>. Consulta Configuración &rarr; Ajustes de UI.</p>
                         </div>
                     </section>
 
