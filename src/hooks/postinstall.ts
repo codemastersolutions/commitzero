@@ -29,7 +29,7 @@ function safeParseJson(content: string): { name: string; scripts: Record<string,
   }
 }
 
-function updateScripts(targetDir: string) {
+export function updateScripts(targetDir: string) {
   const pkgPath = join(targetDir, "package.json");
   if (!existsSync(pkgPath)) return;
 
