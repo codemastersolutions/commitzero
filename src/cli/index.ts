@@ -351,4 +351,4 @@ main()
 // Modified for testing
 // Teste para verificar mensagem commit.git.added// Teste final// Debug translation// Nova mudança
 // Debug test - modificação para testar commit --add
-// Debug: Verificando se commit.git.added está sendo traduzido corretamente - teste 2
+// Debug: Verificando se commit.git.added está sendo traduzido corretamente - teste 3
