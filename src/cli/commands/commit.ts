@@ -468,13 +468,29 @@ export async function interactiveCommit(
     }
 
     function hasUnstagedChanges(): boolean {
+      // Detecta modificações não staged (working tree) e também arquivos não rastreados
+      // 1) git diff --name-only -> mudanças não staged em arquivos rastreados
+      // 2) git ls-files --others --exclude-standard -> arquivos novos (untracked)
       try {
-        const out = execFileSync("git", ["diff", "--name-only"], {
+        const diffOut = execFileSync("git", ["diff", "--name-only"], {
           stdio: ["ignore", "pipe", "ignore"],
         })
           .toString()
           .trim();
-        return out.length > 0;
+        if (diffOut.length > 0) return true;
+      } catch {}
+
+      try {
+        const untrackedOut = execFileSync(
+          "git",
+          ["ls-files", "--others", "--exclude-standard"],
+          {
+            stdio: ["ignore", "pipe", "ignore"],
+          }
+        )
+          .toString()
+          .trim();
+        return untrackedOut.length > 0;
       } catch {
         return false;
       }
