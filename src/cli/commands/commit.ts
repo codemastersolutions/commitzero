@@ -57,7 +57,8 @@ function askWithCharacterCount(
   maxLength?: number,
   ctx?: TestAnswerCtx,
   isRequired?: boolean,
-  lang?: Lang
+  lang?: Lang,
+  nextLineInput: boolean = false
 ): Promise<string> {
   return new Promise((resolve, reject) => {
     const promptWithCount = (currentInput: string = "", cursorPos: number = 0) => {
@@ -123,11 +124,16 @@ function askWithCharacterCount(
     stdin.resume();
     stdin.setEncoding("utf8");
 
+    // Se solicitado, mostrar a pergunta e aceitar a digitação na linha abaixo
+    if (nextLineInput) {
+      console.log(q);
+    }
+
     const updatePrompt = () => {
       // Calcular quantas linhas o prompt atual pode ocupar
       const { prompt } = promptWithCount(currentInput, cursorPosition);
-      const fullLine = prompt + " " + currentInput;
       const terminalWidth = process.stdout.columns || 80;
+      const fullLine = nextLineInput ? currentInput : prompt + " " + currentInput;
       const linesUsed = Math.ceil(fullLine.length / terminalWidth);
 
       // Limpar todas as linhas que podem ter sido usadas
@@ -142,7 +148,11 @@ function askWithCharacterCount(
       const beforeCursor = currentInput.slice(0, cursorPosition);
       const afterCursor = currentInput.slice(cursorPosition);
 
-      process.stdout.write(prompt + " " + beforeCursor + afterCursor);
+      if (nextLineInput) {
+        process.stdout.write(beforeCursor + afterCursor);
+      } else {
+        process.stdout.write(prompt + " " + beforeCursor + afterCursor);
+      }
 
       // Mover cursor para a posição correta
       if (afterCursor.length > 0) {
@@ -153,8 +163,8 @@ function askWithCharacterCount(
     const showErrorAndContinue = (message: string) => {
       // Calcular quantas linhas o prompt atual pode ocupar
       const { prompt } = promptWithCount(currentInput, cursorPosition);
-      const fullLine = prompt + " " + currentInput;
       const terminalWidth = process.stdout.columns || 80;
+      const fullLine = nextLineInput ? currentInput : prompt + " " + currentInput;
       const linesUsed = Math.ceil(fullLine.length / terminalWidth);
 
       // Limpar todas as linhas que podem ter sido usadas
@@ -303,7 +313,8 @@ function askWithValidation(
   validator?: (answer: string) => boolean | string,
   ctx?: TestAnswerCtx,
   isRequired?: boolean,
-  lang?: Lang
+  lang?: Lang,
+  nextLineInput: boolean = false
 ): Promise<string> {
   return new Promise((resolve, reject) => {
     const askQuestion = () => {
@@ -368,7 +379,10 @@ function askWithValidation(
       };
 
       rl.once("SIGINT", onSigint);
-      rl.question(q, (answer: string) => {
+      if (nextLineInput) {
+        console.log(q);
+      }
+      rl.question(nextLineInput ? "" : q, (answer: string) => {
         rl.removeListener("SIGINT", onSigint);
         const trimmedAnswer = sanitizeInputSafe(answer.trim());
 
@@ -941,7 +955,8 @@ export async function interactiveCommit(
         scopeValidator,
         testCtx,
         isScopeRequired,
-        lang
+        lang,
+        true
       );
 
       // Adicionar linha em branco antes da pergunta do Subject
@@ -953,7 +968,8 @@ export async function interactiveCommit(
         cfg?.maxSubjectLength || 72,
         testCtx,
         true,
-        lang
+        lang,
+        true
       );
       body = await askWithCharacterCount(
         rl,
@@ -994,7 +1010,8 @@ export async function interactiveCommit(
           200,
           testCtx,
           false,
-          lang
+          lang,
+          true
         );
       }
     } catch {
