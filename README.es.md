@@ -38,6 +38,9 @@ npx commitzero --help
   - Vía argumento: `commitzero lint -m "feat(core): add x"`
 - Validar el commit actual (hook): `commitzero check`
 - Hooks: `commitzero install-hooks` / `commitzero uninstall-hooks`
+  - Opciones:
+    - `--force`: Sobrescribir configuración de ruta de hooks existente
+    - `--init-git`: Inicializar repositorio git si aún no está inicializado
 - Gestión de comandos de pre-commit:
   - Agregar: `commitzero pre-commit add "npm run lint"`
   - Quitar: `commitzero pre-commit remove "npm run lint"`
@@ -75,6 +78,8 @@ git init
 
 #### Instalar hooks de commit
 
+Los hooks se instalan automáticamente en el directorio `.commitzero/hooks` y Git se configura para usar esta ruta. Esto asegura que los hooks estén bajo control de versiones.
+
 ```sh
 commitzero install-hooks
 # o
@@ -85,10 +90,18 @@ pnpm commitzero install-hooks
 yarn commitzero install-hooks
 ```
 
+**Opciones:**
+- `--force`: Sobrescribir configuración de ruta de hooks existente sin confirmación
+- `--init-git`: Inicializar repositorio git si aún no está inicializado
+
+**Prompts interactivos:**
+- Si Git no está inicializado, se te pedirá que lo inicialices
+- Si ya hay una ruta de hooks diferente configurada, se te preguntará para confirmar la sobrescritura
+
 #### Verificar hooks de commit
 
 ```sh
-ls -l .git/hooks/commit-msg
+ls -l .commitzero/hooks/commit-msg
 # Debe ser ejecutable e incluir el bloque gestionado por CommitZero
 ```
 
