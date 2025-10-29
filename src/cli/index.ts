@@ -7,7 +7,7 @@ import { loadConfig, type UserConfig } from "../config/load.js";
 import { parseMessage } from "../core/parser";
 import { defaultOptions, lintCommit, type LintOptions } from "../core/rules";
 import { cleanupHooks } from "../hooks/cleanup";
-import { installHooks, uninstallHooks, getCurrentHooksPath, isCommitZeroHooksPath } from "../hooks/install";
+import { installHooks, uninstallHooks } from "../hooks/install";
 import { DEFAULT_LANG, t } from "../i18n/index.js";
 import { c } from "./colors";
 import { interactiveCommit } from "./commands/commit";
@@ -145,9 +145,8 @@ async function main() {
   }
 
   if (cmd === "install-hooks") {
-    const forceOverride = args.includes("--force");
     const initGit = args.includes("--init-git");
-    
+
     try {
       // Check if git is initialized
       if (!require("node:fs").existsSync(".git") && !initGit) {
@@ -156,17 +155,23 @@ async function main() {
           const readline = require("node:readline");
           const rl = readline.createInterface({
             input: process.stdin,
-            output: process.stdout
+            output: process.stdout,
           });
-          
+
           const answer = await new Promise<string>((resolve) => {
             rl.question(t(lang, "cli.gitNotInitialized"), (answer: string) => {
               rl.close();
               resolve(answer.toLowerCase());
             });
           });
-          
-          if (answer === "y" || answer === "yes" || answer === "s" || answer === "sim" || answer === "sí") {
+
+          if (
+            answer === "y" ||
+            answer === "yes" ||
+            answer === "s" ||
+            answer === "sim" ||
+            answer === "sí"
+          ) {
             require("node:child_process").execSync("git init", { stdio: "inherit" });
             console.log(t(lang, "cli.gitInitialized"));
           } else {
@@ -182,42 +187,14 @@ async function main() {
         require("node:child_process").execSync("git init", { stdio: "inherit" });
         console.log(t(lang, "cli.gitInitialized"));
       }
-      
-      // Check for existing hooks path and handle override
-      const currentHooksPath = getCurrentHooksPath();
-      
-      if (currentHooksPath && !isCommitZeroHooksPath(currentHooksPath) && !forceOverride) {
-        const isInteractive = process.stdin.isTTY && process.stdout.isTTY;
-        if (isInteractive) {
-          const readline = require("node:readline");
-          const rl = readline.createInterface({
-            input: process.stdin,
-            output: process.stdout
-          });
-          
-          console.log(t(lang, "cli.hooksPathExists", { path: currentHooksPath }));
-          const answer = await new Promise<string>((resolve) => {
-            rl.question(t(lang, "cli.overrideHooksPath"), (answer: string) => {
-              rl.close();
-              resolve(answer.toLowerCase());
-            });
-          });
-          
-          if (answer !== "y" && answer !== "yes" && answer !== "s" && answer !== "sim" && answer !== "sí") {
-            console.log(t(lang, "cli.hooksInstallCancelled"));
-            return;
-          }
-        } else {
-          console.error(t(lang, "cli.hooksPathExistsError", { path: currentHooksPath }));
-          exit(1);
-          return;
-        }
-      }
-      
-      installHooks({ forceOverride });
+      installHooks();
       console.log(t(lang, "cli.hooksInstalled"));
-    } catch (err: any) {
-      console.error(t(lang, "cli.hooksInstallError", { error: err.message }));
+    } catch (err: unknown) {
+      console.error(
+        t(lang, "cli.hooksInstallError", {
+          error: err instanceof Error ? err.message : String(err),
+        })
+      );
       exit(1);
     }
     return;
@@ -241,16 +218,18 @@ async function main() {
   }
 
   if (cmd === "commit") {
-    const cfg: LintOptions & { autoAdd?: boolean; autoPush?: boolean; pushProgress?: boolean } = { 
-      ...defaultOptions, 
-      ...userConfig, 
-      language: lang 
+    const cfg: LintOptions & { autoAdd?: boolean; autoPush?: boolean; pushProgress?: boolean } = {
+      ...defaultOptions,
+      ...userConfig,
+      language: lang,
     };
 
     const autoAdd = args.includes("-a") || args.includes("--add");
     const autoPush = args.includes("-p") || args.includes("--push");
     const progressOff = args.includes("--progress-off");
-    const nestedPushProgress = (userConfig as UserConfig & { commitZero?: { pushProgress?: boolean } })?.commitZero?.pushProgress;
+    const nestedPushProgress = (
+      userConfig as UserConfig & { commitZero?: { pushProgress?: boolean } }
+    )?.commitZero?.pushProgress;
     const pushProgressCfg =
       typeof (userConfig as UserConfig & { pushProgress?: boolean }).pushProgress === "boolean"
         ? (userConfig as UserConfig & { pushProgress?: boolean }).pushProgress
