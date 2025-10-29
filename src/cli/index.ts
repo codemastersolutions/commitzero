@@ -7,7 +7,7 @@ import { loadConfig, type UserConfig } from "../config/load.js";
 import { parseMessage } from "../core/parser";
 import { defaultOptions, lintCommit, type LintOptions } from "../core/rules";
 import { cleanupHooks } from "../hooks/cleanup";
-import { installHooks, uninstallHooks } from "../hooks/install";
+import { installHooks, uninstallHooks, getCurrentHooksPath, isCommitZeroHooksPath } from "../hooks/install";
 import { DEFAULT_LANG, t } from "../i18n/index.js";
 import { c } from "./colors";
 import { interactiveCommit } from "./commands/commit";
@@ -184,7 +184,6 @@ async function main() {
       }
       
       // Check for existing hooks path and handle override
-      const { getCurrentHooksPath, isCommitZeroHooksPath } = require("../hooks/install");
       const currentHooksPath = getCurrentHooksPath();
       
       if (currentHooksPath && !isCommitZeroHooksPath(currentHooksPath) && !forceOverride) {

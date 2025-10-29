@@ -51,7 +51,7 @@ function isProjectRoot(): boolean {
   return existsSync(join(process.cwd(), "package.json"));
 }
 
-function getCurrentHooksPath(): string | null {
+export function getCurrentHooksPath(): string | null {
   try {
     const configured = execSync("git config --get core.hooksPath", {
       encoding: "utf8",
@@ -75,7 +75,7 @@ function removeHooksPath(): void {
   }
 }
 
-function isCommitZeroHooksPath(path: string): boolean {
+export function isCommitZeroHooksPath(path: string): boolean {
   return path === ".commitzero/hooks" || path.endsWith("/.commitzero/hooks");
 }
 
