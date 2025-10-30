@@ -1,0 +1,4 @@
+Teste das correções:
+1. Contador de caracteres para Scope
+2. Contador de caracteres para Subject  
+3. Resposta do Body na linha abaixo da pergunta
