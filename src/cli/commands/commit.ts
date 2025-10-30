@@ -952,7 +952,7 @@ export async function interactiveCommit(
     console.log();
 
     rl = readline.createInterface({ input, output });
-    let scope: string;
+    let scope: string = "";
     let subject: string;
     let body: string;
     let breakingAns: string;
@@ -971,15 +971,35 @@ export async function interactiveCommit(
       // Verificar se o escopo é obrigatório baseado na configuração
       const isScopeRequired = cfg?.requireScope || false;
 
-      scope = await askWithValidation(
-        rl,
-        c.cyan(t(lang, "commit.prompt.scope")),
-        scopeValidator,
-        testCtx,
-        isScopeRequired,
-        lang,
-        true
-      );
+      // Loop para pedir scope até ser válido
+      let scopeValid = false;
+      while (!scopeValid) {
+        scope = await askWithCharacterCount(
+          rl,
+          c.cyan(t(lang, "commit.prompt.scope")),
+          50, // Limite razoável para scope
+          testCtx,
+          isScopeRequired,
+          lang,
+          true
+        );
+
+        // Validar o scope após a entrada
+        if (scope.trim()) {
+          const s = scope.trim();
+          // aceita letras (Unicode, incluindo acentuação), números, hífen, espaço e caracteres especiais seguros
+          const patternOk = /^[\p{L}\p{N}\p{M}\p{P}\p{S}\- .]+$/u.test(s);
+          if (!patternOk) {
+            console.log(c.red(t(lang, "rules.scopePattern") || "Scope contém caracteres inválidos."));
+            continue;
+          }
+          if (s !== s.toLowerCase()) {
+            console.log(c.red(t(lang, "rules.scopeLower") || "Scope deve estar em minúsculas."));
+            continue;
+          }
+        }
+        scopeValid = true;
+      }
 
       // Adicionar linha em branco antes da pergunta do Subject
       console.log();
@@ -999,7 +1019,8 @@ export async function interactiveCommit(
         500,
         testCtx,
         false,
-        lang
+        lang,
+        true
       );
       // Validador para respostas y/N
       const yesNoValidator = (answer: string): boolean | string => {
