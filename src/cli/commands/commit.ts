@@ -974,6 +974,9 @@ export async function interactiveCommit(
       // Loop para pedir scope até ser válido
       let scopeValid = false;
       while (!scopeValid) {
+        console.log("DEBUG: Chamando askWithCharacterCount para SCOPE");
+        console.log("DEBUG: testCtx:", testCtx);
+        console.log("DEBUG: isScopeRequired:", isScopeRequired);
         scope = await askWithCharacterCount(
           rl,
           c.cyan(t(lang, "commit.prompt.scope")),
@@ -983,6 +986,7 @@ export async function interactiveCommit(
           lang,
           true
         );
+        console.log("DEBUG: Scope retornado:", scope);
 
         // Validar o scope após a entrada
         if (scope.trim()) {
@@ -1004,6 +1008,7 @@ export async function interactiveCommit(
       // Adicionar linha em branco antes da pergunta do Subject
       console.log();
 
+      console.log("DEBUG: Chamando askWithCharacterCount para SUBJECT");
       subject = await askWithCharacterCount(
         rl,
         c.cyan(t(lang, "commit.prompt.subject")),
@@ -1013,6 +1018,7 @@ export async function interactiveCommit(
         lang,
         true
       );
+      console.log("DEBUG: Subject retornado:", subject);
       body = await askWithCharacterCount(
         rl,
         c.cyan(t(lang, "commit.prompt.body")),
