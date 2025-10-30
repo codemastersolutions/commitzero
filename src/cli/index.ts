@@ -7,7 +7,7 @@ import { loadConfig, type UserConfig } from "../config/load.js";
 import { parseMessage } from "../core/parser";
 import { defaultOptions, lintCommit, type LintOptions } from "../core/rules";
 import { cleanupHooks } from "../hooks/cleanup";
-import { installHooks, uninstallHooks } from "../hooks/install";
+import { installHooks, uninstallHooks, getCurrentHooksPath } from "../hooks/install";
 import { updateScripts as ensureScripts } from "../hooks/postinstall";
 import { DEFAULT_LANG, t } from "../i18n/index.js";
 import { c } from "./colors";
@@ -195,7 +195,12 @@ async function main() {
       try {
         ensureScripts(process.cwd());
       } catch {}
-      console.log(t(lang, "cli.hooksInstalled"));
+      try {
+        const path = getCurrentHooksPath() || join(".git", "hooks");
+        console.log(t(lang, "cli.hooksInstalled", { path }));
+      } catch {
+        console.log(t(lang, "cli.hooksInstalled", { path: join(".git", "hooks") }));
+      }
     } catch (err: unknown) {
       console.error(
         t(lang, "cli.hooksInstallError", {

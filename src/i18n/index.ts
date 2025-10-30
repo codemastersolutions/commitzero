@@ -14,7 +14,7 @@ const dicts: Record<Lang, Dict> = {
     "cli.warning": "Warning: {msg}",
     "cli.valid": "Valid commit",
     "cli.readEditmsgError": "Could not read COMMIT_EDITMSG",
-    "cli.hooksInstalled": "Hooks installed at .commitzero/hooks",
+    "cli.hooksInstalled": "Hooks installed at {path}",
     "cli.hooksRemoved": "Managed blocks removed from hooks",
     "cli.gitNotInitialized":
       "Git is not initialized in this project. Do you want to initialize it? (y/N): ",
@@ -45,7 +45,6 @@ const dicts: Record<Lang, Dict> = {
     "cli.preCommitNotFound": "Command not found: {cmd}",
     "cli.preCommitJsConfigUnsupported":
       "Editing requires JSON config. Use commitzero init to create JSON.",
-
     "commit.select.type": "Select commit type:",
     "commit.library.header": "Library: {name}",
     "commit.chosen.type": "Chosen type: {type}",
@@ -69,7 +68,6 @@ const dicts: Record<Lang, Dict> = {
     "commit.validation.scopeRequired":
       "Scope is required by configuration. Please provide a scope.",
     "commit.validation.subjectRequired": "Subject is required. Please provide a subject.",
-
     "type.desc.feat": "A new feature",
     "type.desc.fix": "A bug fix",
     "type.desc.docs": "Documentation only changes",
@@ -82,7 +80,6 @@ const dicts: Record<Lang, Dict> = {
     "type.desc.ci": "Changes to CI configuration files and scripts",
     "type.desc.chore": "Other changes that don't modify src or test files",
     "type.desc.revert": "Reverts a previous commit",
-
     "init.exists": "commitzero.config.json already exists, nothing to do.",
     "init.created": "File commitzero.config.json created with defaults.",
     "init.askOverwrite": "commitzero.config.json exists. Overwrite with defaults? (y/N): ",
@@ -90,7 +87,6 @@ const dicts: Record<Lang, Dict> = {
     "init.confirmOverwrite": "Are you sure you want to overwrite? (y/N): ",
     "init.overwritten": "File commitzero.config.json overwritten with defaults.",
     "init.cancelled": "Operation cancelled by user.",
-
     "rules.typeInvalid": "invalid type: {type}",
     "rules.typeLower": "type must be lowercase",
     "rules.scopeRequired": "scope is required",
@@ -117,7 +113,7 @@ const dicts: Record<Lang, Dict> = {
     "cli.warning": "Aviso: {msg}",
     "cli.valid": "Commit válido",
     "cli.readEditmsgError": "Não foi possível ler COMMIT_EDITMSG",
-    "cli.hooksInstalled": "Hooks instalados em .commitzero/hooks",
+    "cli.hooksInstalled": "Hooks instalados em {path}",
     "cli.hooksRemoved": "Blocos gerenciados removidos dos hooks",
     "cli.gitNotInitialized":
       "Git não está inicializado neste projeto. Deseja inicializá-lo? (y/N): ",
@@ -149,7 +145,6 @@ const dicts: Record<Lang, Dict> = {
     "cli.preCommitNotFound": "Comando não encontrado: {cmd}",
     "cli.preCommitJsConfigUnsupported":
       "Edição requer configuração JSON. Use commitzero init para criar JSON.",
-
     "commit.select.type": "Selecione o tipo de commit:",
     "commit.library.header": "Biblioteca: {name}",
     "commit.chosen.type": "Tipo escolhido: {type}",
@@ -158,12 +153,13 @@ const dicts: Record<Lang, Dict> = {
     "commit.prompt.subject": "Assunto (curto, imperativo): ",
     "commit.prompt.body":
       "Corpo (opcional, sem suporte a múltiplas linhas; pressione Enter para pular): ",
-    "commit.prompt.breaking": "Mudança quebrando? (y/N): ",
-    "commit.prompt.breakingDetails": "Forneça detalhes de BREAKING CHANGE (rodapé): ",
+    "commit.prompt.breaking": "Mudança provoca quebra no código? (y/N): ",
+    "commit.prompt.breakingDetails": "Forneça detalhes da mudança (rodapé): ",
     "commit.created": "Mensagem de commit criada em .git/COMMIT_EDITMSG:\n\n{msg}",
     "commit.committing": "Realizando commit...",
     "commit.pushing": "Fazendo push para o remoto...",
-    "commit.git.askAdd": "Nenhum arquivo está staged. Executar 'git add -A' agora? (y/N): ",
+    "commit.git.askAdd":
+      "Deseja adicionar as alterações à área de staging?(Equivalente ao 'git add -A') (y/N): ",
     "commit.git.added": "Arquivos adicionados à área de staging.",
     "commit.git.nothingToCommit": "Nada para commit, mas há commits não enviados.",
     "commit.git.pushed": "Push realizado com sucesso para o remoto.",
@@ -174,7 +170,6 @@ const dicts: Record<Lang, Dict> = {
     "commit.validation.scopeRequired":
       "Escopo é obrigatório pela configuração. Por favor, forneça um escopo.",
     "commit.validation.subjectRequired": "Assunto é obrigatório. Por favor, forneça um assunto.",
-
     "type.desc.feat": "Um novo recurso",
     "type.desc.fix": "Correção de bug",
     "type.desc.docs": "Mudanças somente na documentação",
@@ -187,7 +182,6 @@ const dicts: Record<Lang, Dict> = {
     "type.desc.ci": "Mudanças na configuração e scripts de CI",
     "type.desc.chore": "Outras mudanças que não modificam arquivos de código ou testes",
     "type.desc.revert": "Reverte um commit anterior",
-
     "init.exists": "commitzero.config.json já existe, nada a fazer.",
     "init.created": "Arquivo commitzero.config.json criado com defaults.",
     "init.askOverwrite": "commitzero.config.json existe. Sobrescrever com valores padrões? (y/N): ",
@@ -195,7 +189,6 @@ const dicts: Record<Lang, Dict> = {
     "init.confirmOverwrite": "Tem certeza que deseja sobrescrever? (y/N): ",
     "init.overwritten": "Arquivo commitzero.config.json sobrescrito com valores padrões.",
     "init.cancelled": "Operação cancelada pelo usuário.",
-
     "rules.typeInvalid": "type inválido: {type}",
     "rules.typeLower": "type deve ser minúsculo",
     "rules.scopeRequired": "scope é obrigatório",
@@ -208,9 +201,9 @@ const dicts: Record<Lang, Dict> = {
     "rules.subjectPeriod": "subject não deve terminar com ponto final",
     "rules.blankHeaderBody": "linha em branco requerida entre header e body",
     "rules.blankBeforeFooters": "linha em branco requerida antes dos footers",
-    "rules.breakingNotAllowed": "BREAKING CHANGE não permitido pela configuração",
+    "rules.breakingNotAllowed": "Mudança com quebra no código não permitido pela configuração",
     "rules.breakingRequiresFooter":
-      "BREAKING CHANGE requer footer 'BREAKING CHANGE' detalhando a mudança",
+      "Mudança com quebra no código requer footer 'BREAKING CHANGE' detalhando a mudança",
     "rules.footerUnknown": "footer desconhecido: {key}",
   },
   es: {
@@ -222,7 +215,7 @@ const dicts: Record<Lang, Dict> = {
     "cli.warning": "Advertencia: {msg}",
     "cli.valid": "Commit válido",
     "cli.readEditmsgError": "No se pudo leer COMMIT_EDITMSG",
-    "cli.hooksInstalled": "Hooks instalados en .commitzero/hooks",
+    "cli.hooksInstalled": "Hooks instalados en {path}",
     "cli.hooksRemoved": "Bloques gestionados eliminados de los hooks",
     "cli.gitNotInitialized":
       "Git no está inicializado en este proyecto. ¿Desea inicializarlo? (y/N): ",
@@ -254,7 +247,6 @@ const dicts: Record<Lang, Dict> = {
     "cli.preCommitNotFound": "Comando no encontrado: {cmd}",
     "cli.preCommitJsConfigUnsupported":
       "La edición requiere configuración JSON. Use commitzero init para crear JSON.",
-
     "commit.select.type": "Selecciona el tipo de commit:",
     "commit.library.header": "Biblioteca: {name}",
     "commit.chosen.type": "Tipo elegido: {type}",
@@ -280,7 +272,6 @@ const dicts: Record<Lang, Dict> = {
       "El alcance es obligatorio por configuración. Por favor, proporcione un alcance.",
     "commit.validation.subjectRequired":
       "El asunto es obligatorio. Por favor, proporcione un asunto.",
-
     "type.desc.feat": "Una nueva funcionalidad",
     "type.desc.fix": "Una corrección de bug",
     "type.desc.docs": "Cambios solo en documentación",
@@ -293,7 +284,6 @@ const dicts: Record<Lang, Dict> = {
     "type.desc.ci": "Cambios rompedoras están permitidos.",
     "type.desc.chore": "Cambios rompedoras están permitidos.",
     "type.desc.revert": "Reverte um commit previo",
-
     "init.exists": "commitzero.config.json ya existe, nada que hacer.",
     "init.created": "Archivo commitzero.config.json creado con valores por defecto.",
     "init.askOverwrite":
@@ -302,7 +292,6 @@ const dicts: Record<Lang, Dict> = {
     "init.confirmOverwrite": "¿Seguro que quieres sobrescribir? (y/N): ",
     "init.overwritten": "Archivo commitzero.config.json sobrescrito con valores por defecto.",
     "init.cancelled": "Operación cancelada por el usuario.",
-
     "rules.typeInvalid": "tipo inválido: {type}",
     "rules.typeLower": "type debe estar en minúsculas",
     "rules.scopeRequired": "scope es obligatorio",

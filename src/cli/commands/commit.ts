@@ -998,8 +998,17 @@ export async function interactiveCommit(
         scopeValid = true;
       }
 
-      // Adicionar linha em branco antes da pergunta do Subject
-      console.log();
+      // Garantir apenas uma linha em branco entre Scope e Subject
+      {
+        const forceNonInteractive =
+          process.env.COMMITSKIP_INPUT_PROMPT === "1" ||
+          process.env.CI === "true" ||
+          process.env.NODE_TEST === "1";
+        const isInteractive = !!process.stdin.isTTY && !forceNonInteractive;
+        if (!isInteractive) {
+          console.log();
+        }
+      }
 
       subject = await askWithCharacterCount(
         rl,
