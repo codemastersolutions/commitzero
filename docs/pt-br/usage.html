@@ -347,6 +347,13 @@ rodapé opcional">
                                     </div>
                                     <p class="text-xs text-gray-500 dark:text-gray-400">Você também pode definir <code>NO_ALT_SCREEN=1</code> para desativar por padrão.</p>
                                 </div>
+                                <div>
+                                    <p class="text-sm text-gray-600 dark:text-gray-300 mb-1">Definir timeout para comandos de pre-commit:</p>
+                                    <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 mb-2">
+                                        <code class="text-sm text-gray-800 dark:text-gray-200">commitzero commit -t 2m</code>
+                                    </div>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">Suporta <code>ms</code>, <code>s</code> e <code>m</code>. A flag da CLI sobrescreve <code>COMMITZERO_PRE_COMMIT_TIMEOUT</code> e a configuração <code>preCommitTimeout</code>.</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -372,6 +379,14 @@ rodapé opcional">
                                 <code class="text-sm text-gray-800 dark:text-gray-200">export NO_ALT_SCREEN=1</code>
                             </div>
                             <p class="text-xs text-gray-500 dark:text-gray-400">Desfaça ou defina como <code>0</code> para habilitar. Para por comando, use <code>--no-alt-screen</code>.</p>
+                        </div>
+                        <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Timeout de Pre-commit</h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">Defina o timeout padrão para comandos de pre-commit:</p>
+                            <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 mb-2">
+                                <code class="text-sm text-gray-800 dark:text-gray-200">export COMMITZERO_PRE_COMMIT_TIMEOUT=3m</code>
+                            </div>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Suporta <code>ms</code>, <code>s</code>, <code>m</code>. Sobrescrito por <code>-t</code>/<code>--timeout</code> e configuração <code>preCommitTimeout</code>.</p>
                         </div>
                     </div>
                     <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mt-6">

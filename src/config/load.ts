@@ -10,11 +10,13 @@ export interface UserConfig {
   allowBreaking?: boolean;
   footerKeywords?: string[];
   preCommitCommands?: string[];
+  preCommitTimeout?: string | number;
   language?: Lang;
   uiAltScreen?: boolean;
   commitZero?: {
     uiAltScreen?: boolean;
     pushProgress?: boolean;
+    preCommitTimeout?: string | number;
   };
 }
 

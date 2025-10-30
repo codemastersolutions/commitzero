@@ -108,3 +108,32 @@ test("pre-commit run all success prints ok", () => {
     rmSync(tmp, { recursive: true, force: true });
   }
 });
+
+test("pre-commit times out when command exceeds configured timeout", () => {
+  const tmp = join(process.cwd(), "tmp-precommit-timeout");
+  mkdirSync(tmp, { recursive: true });
+  try {
+    const cfgPath = join(tmp, "commitzero.config.json");
+    const cfg = {
+      preCommitCommands: ['node -e "setTimeout(()=>{}, 5000)"'],
+    };
+    writeFileSync(cfgPath, JSON.stringify(cfg, null, 2), "utf8");
+    try {
+      execSync(`node ${CLI} pre-commit`, {
+        encoding: "utf8",
+        cwd: tmp,
+        env: { ...process.env, COMMITZERO_PRE_COMMIT_TIMEOUT: "100" }, // 100ms
+      });
+      assert.fail("expected CLI to exit with timeout error on long pre-commit command");
+    } catch (err: any) {
+      const output = String((err.stdout || "") + (err.stderr || ""));
+      assert.match(output, /Running pre-commit:|Executando pre-commit:|Ejecutando pre-commit:/);
+      assert.match(
+        output,
+        /timed out|tempo limite|tiempo límite|atingiu o tempo limite|excedió el tiempo límite/
+      );
+    }
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
+  }
+});

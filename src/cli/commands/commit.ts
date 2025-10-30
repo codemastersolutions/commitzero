@@ -424,6 +424,7 @@ export async function interactiveCommit(
     autoPush?: boolean;
     pushProgress?: boolean;
     uiAltScreen?: boolean;
+    preCommitTimeout?: string | number;
   }
 ): Promise<number> {
   // Exibir header primeiro, antes de qualquer outra mensagem
@@ -998,8 +999,17 @@ export async function interactiveCommit(
         scopeValid = true;
       }
 
-      // Adicionar linha em branco antes da pergunta do Subject
-      console.log();
+      // Garantir apenas uma linha em branco entre Scope e Subject
+      {
+        const forceNonInteractive =
+          process.env.COMMITSKIP_INPUT_PROMPT === "1" ||
+          process.env.CI === "true" ||
+          process.env.NODE_TEST === "1";
+        const isInteractive = !!process.stdin.isTTY && !forceNonInteractive;
+        if (!isInteractive) {
+          console.log();
+        }
+      }
 
       subject = await askWithCharacterCount(
         rl,
@@ -1114,6 +1124,12 @@ export async function interactiveCommit(
       const commitOut = execFileSync("git", ["commit", "-F", ".git/COMMIT_EDITMSG"], {
         stdio: ["ignore", "pipe", "pipe"],
         encoding: "utf8",
+        env: {
+          ...process.env,
+          ...(cfg?.preCommitTimeout !== undefined
+            ? { COMMITZERO_PRE_COMMIT_TIMEOUT: String(cfg.preCommitTimeout) }
+            : {}),
+        },
       });
       stopSpinner();
       console.log(""); // Linha em branco após o spinner
