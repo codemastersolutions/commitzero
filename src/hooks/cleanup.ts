@@ -39,7 +39,7 @@ function findProjectRoot(start: string): string {
 export function cleanupHooks(cwd?: string) {
   const start = cwd || process.env.INIT_CWD || process.cwd();
   const root = findProjectRoot(start);
-  const configured = getCurrentHooksPath();
+  const configured = getCurrentHooksPath(root);
   const hookDir = configured
     ? configured.startsWith("/")
       ? configured

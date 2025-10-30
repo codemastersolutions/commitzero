@@ -51,12 +51,41 @@ function isProjectRoot(): boolean {
   return existsSync(join(process.cwd(), "package.json"));
 }
 
-export function getCurrentHooksPath(): string | null {
+export function getCurrentHooksPath(baseDir?: string): string | null {
+  // Se um diretório base foi fornecido, só consideramos configuração local se for um
+  // repositório Git real (presença de .git/config). Caso contrário, retornamos null.
+  if (baseDir) {
+    try {
+      const hasLocalConfig = existsSync(join(baseDir, ".git", "config"));
+      if (!hasLocalConfig) {
+        return null;
+      }
+    } catch {
+      return null;
+    }
+  }
+  // Prioriza configuração local do repositório para evitar interferência de config global.
+  // Em ambientes sem repositório inicializado, retorna null para usar `.git/hooks` padrão.
   try {
-    const configured = execSync("git config --get core.hooksPath", {
+    const configuredLocal = execSync("git config --local --get core.hooksPath", {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "ignore"],
+      cwd: baseDir ?? process.cwd(),
     }).trim();
+    if (configuredLocal) return configuredLocal;
+  } catch {}
+  // Fallback: apenas se houver repositório, a chamada abaixo retornará algo útil.
+  // Evita usar configuração global fora do repositório atual.
+  try {
+    const configured = execSync(
+      "git rev-parse --is-inside-work-tree >/dev/null 2>&1 && git config --local --get core.hooksPath",
+      {
+        encoding: "utf8",
+        stdio: ["ignore", "pipe", "ignore"],
+        shell: "/bin/sh",
+        cwd: baseDir ?? process.cwd(),
+      }
+    ).trim();
     return configured || null;
   } catch {
     return null;
