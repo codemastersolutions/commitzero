@@ -227,7 +227,9 @@
   "preCommitCommands": [],
   "preCommitTimeout": "3m",
   "hookPath": ".git/hooks",
-  "language": "en"
+  "language": "en",
+  "versionCheckEnabled": true,
+  "versionCheckPeriod": "24h"
 }</code></pre>
                         </div>
                     </section>
@@ -422,6 +424,31 @@
                             </div>
                         </div>
                     </section>
+
+        <!-- Version Check -->
+        <section id="version-check" class="mb-12">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Version Check</h2>
+            <p class="text-gray-600 dark:text-gray-300 mb-6">
+                Enable automatic update checks for CommitZero and configure how often to check.
+            </p>
+
+            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Options</h3>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Enable</label>
+                        <pre class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 text-sm"><code class="text-gray-800 dark:text-gray-200">"versionCheckEnabled": true</code></pre>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Check Period</label>
+                        <pre class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 text-sm"><code class="text-gray-800 dark:text-gray-200">"versionCheckPeriod": "24h" // supports m, h, d</code></pre>
+                    </div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                        When enabled, the CLI checks for updates before command execution and may prompt to update in interactive terminals.
+                    </p>
+                </div>
+            </div>
+        </section>
 
                     <!-- Git Hooks -->
                     <section id="git-hooks" class="mb-12">

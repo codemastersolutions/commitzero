@@ -11,9 +11,30 @@ import { getCurrentHooksPath, installHooks, uninstallHooks } from "../hooks/inst
 import { updateScripts as ensureScripts } from "../hooks/postinstall";
 import { DEFAULT_LANG, t } from "../i18n/index.js";
 import { formatDurationMs, parseTimeToMs } from "../utils/time.js";
+import { checkForUpdate } from "../version/check.js";
 import { c } from "./colors";
 import { interactiveCommit } from "./commands/commit";
 import { initConfig } from "./commands/init";
+
+function getCurrentVersion(): string {
+  try {
+    const pkgPath1 = join(__dirname, "../../../package.json");
+    const raw1 = readFileSync(pkgPath1, "utf8");
+    const pkg1 = JSON.parse(raw1);
+    if (pkg1?.version) return String(pkg1.version);
+  } catch {
+    try {
+      const pkgPath2 = require.resolve("@codemastersolutions/commitzero/package.json");
+      const raw2 = readFileSync(pkgPath2, "utf8");
+      const pkg2 = JSON.parse(raw2);
+      if (pkg2?.version) return String(pkg2.version);
+    } catch {
+      const envVersion = process.env.npm_package_version;
+      if (envVersion) return String(envVersion);
+    }
+  }
+  return "";
+}
 
 function printHelp(lang: import("../i18n").Lang) {
   let version = "";
@@ -50,6 +71,66 @@ async function main() {
   }
 
   const cmd = args[0];
+
+  // Self-check de versão: executa antes de processar comandos
+  try {
+    const versionCheckEnabled =
+      ((userConfig as UserConfig & { versionCheckEnabled?: boolean }).versionCheckEnabled ??
+        (userConfig as UserConfig & { commitZero?: { versionCheckEnabled?: boolean } })?.commitZero
+          ?.versionCheckEnabled ??
+        true) === true;
+    const versionCheckPeriod = ((userConfig as UserConfig & { versionCheckPeriod?: string })
+      .versionCheckPeriod ??
+      (userConfig as UserConfig & { commitZero?: { versionCheckPeriod?: string } })?.commitZero
+        ?.versionCheckPeriod ??
+      "daily") as "daily" | "weekly" | "monthly";
+
+    const upd = await checkForUpdate({
+      enabled: versionCheckEnabled,
+      period: versionCheckPeriod,
+      cwd: process.cwd(),
+      packageName: "@codemastersolutions/commitzero",
+      currentVersion: getCurrentVersion() || "",
+    });
+    if (upd.shouldPrompt && upd.latestVersion) {
+      const isInteractive = process.stdin.isTTY && process.stdout.isTTY;
+      if (isInteractive) {
+        const readline = require("node:readline");
+        const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+        const answer: string = await new Promise((resolve) => {
+          rl.question(
+            t(lang, "cli.update_available", { version: upd.latestVersion! }) + " ",
+            (ans: string) => {
+              rl.close();
+              resolve(ans);
+            }
+          );
+        });
+        const a = (answer || "").trim().toLowerCase();
+        const yes = a === "y" || a === "yes" || a === "s" || a === "sim" || a === "sí";
+        if (!yes) {
+          console.log(t(lang, "cli.update_declined"));
+        } else {
+          console.log(t(lang, "cli.updating", { version: upd.latestVersion! }));
+          try {
+            require("node:child_process").execSync(
+              `npm install @codemastersolutions/commitzero@${upd.latestVersion}`,
+              { stdio: "inherit" }
+            );
+            console.log(t(lang, "cli.update_success", { version: upd.latestVersion! }));
+            exit(0);
+            return;
+          } catch (e) {
+            const code =
+              (e && typeof e === "object" && (e as { status?: string | number }).status) || "";
+            console.error(t(lang, "cli.update_failed", { code: String(code) }));
+          }
+        }
+      }
+    }
+  } catch {
+    // Ignora silenciosamente falhas na checagem de versão
+  }
 
   if (
     cmd === "-a" ||
@@ -367,15 +448,12 @@ async function main() {
           errno?: string | number;
           timedOut?: boolean;
         };
-        const msgLow = (
-          String(e.message || "") + " " + String(e.stderr || "")
-        ).toLowerCase();
+        const msgLow = (String(e.message || "") + " " + String(e.stderr || "")).toLowerCase();
         const codeLow = String(e.code || e.errno || "").toLowerCase();
         const timedOut =
           !!e &&
-          (
-            // Explicit flag if present
-            !!e.timedOut ||
+          // Explicit flag if present
+          (!!e.timedOut ||
             // Node error code/errno
             codeLow.includes("etimedout") ||
             // Common message fragments
@@ -383,8 +461,7 @@ async function main() {
             msgLow.includes("timeout") ||
             msgLow.includes("etimedout") ||
             // Fallback: process killed when timeout configured
-            (!!e.killed && timeoutMs > 0)
-          );
+            (!!e.killed && timeoutMs > 0));
         const errOut = e && e.stderr ? String(e.stderr) : e && e.message ? String(e.message) : "";
         if (errOut) process.stderr.write(errOut);
         if (timedOut) {

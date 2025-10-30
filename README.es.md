@@ -200,6 +200,8 @@ yarn commitzero lint -m $'feat(core): change\n\nBody text\n\nRefs: 123'
   "footerKeywords": ["BREAKING CHANGE", "Closes", "Refs"],
   "preCommitCommands": [],
   "preCommitTimeout": "3m",
+  "versionCheckEnabled": true,
+  "versionCheckPeriod": "daily",
   "language": "en",
   "uiAltScreen": true
 }
@@ -215,6 +217,8 @@ yarn commitzero lint -m $'feat(core): change\n\nBody text\n\nRefs: 123'
 - `footerKeywords`: Palabras clave reconocidas como footers del commit (por ejemplo, referencias, cambios rompientes).
 - `preCommitCommands`: Array de comandos de shell para ejecutar antes del commit.
 - `preCommitTimeout`: Timeout para cada comando de pre-commit. Acepta número (ms) o cadena de duración (`"90s"`, `"2m"`, `"1500ms"`). Por defecto: `"3m"`.
+- `versionCheckEnabled`: Activa la auto-verificación de nuevas versiones en la primera ejecución diaria del CLI. Por defecto: `true`.
+- `versionCheckPeriod`: Periodicidad para las verificaciones de versión. Valores aceptados: `daily`, `weekly`, `monthly`. Por defecto: `daily`.
 - `language`: Idioma de salida de la CLI y de las reglas. Valores aceptados: `en`, `pt`, `es`. Por defecto: `en`.
 - `uiAltScreen`: Cuando `true`, los prompts interactivos se renderizan en la pantalla alternativa del terminal para una visualización estable. Desactívalo con `--no-alt-screen` o configúralo en `false`.
 
