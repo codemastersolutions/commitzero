@@ -424,6 +424,7 @@ export async function interactiveCommit(
     autoPush?: boolean;
     pushProgress?: boolean;
     uiAltScreen?: boolean;
+    preCommitTimeout?: string | number;
   }
 ): Promise<number> {
   // Exibir header primeiro, antes de qualquer outra mensagem
@@ -1123,6 +1124,12 @@ export async function interactiveCommit(
       const commitOut = execFileSync("git", ["commit", "-F", ".git/COMMIT_EDITMSG"], {
         stdio: ["ignore", "pipe", "pipe"],
         encoding: "utf8",
+        env: {
+          ...process.env,
+          ...(cfg?.preCommitTimeout !== undefined
+            ? { COMMITZERO_PRE_COMMIT_TIMEOUT: String(cfg.preCommitTimeout) }
+            : {}),
+        },
       });
       stopSpinner();
       console.log(""); // Linha em branco após o spinner

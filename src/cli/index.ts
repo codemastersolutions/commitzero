@@ -7,9 +7,10 @@ import { loadConfig, type UserConfig } from "../config/load.js";
 import { parseMessage } from "../core/parser";
 import { defaultOptions, lintCommit, type LintOptions } from "../core/rules";
 import { cleanupHooks } from "../hooks/cleanup";
-import { installHooks, uninstallHooks, getCurrentHooksPath } from "../hooks/install";
+import { getCurrentHooksPath, installHooks, uninstallHooks } from "../hooks/install";
 import { updateScripts as ensureScripts } from "../hooks/postinstall";
 import { DEFAULT_LANG, t } from "../i18n/index.js";
+import { formatDurationMs, parseTimeToMs } from "../utils/time.js";
 import { c } from "./colors";
 import { interactiveCommit } from "./commands/commit";
 import { initConfig } from "./commands/init";
@@ -235,6 +236,7 @@ async function main() {
       autoPush?: boolean;
       pushProgress?: boolean;
       uiAltScreen?: boolean;
+      preCommitTimeout?: string | number;
     } = {
       ...defaultOptions,
       ...userConfig,
@@ -265,12 +267,20 @@ async function main() {
           ? nestedUiAltScreen
           : true;
     const uiAltScreen = noAltScreen ? false : uiAltScreenCfg;
+    // Parse optional timeout flag only for `commit` command
+    const tIdx = Math.max(args.indexOf("-t"), args.indexOf("--timeout"));
+    let preCommitTimeoutMs: number | undefined;
+    if (tIdx !== -1 && args[tIdx + 1]) {
+      preCommitTimeoutMs = parseTimeToMs(args[tIdx + 1], 180000);
+    }
+
     const code = await interactiveCommit(lang, {
       ...cfg,
       autoAdd,
       autoPush,
       pushProgress,
       uiAltScreen,
+      preCommitTimeout: preCommitTimeoutMs,
     });
     exit(code);
   }
@@ -327,6 +337,14 @@ async function main() {
       console.log(t(lang, "cli.preCommitNone"));
       return;
     }
+    // Determine timeout from env or config; env overrides config
+    const envTimeoutRaw = process.env.COMMITZERO_PRE_COMMIT_TIMEOUT;
+    const cfgTimeoutRaw =
+      (userConfig as UserConfig & { preCommitTimeout?: string | number }).preCommitTimeout ??
+      (userConfig as UserConfig & { commitZero?: { preCommitTimeout?: string | number } })
+        ?.commitZero?.preCommitTimeout;
+    const timeoutMs = parseTimeToMs(envTimeoutRaw ?? cfgTimeoutRaw, 180000);
+
     for (const command of commands) {
       try {
         console.log(t(lang, "cli.preCommitRun", { cmd: command }));
@@ -335,12 +353,47 @@ async function main() {
           stdio: ["ignore", "pipe", "pipe"],
           encoding: "utf8",
           cwd: process.cwd(),
+          // Apply timeout per command
+          timeout: timeoutMs,
         });
         if (out) process.stdout.write(out);
       } catch (err: unknown) {
-        const errOut = err && err instanceof Error ? err.message : "";
+        const e = err as {
+          killed?: boolean;
+          stderr?: Buffer | string;
+          stdout?: Buffer | string;
+          message?: string;
+          code?: string | number;
+          errno?: string | number;
+          timedOut?: boolean;
+        };
+        const msgLow = (
+          String(e.message || "") + " " + String(e.stderr || "")
+        ).toLowerCase();
+        const codeLow = String(e.code || e.errno || "").toLowerCase();
+        const timedOut =
+          !!e &&
+          (
+            // Explicit flag if present
+            !!e.timedOut ||
+            // Node error code/errno
+            codeLow.includes("etimedout") ||
+            // Common message fragments
+            msgLow.includes("timed out") ||
+            msgLow.includes("timeout") ||
+            msgLow.includes("etimedout") ||
+            // Fallback: process killed when timeout configured
+            (!!e.killed && timeoutMs > 0)
+          );
+        const errOut = e && e.stderr ? String(e.stderr) : e && e.message ? String(e.message) : "";
         if (errOut) process.stderr.write(errOut);
-        console.error(t(lang, "cli.preCommitFail", { cmd: command }));
+        if (timedOut) {
+          console.error(
+            t(lang, "cli.preCommitTimeout", { cmd: command, time: formatDurationMs(timeoutMs) })
+          );
+        } else {
+          console.error(t(lang, "cli.preCommitFail", { cmd: command }));
+        }
         exit(1);
       }
     }

@@ -7,7 +7,7 @@ type Dict = Record<string, string>;
 const dicts: Record<Lang, Dict> = {
   en: {
     "cli.help":
-      "CommitZero CLI{version}\n\nCommands:\n  init\n  lint --file <path> | -m <message>\n  check\n  install-hooks\n  uninstall-hooks\n  cleanup\n  commit [-a|--add] [-p|--push] [--progress-off] [--no-alt-screen]\n  pre-commit [add|remove] <command>\n\nOptions:\n  --help",
+      "CommitZero CLI{version}\n\nCommands:\n  init\n  lint --file <path> | -m <message>\n  check\n  install-hooks\n  uninstall-hooks\n  cleanup\n  commit [-a|--add] [-p|--push] [-t|--timeout <duration>] [--progress-off] [--no-alt-screen]\n  pre-commit [add|remove] <command>\n\nOptions:\n  --help",
     "cli.provideInput": "Provide --file <path> or -m <message>",
     "cli.invalid": "Invalid commit:",
     "cli.warnings": "Warnings:",
@@ -37,6 +37,7 @@ const dicts: Record<Lang, Dict> = {
     "cli.preCommitNone": "No pre-commit commands configured.",
     "cli.preCommitRun": "Running pre-commit: {cmd}",
     "cli.preCommitFail": "Pre-commit failed on: {cmd}",
+    "cli.preCommitTimeout": "Pre-commit timed out after {time} on: {cmd}",
     "cli.preCommitOk": "Pre-commit commands completed successfully.",
     "cli.preCommitProvideCmd": "Provide a command to add/remove.",
     "cli.preCommitAdded": "Added pre-commit command: {cmd}",
@@ -106,7 +107,7 @@ const dicts: Record<Lang, Dict> = {
   },
   pt: {
     "cli.help":
-      "CommitZero CLI{version}\n\nComandos:\n  init\n  lint --file <caminho> | -m <mensagem>\n  check\n  install-hooks\n  uninstall-hooks\n  cleanup\n  commit [-a|--add] [-p|--push] [--progress-off] [--no-alt-screen]\n  pre-commit [add|remove] <comando>\n\nOpções:\n  --help",
+      "CommitZero CLI{version}\n\nComandos:\n  init\n  lint --file <caminho> | -m <mensagem>\n  check\n  install-hooks\n  uninstall-hooks\n  cleanup\n  commit [-a|--add] [-p|--push] [-t|--timeout <duração>] [--progress-off] [--no-alt-screen]\n  pre-commit [add|remove] <comando>\n\nOpções:\n  --help",
     "cli.provideInput": "Forneça --file <caminho> ou -m <mensagem>",
     "cli.invalid": "Commit inválido:",
     "cli.warnings": "Avisos:",
@@ -137,6 +138,7 @@ const dicts: Record<Lang, Dict> = {
     "cli.preCommitNone": "Nenhum comando de pre-commit configurado.",
     "cli.preCommitRun": "Executando pre-commit: {cmd}",
     "cli.preCommitFail": "Pre-commit falhou em: {cmd}",
+    "cli.preCommitTimeout": "Pre-commit atingiu o tempo limite após {time} em: {cmd}",
     "cli.preCommitOk": "Comandos de pre-commit concluídos com sucesso.",
     "cli.preCommitProvideCmd": "Forneça um comando para adicionar/remover.",
     "cli.preCommitAdded": "Comando de pre-commit adicionado: {cmd}",
@@ -208,7 +210,7 @@ const dicts: Record<Lang, Dict> = {
   },
   es: {
     "cli.help":
-      "CommitZero CLI{version}\n\nComandos:\n  init\n  lint --file <ruta> | -m <mensaje>\n  check\n  install-hooks\n  uninstall-hooks\n  cleanup\n  commit [-a|--add] [-p|--push] [--progress-off] [--no-alt-screen]\n  pre-commit [add|remove] <comando>\n\nOpciones:\n  --help",
+      "CommitZero CLI{version}\n\nComandos:\n  init\n  lint --file <ruta> | -m <mensaje>\n  check\n  install-hooks\n  uninstall-hooks\n  cleanup\n  commit [-a|--add] [-p|--push] [-t|--timeout <duración>] [--progress-off] [--no-alt-screen]\n  pre-commit [add|remove] <comando>\n\nOpciones:\n  --help",
     "cli.provideInput": "Proporciona --file <ruta> o -m <mensaje>",
     "cli.invalid": "Commit inválido:",
     "cli.warnings": "Advertencias:",
@@ -239,6 +241,7 @@ const dicts: Record<Lang, Dict> = {
     "cli.preCommitNone": "No hay comandos de pre-commit configurados.",
     "cli.preCommitRun": "Ejecutando pre-commit: {cmd}",
     "cli.preCommitFail": "Pre-commit falló en: {cmd}",
+    "cli.preCommitTimeout": "Pre-commit excedió el tiempo límite después de {time} en: {cmd}",
     "cli.preCommitOk": "Comandos de pre-commit completados exitosamente.",
     "cli.preCommitProvideCmd": "Proporcione un comando para agregar/quitar.",
     "cli.preCommitAdded": "Comando de pre-commit agregado: {cmd}",
