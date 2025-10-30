@@ -113,8 +113,15 @@ async function main() {
         } else {
           console.log(t(lang, "cli.updating", { version: upd.latestVersion! }));
           try {
-            require("node:child_process").execSync(
-              `npm install @codemastersolutions/commitzero@${upd.latestVersion}`,
+            const { execFileSync } = require("node:child_process");
+            const semverPattern = /^[vV]?(?:\d+\.){2}\d+(?:-[A-Za-z0-9-.]+)?(?:\+[A-Za-z0-9-.]+)?$/;
+            const version = (upd.latestVersion || "").trim();
+            if (!semverPattern.test(version)) {
+              throw new Error(`Unsafe latestVersion: "${version}"`);
+            }
+            execFileSync(
+              "npm",
+              ["install", `@codemastersolutions/commitzero@${version}`],
               { stdio: "inherit" }
             );
             console.log(t(lang, "cli.update_success", { version: upd.latestVersion! }));
