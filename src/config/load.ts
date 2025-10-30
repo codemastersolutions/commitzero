@@ -11,12 +11,16 @@ export interface UserConfig {
   footerKeywords?: string[];
   preCommitCommands?: string[];
   preCommitTimeout?: string | number;
+  versionCheckEnabled?: boolean;
+  versionCheckPeriod?: string; // daily | weekly | monthly
   language?: Lang;
   uiAltScreen?: boolean;
   commitZero?: {
     uiAltScreen?: boolean;
     pushProgress?: boolean;
     preCommitTimeout?: string | number;
+    versionCheckEnabled?: boolean;
+    versionCheckPeriod?: string; // daily | weekly | monthly
   };
 }
 
