@@ -46,6 +46,7 @@ npx commitzero --help
   - Adicionar automaticamente: `commitzero commit -a`
   - Fazer push após o commit: `commitzero commit -p` (desative o progresso com `--progress-off`)
   - Usar o buffer principal em vez da tela alternativa: `commitzero commit --no-alt-screen`
+  - Definir timeout do pre-commit: `commitzero commit -t 2m` (ou `--timeout 120s`)
 
 ## Uso do CLI
 
@@ -198,6 +199,9 @@ yarn commitzero lint -m $'feat(core): change\n\nBody text\n\nRefs: 123'
   "allowBreaking": true,
   "footerKeywords": ["BREAKING CHANGE", "Closes", "Refs"],
   "preCommitCommands": [],
+  "preCommitTimeout": "3m",
+  "versionCheckEnabled": true,
+  "versionCheckPeriod": "daily",
   "language": "en",
   "uiAltScreen": true
 }
@@ -212,6 +216,9 @@ yarn commitzero lint -m $'feat(core): change\n\nBody text\n\nRefs: 123'
 - `allowBreaking`: Quando `false`, não permite `feat!` e exige footer `BREAKING CHANGE` quando houver breaking changes.
 - `footerKeywords`: Palavras-chave reconhecidas como footers de commit (ex.: referências, breaking changes).
 - `preCommitCommands`: Array de comandos de shell para rodar antes do commit.
+- `preCommitTimeout`: Timeout para cada comando de pre-commit. Aceita número (ms) ou string de duração (`"90s"`, `"2m"`, `"1500ms"`). Padrão: `"3m"`.
+- `versionCheckEnabled`: Ativa checagem de novas versões na primeira execução da CLI do dia. Padrão: `true`.
+- `versionCheckPeriod`: Periodicidade da checagem de versão. Valores aceitos: `daily`, `weekly`, `monthly`. Padrão: `daily`.
 - `language`: Idioma de saída da CLI e das regras. Valores aceitos: `en`, `pt`, `es`. Padrão: `en`.
 - `uiAltScreen`: Quando `true`, prompts interativos são renderizados na tela alternativa do terminal para exibição estável. Desative com `--no-alt-screen` ou defina como `false`.
 
@@ -219,6 +226,7 @@ yarn commitzero lint -m $'feat(core): change\n\nBody text\n\nRefs: 123'
 
 - `COMMITZERO_LANG`: Sobrescreve idioma (`en`, `pt`, `es`).
 - `NO_ALT_SCREEN=1`: Desativa tela alternativa para prompts interativos.
+- `COMMITZERO_PRE_COMMIT_TIMEOUT`: Timeout para comandos de pre-commit. Ex.: `"2m"`, `"120s"`, `"5000ms"`. Tem precedência sobre a configuração.
 
 ### Caminho dos hooks
 

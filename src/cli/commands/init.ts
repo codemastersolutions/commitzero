@@ -115,6 +115,9 @@ export async function initConfig(lang: import("../../i18n").Lang = DEFAULT_LANG)
     allowBreaking: true,
     footerKeywords: ["BREAKING CHANGE", "Closes", "Refs"],
     preCommitCommands: [],
+    preCommitTimeout: "3m",
+    versionCheckEnabled: true,
+    versionCheckPeriod: "daily",
     language: existed ? DEFAULT_LANG : lang,
     uiAltScreen: true,
   };

@@ -443,6 +443,30 @@
                     </div>
                 </div>
 
+                <!-- Verificação de Versão -->
+                <div class="mb-12">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Verificação de Versão</h2>
+                    <p class="text-gray-600 dark:text-gray-300 mb-6">
+                        Habilite a verificação automática de atualizações do CommitZero e ajuste a frequência conforme necessário.
+                    </p>
+                    <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Opções</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Habilitar</label>
+                                <pre class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 text-sm"><code class="text-gray-800 dark:text-gray-200">"versionCheckEnabled": true</code></pre>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Período de verificação</label>
+                                <pre class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 text-sm"><code class="text-gray-800 dark:text-gray-200">"versionCheckPeriod": "24h" // suporta m, h, d</code></pre>
+                            </div>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">
+                                Quando habilitado, o CLI verifica atualizações antes de executar comandos e pode solicitar atualização em terminais interativos.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Git Hooks -->
                 <div class="mb-12">
                     <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Integração com Git Hooks</h2>
@@ -467,6 +491,37 @@
                     <p class="text-gray-600 dark:text-gray-300">
                         Para remover os hooks, use: <code class="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">commitzero uninstall-hooks</code>
                     </p>
+                    
+                    <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 mt-6">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Comandos de Pre-commit</h3>
+                        <p class="text-gray-600 dark:text-gray-300 mb-4">
+                            Execute comandos personalizados antes de cada commit (ex.: lint, testes):
+                        </p>
+                        <pre class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 text-sm mb-4"><code class="text-gray-800 dark:text-gray-200">{
+  "preCommitCommands": [
+    "npm run lint",
+    "npm test"
+  ]
+}</code></pre>
+                        <div class="mt-4">
+                            <h4 class="text-md font-semibold text-gray-900 dark:text-white mb-2">Timeout de Pre-commit</h4>
+                            <p class="text-gray-600 dark:text-gray-300 mb-2">Defina o tempo máximo para executar comandos de pre-commit:</p>
+                            <pre class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 text-sm mb-2"><code class="text-gray-800 dark:text-gray-200">{
+  "preCommitTimeout": "3m" // suporta ms, s, m
+}</code></pre>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Precedência: flag da CLI <code>-t</code>/<code>--timeout</code> &gt; variável <code>COMMITZERO_PRE_COMMIT_TIMEOUT</code> &gt; configuração <code>preCommitTimeout</code>.</p>
+                        </div>
+                        <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mt-4">
+                            <div class="flex items-start">
+                                <svg class="w-5 h-5 text-yellow-600 dark:text-yellow-400 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                </svg>
+                                <p class="text-sm text-yellow-800 dark:text-yellow-200">
+                                    <strong>Nota:</strong> Se algum comando de pre-commit falhar, o commit será abortado.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Advanced Configuration -->

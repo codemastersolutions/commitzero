@@ -482,6 +482,13 @@ yarn commitzero cleanup</code></pre>
                                             </div>
                                             <p class="text-xs text-gray-500 dark:text-gray-400">You can also set <code>NO_ALT_SCREEN=1</code> to disable it by default.</p>
                                         </div>
+                                        <div>
+                                            <p class="text-sm text-gray-600 dark:text-gray-300 mb-1">Set pre-commit timeout for command execution:</p>
+                                            <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 mb-2">
+                                                <code class="text-sm text-gray-800 dark:text-gray-200">commitzero commit -t 2m</code>
+                                            </div>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400">Supports <code>ms</code>, <code>s</code>, and <code>m</code>. CLI flag overrides <code>COMMITZERO_PRE_COMMIT_TIMEOUT</code> and config <code>preCommitTimeout</code>.</p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -508,6 +515,14 @@ yarn commitzero cleanup</code></pre>
                                     <code class="text-sm text-gray-800 dark:text-gray-200">export NO_ALT_SCREEN=1</code>
                                 </div>
                                 <p class="text-xs text-gray-500 dark:text-gray-400">Unset or set to <code>0</code> to enable. For per-command, use <code>--no-alt-screen</code>.</p>
+                            </div>
+                            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Pre-commit Timeout</h3>
+                                <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">Set default timeout for pre-commit commands:</p>
+                                <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 mb-2">
+                                    <code class="text-sm text-gray-800 dark:text-gray-200">export COMMITZERO_PRE_COMMIT_TIMEOUT=3m</code>
+                                </div>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Supports <code>ms</code>, <code>s</code>, <code>m</code>. Overridden by <code>-t</code>/<code>--timeout</code> and config <code>preCommitTimeout</code>.</p>
                             </div>
                         </div>
                         <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mt-6">

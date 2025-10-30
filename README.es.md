@@ -46,6 +46,7 @@ npx commitzero --help
   - Agregar automáticamente: `commitzero commit -a`
   - Hacer push después del commit: `commitzero commit -p` (desactiva el progreso con `--progress-off`)
   - Usar el buffer principal en lugar de la pantalla alternativa: `commitzero commit --no-alt-screen`
+  - Definir timeout de pre-commit: `commitzero commit -t 2m` (o `--timeout 120s`)
 
 ## Uso del CLI
 
@@ -198,6 +199,9 @@ yarn commitzero lint -m $'feat(core): change\n\nBody text\n\nRefs: 123'
   "allowBreaking": true,
   "footerKeywords": ["BREAKING CHANGE", "Closes", "Refs"],
   "preCommitCommands": [],
+  "preCommitTimeout": "3m",
+  "versionCheckEnabled": true,
+  "versionCheckPeriod": "daily",
   "language": "en",
   "uiAltScreen": true
 }
@@ -212,6 +216,9 @@ yarn commitzero lint -m $'feat(core): change\n\nBody text\n\nRefs: 123'
 - `allowBreaking`: Cuando `false`, no permite `feat!` y exige el footer `BREAKING CHANGE` cuando hay cambios rompientes.
 - `footerKeywords`: Palabras clave reconocidas como footers del commit (por ejemplo, referencias, cambios rompientes).
 - `preCommitCommands`: Array de comandos de shell para ejecutar antes del commit.
+- `preCommitTimeout`: Timeout para cada comando de pre-commit. Acepta número (ms) o cadena de duración (`"90s"`, `"2m"`, `"1500ms"`). Por defecto: `"3m"`.
+- `versionCheckEnabled`: Activa la auto-verificación de nuevas versiones en la primera ejecución diaria del CLI. Por defecto: `true`.
+- `versionCheckPeriod`: Periodicidad para las verificaciones de versión. Valores aceptados: `daily`, `weekly`, `monthly`. Por defecto: `daily`.
 - `language`: Idioma de salida de la CLI y de las reglas. Valores aceptados: `en`, `pt`, `es`. Por defecto: `en`.
 - `uiAltScreen`: Cuando `true`, los prompts interactivos se renderizan en la pantalla alternativa del terminal para una visualización estable. Desactívalo con `--no-alt-screen` o configúralo en `false`.
 
@@ -219,6 +226,7 @@ yarn commitzero lint -m $'feat(core): change\n\nBody text\n\nRefs: 123'
 
 - `COMMITZERO_LANG`: Sobrescribe idioma (`en`, `pt`, `es`).
 - `NO_ALT_SCREEN=1`: Desactiva pantalla alternativa para prompts interactivos.
+- `COMMITZERO_PRE_COMMIT_TIMEOUT`: Timeout para comandos de pre-commit. Ej.: `"2m"`, `"120s"`, `"5000ms"`. Tiene precedencia sobre la configuración.
 
 ### Ruta de los hooks
 

@@ -46,6 +46,7 @@ npx commitzero --help
   - Auto stage: `commitzero commit -a`
   - Push after commit: `commitzero commit -p` (disable progress with `--progress-off`)
   - Use main buffer instead of alternate screen: `commitzero commit --no-alt-screen`
+  - Set pre-commit timeout: `commitzero commit -t 2m` (or `--timeout 120s`)
 
 ## CLI Usage
 
@@ -199,6 +200,9 @@ yarn commitzero lint -m $'feat(core): change\n\nBody text\n\nRefs: 123'
   "allowBreaking": true,
   "footerKeywords": ["BREAKING CHANGE", "Closes", "Refs"],
   "preCommitCommands": [],
+  "preCommitTimeout": "3m",
+  "versionCheckEnabled": true,
+  "versionCheckPeriod": "daily",
   "language": "en",
   "uiAltScreen": true
 }
@@ -213,6 +217,9 @@ yarn commitzero lint -m $'feat(core): change\n\nBody text\n\nRefs: 123'
 - `allowBreaking`: When `false`, disallows `feat!` and requires `BREAKING CHANGE` footer when breaking changes are present.
 - `footerKeywords`: Keywords recognized as commit footers (e.g., references, breaking changes).
 - `preCommitCommands`: Array of shell commands to run before committing.
+- `preCommitTimeout`: Timeout for each pre-commit command. Accepts a number (ms) or duration string (`"90s"`, `"2m"`, `"1500ms"`). Default: `"3m"`.
+- `versionCheckEnabled`: Enables self-check for new versions on first CLI run of the day. Default: `true`.
+- `versionCheckPeriod`: Periodicity for version checks. Accepted values: `daily`, `weekly`, `monthly`. Default: `daily`.
 - `language`: CLI and rules output language. Accepted values: `en`, `pt`, `es`. Default: `en`.
 - `uiAltScreen`: When `true`, interactive prompts render in the terminal's alternate screen for stable display. Disable with `--no-alt-screen` or set to `false`.
 
@@ -220,6 +227,7 @@ yarn commitzero lint -m $'feat(core): change\n\nBody text\n\nRefs: 123'
 
 - `COMMITZERO_LANG`: Override language (`en`, `pt`, `es`).
 - `NO_ALT_SCREEN=1`: Disable alternate screen for interactive prompts.
+- `COMMITZERO_PRE_COMMIT_TIMEOUT`: Timeout for pre-commit commands. E.g., `"2m"`, `"120s"`, `"5000ms"`. Takes precedence over config.
 
 ### Hooks path
 

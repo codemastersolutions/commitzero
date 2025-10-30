@@ -7,12 +7,34 @@ import { loadConfig, type UserConfig } from "../config/load.js";
 import { parseMessage } from "../core/parser";
 import { defaultOptions, lintCommit, type LintOptions } from "../core/rules";
 import { cleanupHooks } from "../hooks/cleanup";
-import { installHooks, uninstallHooks } from "../hooks/install";
+import { getCurrentHooksPath, installHooks, uninstallHooks } from "../hooks/install";
 import { updateScripts as ensureScripts } from "../hooks/postinstall";
 import { DEFAULT_LANG, t } from "../i18n/index.js";
+import { formatDurationMs, parseTimeToMs } from "../utils/time.js";
+import { checkForUpdate } from "../version/check.js";
 import { c } from "./colors";
 import { interactiveCommit } from "./commands/commit";
 import { initConfig } from "./commands/init";
+
+function getCurrentVersion(): string {
+  try {
+    const pkgPath1 = join(__dirname, "../../../package.json");
+    const raw1 = readFileSync(pkgPath1, "utf8");
+    const pkg1 = JSON.parse(raw1);
+    if (pkg1?.version) return String(pkg1.version);
+  } catch {
+    try {
+      const pkgPath2 = require.resolve("@codemastersolutions/commitzero/package.json");
+      const raw2 = readFileSync(pkgPath2, "utf8");
+      const pkg2 = JSON.parse(raw2);
+      if (pkg2?.version) return String(pkg2.version);
+    } catch {
+      const envVersion = process.env.npm_package_version;
+      if (envVersion) return String(envVersion);
+    }
+  }
+  return "";
+}
 
 function printHelp(lang: import("../i18n").Lang) {
   let version = "";
@@ -49,6 +71,73 @@ async function main() {
   }
 
   const cmd = args[0];
+
+  // Self-check de versão: executa antes de processar comandos
+  try {
+    const versionCheckEnabled =
+      ((userConfig as UserConfig & { versionCheckEnabled?: boolean }).versionCheckEnabled ??
+        (userConfig as UserConfig & { commitZero?: { versionCheckEnabled?: boolean } })?.commitZero
+          ?.versionCheckEnabled ??
+        true) === true;
+    const versionCheckPeriod = ((userConfig as UserConfig & { versionCheckPeriod?: string })
+      .versionCheckPeriod ??
+      (userConfig as UserConfig & { commitZero?: { versionCheckPeriod?: string } })?.commitZero
+        ?.versionCheckPeriod ??
+      "daily") as "daily" | "weekly" | "monthly";
+
+    const upd = await checkForUpdate({
+      enabled: versionCheckEnabled,
+      period: versionCheckPeriod,
+      cwd: process.cwd(),
+      packageName: "@codemastersolutions/commitzero",
+      currentVersion: getCurrentVersion() || "",
+    });
+    if (upd.shouldPrompt && upd.latestVersion) {
+      const isInteractive = process.stdin.isTTY && process.stdout.isTTY;
+      if (isInteractive) {
+        const readline = require("node:readline");
+        const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+        const answer: string = await new Promise((resolve) => {
+          rl.question(
+            t(lang, "cli.update_available", { version: upd.latestVersion! }) + " ",
+            (ans: string) => {
+              rl.close();
+              resolve(ans);
+            }
+          );
+        });
+        const a = (answer || "").trim().toLowerCase();
+        const yes = a === "y" || a === "yes" || a === "s" || a === "sim" || a === "sí";
+        if (!yes) {
+          console.log(t(lang, "cli.update_declined"));
+        } else {
+          console.log(t(lang, "cli.updating", { version: upd.latestVersion! }));
+          try {
+            const { execFileSync } = require("node:child_process");
+            const semverPattern = /^[vV]?(?:\d+\.){2}\d+(?:-[A-Za-z0-9-.]+)?(?:\+[A-Za-z0-9-.]+)?$/;
+            const version = (upd.latestVersion || "").trim();
+            if (!semverPattern.test(version)) {
+              throw new Error(`Unsafe latestVersion: "${version}"`);
+            }
+            execFileSync(
+              "npm",
+              ["install", `@codemastersolutions/commitzero@${version}`],
+              { stdio: "inherit" }
+            );
+            console.log(t(lang, "cli.update_success", { version: upd.latestVersion! }));
+            exit(0);
+            return;
+          } catch (e) {
+            const code =
+              (e && typeof e === "object" && (e as { status?: string | number }).status) || "";
+            console.error(t(lang, "cli.update_failed", { code: String(code) }));
+          }
+        }
+      }
+    }
+  } catch {
+    // Ignora silenciosamente falhas na checagem de versão
+  }
 
   if (
     cmd === "-a" ||
@@ -195,7 +284,12 @@ async function main() {
       try {
         ensureScripts(process.cwd());
       } catch {}
-      console.log(t(lang, "cli.hooksInstalled"));
+      try {
+        const path = getCurrentHooksPath() || join(".git", "hooks");
+        console.log(t(lang, "cli.hooksInstalled", { path }));
+      } catch {
+        console.log(t(lang, "cli.hooksInstalled", { path: join(".git", "hooks") }));
+      }
     } catch (err: unknown) {
       console.error(
         t(lang, "cli.hooksInstallError", {
@@ -230,6 +324,7 @@ async function main() {
       autoPush?: boolean;
       pushProgress?: boolean;
       uiAltScreen?: boolean;
+      preCommitTimeout?: string | number;
     } = {
       ...defaultOptions,
       ...userConfig,
@@ -260,12 +355,20 @@ async function main() {
           ? nestedUiAltScreen
           : true;
     const uiAltScreen = noAltScreen ? false : uiAltScreenCfg;
+    // Parse optional timeout flag only for `commit` command
+    const tIdx = Math.max(args.indexOf("-t"), args.indexOf("--timeout"));
+    let preCommitTimeoutMs: number | undefined;
+    if (tIdx !== -1 && args[tIdx + 1]) {
+      preCommitTimeoutMs = parseTimeToMs(args[tIdx + 1], 180000);
+    }
+
     const code = await interactiveCommit(lang, {
       ...cfg,
       autoAdd,
       autoPush,
       pushProgress,
       uiAltScreen,
+      preCommitTimeout: preCommitTimeoutMs,
     });
     exit(code);
   }
@@ -322,6 +425,14 @@ async function main() {
       console.log(t(lang, "cli.preCommitNone"));
       return;
     }
+    // Determine timeout from env or config; env overrides config
+    const envTimeoutRaw = process.env.COMMITZERO_PRE_COMMIT_TIMEOUT;
+    const cfgTimeoutRaw =
+      (userConfig as UserConfig & { preCommitTimeout?: string | number }).preCommitTimeout ??
+      (userConfig as UserConfig & { commitZero?: { preCommitTimeout?: string | number } })
+        ?.commitZero?.preCommitTimeout;
+    const timeoutMs = parseTimeToMs(envTimeoutRaw ?? cfgTimeoutRaw, 180000);
+
     for (const command of commands) {
       try {
         console.log(t(lang, "cli.preCommitRun", { cmd: command }));
@@ -330,12 +441,43 @@ async function main() {
           stdio: ["ignore", "pipe", "pipe"],
           encoding: "utf8",
           cwd: process.cwd(),
+          // Apply timeout per command
+          timeout: timeoutMs,
         });
         if (out) process.stdout.write(out);
       } catch (err: unknown) {
-        const errOut = err && err instanceof Error ? err.message : "";
+        const e = err as {
+          killed?: boolean;
+          stderr?: Buffer | string;
+          stdout?: Buffer | string;
+          message?: string;
+          code?: string | number;
+          errno?: string | number;
+          timedOut?: boolean;
+        };
+        const msgLow = (String(e.message || "") + " " + String(e.stderr || "")).toLowerCase();
+        const codeLow = String(e.code || e.errno || "").toLowerCase();
+        const timedOut =
+          !!e &&
+          // Explicit flag if present
+          (!!e.timedOut ||
+            // Node error code/errno
+            codeLow.includes("etimedout") ||
+            // Common message fragments
+            msgLow.includes("timed out") ||
+            msgLow.includes("timeout") ||
+            msgLow.includes("etimedout") ||
+            // Fallback: process killed when timeout configured
+            (!!e.killed && timeoutMs > 0));
+        const errOut = e && e.stderr ? String(e.stderr) : e && e.message ? String(e.message) : "";
         if (errOut) process.stderr.write(errOut);
-        console.error(t(lang, "cli.preCommitFail", { cmd: command }));
+        if (timedOut) {
+          console.error(
+            t(lang, "cli.preCommitTimeout", { cmd: command, time: formatDurationMs(timeoutMs) })
+          );
+        } else {
+          console.error(t(lang, "cli.preCommitFail", { cmd: command }));
+        }
         exit(1);
       }
     }
