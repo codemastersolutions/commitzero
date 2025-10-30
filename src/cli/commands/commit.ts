@@ -482,13 +482,9 @@ export async function interactiveCommit(
       } catch {}
 
       try {
-        const untrackedOut = execFileSync(
-          "git",
-          ["ls-files", "--others", "--exclude-standard"],
-          {
-            stdio: ["ignore", "pipe", "ignore"],
-          }
-        )
+        const untrackedOut = execFileSync("git", ["ls-files", "--others", "--exclude-standard"], {
+          stdio: ["ignore", "pipe", "ignore"],
+        })
           .toString()
           .trim();
         return untrackedOut.length > 0;
@@ -933,12 +929,9 @@ export async function interactiveCommit(
     }
     let type: string;
     try {
-      type = await select(
-        c.bold(t(lang, "commit.select.type")),
-        typeItems,
-        undefined,
-        { useAltScreen: cfg?.uiAltScreen }
-      );
+      type = await select(c.bold(t(lang, "commit.select.type")), typeItems, undefined, {
+        useAltScreen: cfg?.uiAltScreen,
+      });
     } catch {
       console.log(c.yellow(t(lang, "commit.cancelled")));
       return 130;
@@ -958,7 +951,7 @@ export async function interactiveCommit(
     let breakingAns: string;
     let breakingDetails: string = "";
     try {
-      const scopeValidator = (answer: string): boolean | string => {
+      const _scopeValidator = (answer: string): boolean | string => {
         const s = answer.trim();
         if (s === "") return true; // escopo opcional
         // aceita letras (Unicode, incluindo acentuação), números, hífen, espaço e caracteres especiais seguros
@@ -974,9 +967,6 @@ export async function interactiveCommit(
       // Loop para pedir scope até ser válido
       let scopeValid = false;
       while (!scopeValid) {
-        console.log("DEBUG: Chamando askWithCharacterCount para SCOPE");
-        console.log("DEBUG: testCtx:", testCtx);
-        console.log("DEBUG: isScopeRequired:", isScopeRequired);
         scope = await askWithCharacterCount(
           rl,
           c.cyan(t(lang, "commit.prompt.scope")),
@@ -986,7 +976,6 @@ export async function interactiveCommit(
           lang,
           true
         );
-        console.log("DEBUG: Scope retornado:", scope);
 
         // Validar o scope após a entrada
         if (scope.trim()) {
@@ -994,7 +983,9 @@ export async function interactiveCommit(
           // aceita letras (Unicode, incluindo acentuação), números, hífen, espaço e caracteres especiais seguros
           const patternOk = /^[\p{L}\p{N}\p{M}\p{P}\p{S}\- .]+$/u.test(s);
           if (!patternOk) {
-            console.log(c.red(t(lang, "rules.scopePattern") || "Scope contém caracteres inválidos."));
+            console.log(
+              c.red(t(lang, "rules.scopePattern") || "Scope contém caracteres inválidos.")
+            );
             continue;
           }
           if (s !== s.toLowerCase()) {
@@ -1008,7 +999,6 @@ export async function interactiveCommit(
       // Adicionar linha em branco antes da pergunta do Subject
       console.log();
 
-      console.log("DEBUG: Chamando askWithCharacterCount para SUBJECT");
       subject = await askWithCharacterCount(
         rl,
         c.cyan(t(lang, "commit.prompt.subject")),
@@ -1018,7 +1008,6 @@ export async function interactiveCommit(
         lang,
         true
       );
-      console.log("DEBUG: Subject retornado:", subject);
       body = await askWithCharacterCount(
         rl,
         c.cyan(t(lang, "commit.prompt.body")),
