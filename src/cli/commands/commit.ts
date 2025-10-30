@@ -66,7 +66,9 @@ function askWithCharacterCount(
       const countDisplay = maxLength ? ` (${count}/${maxLength})` : ` (${count})`;
       const coloredCount =
         maxLength && count > maxLength ? c.red(countDisplay) : c.gray(countDisplay);
-      return { prompt: q + coloredCount, cursorPos };
+      const prompt = q + coloredCount;
+      const inputPrefix = `${coloredCount} `; // contador no início da linha da resposta
+      return { prompt, inputPrefix, cursorPos };
     };
 
     if (ctx?.answers && ctx.index < ctx.answers.length) {
@@ -131,9 +133,9 @@ function askWithCharacterCount(
 
     const updatePrompt = () => {
       // Calcular quantas linhas o prompt atual pode ocupar
-      const { prompt } = promptWithCount(currentInput, cursorPosition);
+      const { prompt, inputPrefix } = promptWithCount(currentInput, cursorPosition);
       const terminalWidth = process.stdout.columns || 80;
-      const fullLine = nextLineInput ? currentInput : prompt + " " + currentInput;
+      const fullLine = nextLineInput ? inputPrefix + currentInput : prompt + " " + currentInput;
       const linesUsed = Math.ceil(fullLine.length / terminalWidth);
 
       // Limpar todas as linhas que podem ter sido usadas
@@ -149,7 +151,7 @@ function askWithCharacterCount(
       const afterCursor = currentInput.slice(cursorPosition);
 
       if (nextLineInput) {
-        process.stdout.write(beforeCursor + afterCursor);
+        process.stdout.write(inputPrefix + beforeCursor + afterCursor);
       } else {
         process.stdout.write(prompt + " " + beforeCursor + afterCursor);
       }
@@ -162,9 +164,9 @@ function askWithCharacterCount(
 
     const showErrorAndContinue = (message: string) => {
       // Calcular quantas linhas o prompt atual pode ocupar
-      const { prompt } = promptWithCount(currentInput, cursorPosition);
+      const { prompt, inputPrefix } = promptWithCount(currentInput, cursorPosition);
       const terminalWidth = process.stdout.columns || 80;
-      const fullLine = nextLineInput ? currentInput : prompt + " " + currentInput;
+      const fullLine = nextLineInput ? inputPrefix + currentInput : prompt + " " + currentInput;
       const linesUsed = Math.ceil(fullLine.length / terminalWidth);
 
       // Limpar todas as linhas que podem ter sido usadas
