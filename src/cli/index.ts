@@ -425,6 +425,10 @@ async function main() {
       console.log(t(lang, "cli.preCommitNone"));
       return;
     }
+    // Start message summarizing how many tasks will run
+    console.log(
+      t(lang, "cli.preCommitStart", { count: commands.length })
+    );
     // Determine timeout from env or config; env overrides config
     const envTimeoutRaw = process.env.COMMITZERO_PRE_COMMIT_TIMEOUT;
     const cfgTimeoutRaw =
@@ -432,55 +436,80 @@ async function main() {
       (userConfig as UserConfig & { commitZero?: { preCommitTimeout?: string | number } })
         ?.commitZero?.preCommitTimeout;
     const timeoutMs = parseTimeToMs(envTimeoutRaw ?? cfgTimeoutRaw, 180000);
+    // Track durations per command for summary
+    const durations: { cmd: string; timeMs: number }[] = [];
 
     for (const command of commands) {
-      try {
-        console.log(t(lang, "cli.preCommitRun", { cmd: command }));
+      console.log(t(lang, "cli.preCommitRun", { cmd: command }));
 
-        const out = require("node:child_process").execSync(command, {
-          stdio: ["ignore", "pipe", "pipe"],
-          encoding: "utf8",
-          cwd: process.cwd(),
-          // Apply timeout per command
-          timeout: timeoutMs,
-        });
-        if (out) process.stdout.write(out);
-      } catch (err: unknown) {
-        const e = err as {
-          killed?: boolean;
-          stderr?: Buffer | string;
-          stdout?: Buffer | string;
-          message?: string;
-          code?: string | number;
-          errno?: string | number;
-          timedOut?: boolean;
-        };
-        const msgLow = (String(e.message || "") + " " + String(e.stderr || "")).toLowerCase();
-        const codeLow = String(e.code || e.errno || "").toLowerCase();
-        const timedOut =
-          !!e &&
-          // Explicit flag if present
-          (!!e.timedOut ||
-            // Node error code/errno
-            codeLow.includes("etimedout") ||
-            // Common message fragments
-            msgLow.includes("timed out") ||
-            msgLow.includes("timeout") ||
-            msgLow.includes("etimedout") ||
-            // Fallback: process killed when timeout configured
-            (!!e.killed && timeoutMs > 0));
-        const errOut = e && e.stderr ? String(e.stderr) : e && e.message ? String(e.message) : "";
-        if (errOut) process.stderr.write(errOut);
-        if (timedOut) {
-          console.error(
-            t(lang, "cli.preCommitTimeout", { cmd: command, time: formatDurationMs(timeoutMs) })
-          );
-        } else {
-          console.error(t(lang, "cli.preCommitFail", { cmd: command }));
-        }
+      const startTs = Date.now();
+      const child = require("node:child_process").spawn(command, {
+        shell: true,
+        cwd: process.cwd(),
+        stdio: ["ignore", "inherit", "inherit"],
+      });
+      let timedOut = false as boolean;
+
+      // Live elapsed time updates
+      const progress = setInterval(() => {
+        const elapsed = Date.now() - startTs;
+        process.stdout.write(
+          "\r" +
+            t(lang, "cli.preCommitRun", { cmd: command }) +
+            " — " +
+            t(lang, "cli.preCommitElapsed", { time: formatDurationMs(elapsed) })
+        );
+      }, 1000);
+
+      // Timeout enforcement
+      const killer = setTimeout(() => {
+        timedOut = true;
+        try {
+          child.kill("SIGTERM");
+          // Escalate if needed
+          setTimeout(() => {
+            try {
+              child.kill("SIGKILL");
+            } catch {}
+          }, 1000);
+        } catch {}
+      }, timeoutMs);
+
+      const rc: number = await new Promise((resolve) => {
+        child.on("exit", (code: number | null) => resolve(typeof code === "number" ? code : 1));
+        child.on("error", () => resolve(1));
+      });
+
+      clearTimeout(killer);
+      clearInterval(progress);
+      // Move cursor to next line after progress carriage returns
+      process.stdout.write("\n");
+
+      const elapsedTotal = Date.now() - startTs;
+      durations.push({ cmd: command, timeMs: elapsedTotal });
+
+      if (timedOut) {
+        console.error(
+          t(lang, "cli.preCommitTimeout", { cmd: command, time: formatDurationMs(timeoutMs) })
+        );
         exit(1);
+        return;
+      }
+      if (rc !== 0) {
+        console.error(t(lang, "cli.preCommitFail", { cmd: command }));
+        exit(1);
+        return;
       }
     }
+
+    // Print time summary per task and total
+    console.log(t(lang, "cli.preCommitSummary"));
+    for (const d of durations) {
+      console.log(t(lang, "cli.preCommitSummaryItem", { cmd: d.cmd, time: formatDurationMs(d.timeMs) }));
+    }
+    const totalMs = durations.reduce((acc, d) => acc + d.timeMs, 0);
+    console.log(t(lang, "cli.preCommitSummaryTotal", { time: formatDurationMs(totalMs) }));
+
     console.log(t(lang, "cli.preCommitOk"));
     return;
   }
