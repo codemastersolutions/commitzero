@@ -99,7 +99,7 @@ test("pre-commit run all success prints ok", () => {
       preCommitCommands: ['node -e "1+1"', "node -e \"console.log('ok')\""],
     };
     writeFileSync(cfgPath, JSON.stringify(cfg, null, 2), "utf8");
-    const out = execSync(`node ${CLI} pre-commit`, { encoding: "utf8", cwd: tmp });
+    const out = execFileSync("node", [CLI, "pre-commit"], { encoding: "utf8", cwd: tmp });
     assert.match(
       out,
       /Pre-commit commands completed successfully\.|Comandos de pre-commit concluídos com sucesso\.|Comandos de pre-commit completados exitosamente\./
@@ -136,7 +136,7 @@ test("pre-commit fails when file size exceeds limit", () => {
 
     // Run pre-commit
     try {
-      execSync(`node ${CLI} pre-commit`, { encoding: "utf8", cwd: tmp });
+      execFileSync("node", [CLI, "pre-commit"], { encoding: "utf8", cwd: tmp });
       assert.fail("expected CLI to exit with error due to file size limit");
     } catch (err: any) {
       const output = String((err.stdout || "") + (err.stderr || ""));
@@ -175,7 +175,7 @@ test("pre-commit fails when file size exceeds limit (string format)", () => {
 
     // Run pre-commit
     try {
-      execSync(`node ${CLI} pre-commit`, { encoding: "utf8", cwd: tmp });
+      execFileSync("node", [CLI, "pre-commit"], { encoding: "utf8", cwd: tmp });
       assert.fail("expected CLI to exit with error due to file size limit");
     } catch (err: any) {
       const output = String((err.stdout || "") + (err.stderr || ""));
