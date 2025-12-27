@@ -112,6 +112,7 @@ export async function initConfig(lang: import("../../i18n").Lang = DEFAULT_LANG)
     scopes: [],
     requireScope: false,
     maxSubjectLength: 72,
+    maxFileSize: "2MB",
     allowBreaking: true,
     footerKeywords: ["BREAKING CHANGE", "Closes", "Refs"],
     preCommitCommands: [],
