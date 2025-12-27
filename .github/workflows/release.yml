@@ -15,11 +15,12 @@ on:
 permissions:
   contents: write
   packages: write
+  id-token: write
 
 env:
-  NODE_VERSION: '18.x'
-  NPM_REGISTRY: 'https://registry.npmjs.org'
-  BUMP: 'patch'
+  NODE_VERSION: "24.x"
+  NPM_REGISTRY: "https://registry.npmjs.org"
+  BUMP: "patch"
 
 jobs:
   checks:
@@ -127,10 +128,8 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           tag: "v${{ steps.pkg.outputs.version }}"
-          generateReleaseNotes: 'true'
+          generateReleaseNotes: "true"
           token: "${{ secrets.GITHUB_TOKEN }}"
 
       - name: Publicar no npm
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish --access public
+        run: npm publish --access public --provenance
