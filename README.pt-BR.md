@@ -214,7 +214,7 @@ yarn commitzero lint -m $'feat(core): change\n\nBody text\n\nRefs: 123'
 - `scopes`: Escopos permitidos. Array vazio significa que qualquer escopo minúsculo é aceito.
 - `requireScope`: Quando `true`, um escopo deve ser informado.
 - `maxSubjectLength`: Número máximo de caracteres no assunto do commit.
-- `maxFileSize`: Tamanho máximo permitido para arquivos em stage. Aceita um número (bytes) ou string de tamanho (`"5MB"`, `"500KB"`). Padrão: `0` (desabilitado).
+- `maxFileSize`: Tamanho máximo permitido para arquivos em stage. Aceita um número (bytes) ou string de tamanho (`"5MB"`, `"500KB"`). Padrão: `"2MB"`.
 - `allowBreaking`: Quando `false`, não permite `feat!` e exige footer `BREAKING CHANGE` quando houver breaking changes.
 - `footerKeywords`: Palavras-chave reconhecidas como footers de commit (ex.: referências, breaking changes).
 - `preCommitCommands`: Array de comandos de shell para rodar antes do commit.
