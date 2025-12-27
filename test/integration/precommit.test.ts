@@ -1,5 +1,5 @@
 import assert from "node:assert";
-import { execSync, execFileSync } from "node:child_process";
+import { execFileSync, execSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import test from "node:test";
@@ -99,11 +99,94 @@ test("pre-commit run all success prints ok", () => {
       preCommitCommands: ['node -e "1+1"', "node -e \"console.log('ok')\""],
     };
     writeFileSync(cfgPath, JSON.stringify(cfg, null, 2), "utf8");
-    const out = execFileSync("node", [CLI, "pre-commit"], { encoding: "utf8", cwd: tmp });
+    const out = execSync(`node ${CLI} pre-commit`, { encoding: "utf8", cwd: tmp });
     assert.match(
       out,
-      /Pre-commit commands completed successfully\.|Comandos de pre-commit concluídos com sucesso\.|Comandos de pre-commit completados con éxito\./
+      /Pre-commit commands completed successfully\.|Comandos de pre-commit concluídos com sucesso\.|Comandos de pre-commit completados exitosamente\./
     );
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test("pre-commit fails when file size exceeds limit", () => {
+  const tmp = join(process.cwd(), "tmp-precommit-filesize");
+  mkdirSync(tmp, { recursive: true });
+  try {
+    // Init git
+    execSync("git init", { cwd: tmp, stdio: "ignore" });
+    // Config git user for commit if needed, but we are just staging
+    execSync("git config user.email 'test@example.com'", { cwd: tmp, stdio: "ignore" });
+    execSync("git config user.name 'Test User'", { cwd: tmp, stdio: "ignore" });
+
+    // Create config with small limit
+    const cfgPath = join(tmp, "commitzero.config.json");
+    const cfg = {
+      maxFileSize: 1024, // 1KB
+    };
+    writeFileSync(cfgPath, JSON.stringify(cfg, null, 2), "utf8");
+
+    // Create large file (2KB)
+    const largeFile = join(tmp, "large.txt");
+    // Create dummy content
+    writeFileSync(largeFile, "a".repeat(2048));
+
+    // Stage file
+    execSync("git add large.txt", { cwd: tmp, stdio: "ignore" });
+
+    // Run pre-commit
+    try {
+      execSync(`node ${CLI} pre-commit`, { encoding: "utf8", cwd: tmp });
+      assert.fail("expected CLI to exit with error due to file size limit");
+    } catch (err: any) {
+      const output = String((err.stdout || "") + (err.stderr || ""));
+      assert.match(
+        output,
+        /File size limit exceeded|Limite de tamanho de arquivo excedido|Límite de tamaño de archivo excedido/
+      );
+    }
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test("pre-commit fails when file size exceeds limit (string format)", () => {
+  const tmp = join(process.cwd(), "tmp-precommit-filesize-str");
+  mkdirSync(tmp, { recursive: true });
+  try {
+    // Init git
+    execSync("git init", { cwd: tmp, stdio: "ignore" });
+    execSync("git config user.email 'test@example.com'", { cwd: tmp, stdio: "ignore" });
+    execSync("git config user.name 'Test User'", { cwd: tmp, stdio: "ignore" });
+
+    // Create config with string limit "1KB"
+    const cfgPath = join(tmp, "commitzero.config.json");
+    const cfg = {
+      maxFileSize: "1KB",
+    };
+    writeFileSync(cfgPath, JSON.stringify(cfg, null, 2), "utf8");
+
+    // Create large file (2KB)
+    const largeFile = join(tmp, "large.txt");
+    writeFileSync(largeFile, "a".repeat(2048));
+
+    // Stage file
+    execSync("git add large.txt", { cwd: tmp, stdio: "ignore" });
+
+    // Run pre-commit
+    try {
+      execSync(`node ${CLI} pre-commit`, { encoding: "utf8", cwd: tmp });
+      assert.fail("expected CLI to exit with error due to file size limit");
+    } catch (err: any) {
+      const output = String((err.stdout || "") + (err.stderr || ""));
+      assert.match(
+        output,
+        /File size limit exceeded|Limite de tamanho de arquivo excedido|Límite de tamaño de archivo excedido/
+      );
+      // Verify the limit display in error message
+      assert.match(output, /1KB/);
+      assert.match(output, /2KB/);
+    }
   } finally {
     rmSync(tmp, { recursive: true, force: true });
   }

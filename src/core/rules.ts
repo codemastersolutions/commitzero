@@ -19,6 +19,7 @@ export interface LintOptions {
   maxSubjectLength?: number;
   allowBreaking?: boolean;
   footerKeywords?: string[];
+  maxFileSize?: number | string;
   language?: import("../i18n").Lang;
 }
 
@@ -47,6 +48,7 @@ export const defaultOptions: Required<LintOptions> = {
   maxSubjectLength: 72,
   allowBreaking: true,
   footerKeywords: ["BREAKING CHANGE", "Closes", "Refs"],
+  maxFileSize: 2 * 1024 * 1024, // 2MB
   language: DEFAULT_LANG,
 };
 

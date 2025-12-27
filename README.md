@@ -197,6 +197,7 @@ yarn commitzero lint -m $'feat(core): change\n\nBody text\n\nRefs: 123'
   "scopes": [],
   "requireScope": false,
   "maxSubjectLength": 72,
+  "maxFileSize": "2MB",
   "allowBreaking": true,
   "footerKeywords": ["BREAKING CHANGE", "Closes", "Refs"],
   "preCommitCommands": [],
@@ -214,6 +215,7 @@ yarn commitzero lint -m $'feat(core): change\n\nBody text\n\nRefs: 123'
 - `scopes`: Allowed scopes. Empty array means any lowercase scope is accepted.
 - `requireScope`: When `true`, a scope must be provided.
 - `maxSubjectLength`: Maximum characters allowed in the commit subject.
+- `maxFileSize`: Maximum size allowed for staged files. Accepts a number (bytes) or size string (`"5MB"`, `"500KB"`). Default: `0` (disabled).
 - `allowBreaking`: When `false`, disallows `feat!` and requires `BREAKING CHANGE` footer when breaking changes are present.
 - `footerKeywords`: Keywords recognized as commit footers (e.g., references, breaking changes).
 - `preCommitCommands`: Array of shell commands to run before committing.
