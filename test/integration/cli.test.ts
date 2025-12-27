@@ -201,7 +201,7 @@ test("install-hooks and uninstall-hooks manage hooks content", () => {
   }
 });
 
-test("init creates commitzero.config.json", () => {
+test("init creates commitzero.config.json with defaults", () => {
   const tmp = join(process.cwd(), "tmp-wd-init");
   mkdirSync(tmp, { recursive: true });
   try {
@@ -209,6 +209,10 @@ test("init creates commitzero.config.json", () => {
     assert.match(out1, /created/i);
     const cfgPath = join(tmp, "commitzero.config.json");
     assert.ok(existsSync(cfgPath));
+
+    const content = readFileSync(cfgPath, "utf8");
+    const config = JSON.parse(content);
+    assert.strictEqual(config.maxFileSize, "2MB");
 
     const out2 = execSync(`node ${CLI} init`, { encoding: "utf8", cwd: tmp });
     assert.match(out2.toLowerCase(), /already exists|já existe|ya existe/);
