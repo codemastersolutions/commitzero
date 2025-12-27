@@ -175,7 +175,7 @@ test("pre-commit fails when file size exceeds limit (string format)", () => {
 
     // Run pre-commit
     try {
-      execSync(`node ${CLI} pre-commit`, { encoding: "utf8", cwd: tmp });
+      execFileSync("node", [CLI, "pre-commit"], { encoding: "utf8", cwd: tmp });
       assert.fail("expected CLI to exit with error due to file size limit");
     } catch (err: any) {
       const output = String((err.stdout || "") + (err.stderr || ""));
