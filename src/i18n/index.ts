@@ -56,6 +56,7 @@ const dicts: Record<Lang, Dict> = {
     "cli.update_failed": "Update failed. Exit code: {code}",
     "cli.preCommitJsConfigUnsupported":
       "Editing requires JSON config. Use commitzero init to create JSON.",
+    "cli.fileSizeLimitExceeded": "File size limit exceeded ({limit}): {file} ({size})",
     "commit.select.type": "Select commit type:",
     "commit.library.header": "Library: {name}",
     "commit.chosen.type": "Chosen type: {type}",
@@ -167,6 +168,7 @@ const dicts: Record<Lang, Dict> = {
     "cli.update_failed": "Falha na atualização. Código: {code}",
     "cli.preCommitJsConfigUnsupported":
       "Edição requer configuração JSON. Use commitzero init para criar JSON.",
+    "cli.fileSizeLimitExceeded": "Limite de tamanho de arquivo excedido ({limit}): {file} ({size})",
     "commit.select.type": "Selecione o tipo de commit:",
     "commit.library.header": "Biblioteca: {name}",
     "commit.chosen.type": "Tipo escolhido: {type}",
@@ -280,6 +282,7 @@ const dicts: Record<Lang, Dict> = {
     "cli.update_failed": "Actualización fallida. Código: {code}",
     "cli.preCommitJsConfigUnsupported":
       "La edición requiere configuración JSON. Use commitzero init para crear JSON.",
+    "cli.fileSizeLimitExceeded": "Límite de tamaño de archivo excedido ({limit}): {file} ({size})",
     "commit.select.type": "Selecciona el tipo de commit:",
     "commit.library.header": "Biblioteca: {name}",
     "commit.chosen.type": "Tipo elegido: {type}",

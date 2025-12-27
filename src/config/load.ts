@@ -9,6 +9,7 @@ export interface UserConfig {
   maxSubjectLength?: number;
   allowBreaking?: boolean;
   footerKeywords?: string[];
+  maxFileSize?: number | string;
   preCommitCommands?: string[];
   preCommitTimeout?: string | number;
   versionCheckEnabled?: boolean;

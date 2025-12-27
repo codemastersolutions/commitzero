@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /* eslint-disable no-control-regex */
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { argv, exit } from "node:process";
 import { loadConfig, type UserConfig } from "../config/load.js";
@@ -10,6 +10,7 @@ import { cleanupHooks } from "../hooks/cleanup";
 import { getCurrentHooksPath, installHooks, uninstallHooks } from "../hooks/install";
 import { updateScripts as ensureScripts } from "../hooks/postinstall";
 import { DEFAULT_LANG, t } from "../i18n/index.js";
+import { formatBytes, parseSizeToBytes } from "../utils/size.js";
 import { formatDurationMs, parseTimeToMs } from "../utils/time.js";
 import { checkForUpdate } from "../version/check.js";
 import { c } from "./colors";
@@ -119,11 +120,9 @@ async function main() {
             if (!semverPattern.test(version)) {
               throw new Error(`Unsafe latestVersion: "${version}"`);
             }
-            execFileSync(
-              "npm",
-              ["install", `@codemastersolutions/commitzero@${version}`],
-              { stdio: "inherit" }
-            );
+            execFileSync("npm", ["install", `@codemastersolutions/commitzero@${version}`], {
+              stdio: "inherit",
+            });
             console.log(t(lang, "cli.update_success", { version: upd.latestVersion! }));
             exit(0);
             return;
@@ -420,15 +419,44 @@ async function main() {
     }
 
     const cfg = { ...defaultOptions, ...userConfig, language: lang };
+
+    // Validate max file size for staged files
+    const maxFileSize = parseSizeToBytes(cfg.maxFileSize ?? 2 * 1024 * 1024);
+    try {
+      const stagedFiles = require("node:child_process")
+        .execSync("git diff --cached --name-only", { encoding: "utf8", cwd: process.cwd() })
+        .trim()
+        .split("\n")
+        .filter((f: string) => f.trim().length > 0);
+
+      for (const file of stagedFiles) {
+        const filePath = join(process.cwd(), file);
+        if (existsSync(filePath)) {
+          const stats = statSync(filePath);
+          if (stats.size > maxFileSize) {
+            const sizeDisplay = formatBytes(stats.size);
+            const limitDisplay = formatBytes(maxFileSize);
+            console.error(
+              t(lang, "cli.fileSizeLimitExceeded", {
+                limit: limitDisplay,
+                file,
+                size: sizeDisplay,
+              })
+            );
+            exit(1);
+            return;
+          }
+        }
+      }
+    } catch {}
+
     const commands: string[] = Array.isArray(cfg.preCommitCommands) ? cfg.preCommitCommands : [];
     if (!commands.length) {
       console.log(t(lang, "cli.preCommitNone"));
       return;
     }
     // Start message summarizing how many tasks will run
-    console.log(
-      t(lang, "cli.preCommitStart", { count: commands.length })
-    );
+    console.log(t(lang, "cli.preCommitStart", { count: commands.length }));
     // Determine timeout from env or config; env overrides config
     const envTimeoutRaw = process.env.COMMITZERO_PRE_COMMIT_TIMEOUT;
     const cfgTimeoutRaw =
@@ -505,7 +533,9 @@ async function main() {
     // Print time summary per task and total
     console.log(t(lang, "cli.preCommitSummary"));
     for (const d of durations) {
-      console.log(t(lang, "cli.preCommitSummaryItem", { cmd: d.cmd, time: formatDurationMs(d.timeMs) }));
+      console.log(
+        t(lang, "cli.preCommitSummaryItem", { cmd: d.cmd, time: formatDurationMs(d.timeMs) })
+      );
     }
     const totalMs = durations.reduce((acc, d) => acc + d.timeMs, 0);
     console.log(t(lang, "cli.preCommitSummaryTotal", { time: formatDurationMs(totalMs) }));
