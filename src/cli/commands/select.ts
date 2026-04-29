@@ -1,4 +1,5 @@
 import { c } from "../colors";
+import * as readline from "node:readline";
 
 interface Item {
   value: string;
@@ -87,8 +88,8 @@ export async function select(
   items: Item[],
   header?: string,
   opts?: { useAltScreen?: boolean }
-): Promise<string> {
-  return new Promise((resolve) => {
+): Promise<string | undefined> {
+  return new Promise((resolve, reject) => {
     const stdin = process.stdin;
     const stdout = process.stdout;
     const isTTY = !!stdin.isTTY;
@@ -102,6 +103,65 @@ export async function select(
       } catch {}
       return resolve(items[0]?.value);
     }
+    if (items.length === 0) {
+      try {
+        stdin.pause?.();
+      } catch {}
+      return resolve(undefined);
+    }
+
+    const fallbackLineMode = () => {
+      const rl = readline.createInterface({ input: stdin, output: stdout });
+      let cleaned = false;
+
+      const cleanup = () => {
+        if (cleaned) return;
+        cleaned = true;
+        try {
+          rl.close();
+        } catch {}
+        try {
+          stdin.pause?.();
+        } catch {}
+      };
+
+      const ask = () => {
+        try {
+          if (header) {
+            process.stdout.write(c.green(c.bold(header)) + "\n\n");
+          }
+          process.stdout.write(c.bold(prompt) + "\n");
+          for (let i = 0; i < items.length; i++) {
+            const it = items[i];
+            const label = it.label ?? it.value;
+            const desc = it.description ? `  ${it.description}` : "";
+            process.stdout.write(`${i + 1}) ${label}${desc}\n`);
+          }
+          process.stdout.write("\n");
+        } catch {}
+
+        const onSigint = () => {
+          rl.removeListener("SIGINT", onSigint);
+          cleanup();
+          reject(new Error("cancelled"));
+        };
+        rl.once("SIGINT", onSigint);
+        rl.question("Select an option: ", (answer) => {
+          rl.removeListener("SIGINT", onSigint);
+          const trimmed = (answer ?? "").trim();
+          const idx = trimmed === "" ? 1 : Number.parseInt(trimmed, 10);
+          if (!Number.isFinite(idx) || idx < 1 || idx > items.length) {
+            process.stdout.write(c.red("Invalid selection.") + "\n\n");
+            return ask();
+          }
+          cleanup();
+          resolve(items[idx - 1]?.value);
+        });
+      };
+
+      ask();
+    };
+
     let selected = 0;
     let cleaned = false;
 
@@ -110,11 +170,11 @@ export async function select(
       if (key === "\x03") {
         // Ctrl+C
         cleanup();
-        process.exit(0);
+        reject(new Error("cancelled"));
       } else if (key === "\r" || key === "\n") {
         // Enter
         cleanup();
-        resolve(items[selected].value);
+        resolve(items[selected]?.value);
       } else if (key === "\x1b[A" || key === "k") {
         // Up arrow or k
         selected = selected > 0 ? selected - 1 : items.length - 1;
@@ -130,7 +190,11 @@ export async function select(
       }
     };
 
-    stdin.setRawMode?.(true);
+    try {
+      stdin.setRawMode?.(true);
+    } catch {
+      return fallbackLineMode();
+    }
     stdin.resume();
     stdin.on("data", onData);
     // Use alternate screen by default to ensure stable rendering regardless of

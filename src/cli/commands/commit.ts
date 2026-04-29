@@ -134,7 +134,62 @@ function askWithCharacterCount(
     // Modo interativo com contador em tempo real e suporte a cursor
     const stdin = process.stdin;
     const wasRaw = stdin.isRaw;
-    stdin.setRawMode(true);
+    if (typeof (stdin as NodeJS.ReadStream & { setRawMode?: unknown }).setRawMode !== "function") {
+      const askFallback = () => {
+        if (nextLineInput) {
+          console.log(q);
+        }
+        rl.question(nextLineInput ? "" : q, (answer: string) => {
+          const sanitized = sanitizeInputSafe((answer ?? "").trim());
+          if (maxLength && sanitized.length > maxLength) {
+            console.log(
+              c.red(`Entrada excede o limite de ${maxLength} caracteres. Tente novamente.`)
+            );
+            return askFallback();
+          }
+          if (isRequired && (!sanitized || sanitized.trim().length === 0)) {
+            const errorMessage = lang
+              ? t(lang, "commit.validation.required") ||
+                "Este campo é obrigatório. Por favor, forneça uma resposta."
+              : "Este campo é obrigatório. Por favor, forneça uma resposta.";
+            console.log(c.red(errorMessage));
+            return askFallback();
+          }
+          resolve(sanitized);
+        });
+      };
+      askFallback();
+      return;
+    }
+    try {
+      stdin.setRawMode(true);
+    } catch {
+      const askFallback = () => {
+        if (nextLineInput) {
+          console.log(q);
+        }
+        rl.question(nextLineInput ? "" : q, (answer: string) => {
+          const sanitized = sanitizeInputSafe((answer ?? "").trim());
+          if (maxLength && sanitized.length > maxLength) {
+            console.log(
+              c.red(`Entrada excede o limite de ${maxLength} caracteres. Tente novamente.`)
+            );
+            return askFallback();
+          }
+          if (isRequired && (!sanitized || sanitized.trim().length === 0)) {
+            const errorMessage = lang
+              ? t(lang, "commit.validation.required") ||
+                "Este campo é obrigatório. Por favor, forneça uma resposta."
+              : "Este campo é obrigatório. Por favor, forneça uma resposta.";
+            console.log(c.red(errorMessage));
+            return askFallback();
+          }
+          resolve(sanitized);
+        });
+      };
+      askFallback();
+      return;
+    }
     stdin.resume();
     stdin.setEncoding("utf8");
 
@@ -922,9 +977,18 @@ export async function interactiveCommit(
     }
     let type: string;
     try {
-      type = await select(c.bold(t(lang, "commit.select.type")), typeItems, undefined, {
-        useAltScreen: cfg?.uiAltScreen,
-      });
+      const selectedType = await select(
+        c.bold(t(lang, "commit.select.type")),
+        typeItems,
+        undefined,
+        {
+          useAltScreen: cfg?.uiAltScreen,
+        }
+      );
+      if (!selectedType) {
+        throw new Error("cancelled");
+      }
+      type = selectedType;
     } catch {
       console.log(c.yellow(t(lang, "commit.cancelled")));
       return 130;
