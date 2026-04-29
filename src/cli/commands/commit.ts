@@ -532,7 +532,7 @@ export async function interactiveCommit(
     }
 
     function readGitErrorText(err: unknown): string {
-      const anyErr = err as any;
+      const anyErr = err as Record<string, unknown>;
       const stderr = anyErr?.stderr;
       const stderrText = Buffer.isBuffer(stderr)
         ? stderr.toString("utf8")
