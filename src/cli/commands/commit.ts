@@ -40,6 +40,18 @@ function showSpinner(message: string): () => void {
   };
 }
 
+function runWithSpinner<T>(message: string, fn: () => T): T {
+  const stop = showSpinner(message);
+  try {
+    const res = fn();
+    stop();
+    return res;
+  } catch (err) {
+    stop();
+    throw err;
+  }
+}
+
 function sanitizeInputSafe(input: string): string {
   // Remove caracteres de controle perigosos, mas preserva caracteres Unicode válidos e espaços
   return input
@@ -458,159 +470,137 @@ export async function interactiveCommit(
     } catch {}
   }
   try {
-    function hasStaged(): boolean {
+    function sleepSync(ms: number): void {
+      if (ms <= 0) return;
+      const arr = new Int32Array(new SharedArrayBuffer(4));
+      Atomics.wait(arr, 0, 0, ms);
+    }
+
+    function readGitErrorText(err: unknown): string {
+      const anyErr = err as any;
+      const stderr = anyErr?.stderr;
+      const stderrText = Buffer.isBuffer(stderr)
+        ? stderr.toString("utf8")
+        : typeof stderr === "string"
+          ? stderr
+          : "";
+      const messageText = anyErr?.message ? String(anyErr.message) : "";
+      return `${messageText}\n${stderrText}`.trim();
+    }
+
+    function isTransientGitError(err: unknown): boolean {
+      const text = readGitErrorText(err).toLowerCase();
+      return (
+        text.includes("index.lock") ||
+        text.includes("could not lock") ||
+        text.includes("unable to create") ||
+        text.includes("another git process") ||
+        text.includes("fatal: unable to") ||
+        text.includes("fatal: could not") ||
+        text.includes("resource temporarily unavailable")
+      );
+    }
+
+    function execGitUtf8(
+      args: string[],
+      stdio: ["ignore", "pipe", "pipe"] | undefined = undefined
+    ) {
+      return execFileSync("git", args, {
+        stdio: stdio ?? ["ignore", "pipe", "pipe"],
+        encoding: "utf8",
+      });
+    }
+
+    function execGitUtf8WithRetry(args: string[], maxRetries: number = 6): string {
+      let lastErr: unknown;
+      for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+          return execGitUtf8(args);
+        } catch (err: unknown) {
+          lastErr = err;
+          if (!isTransientGitError(err) || attempt === maxRetries) break;
+          sleepSync(50 * (attempt + 1));
+        }
+      }
+      throw lastErr;
+    }
+
+    type GitStatusState = { hasStaged: boolean; hasUnstaged: boolean; undetermined: boolean };
+
+    function parsePorcelainV1Z(out: string): GitStatusState {
+      let hasStaged = false;
+      let hasUnstaged = false;
+      const raw = out ?? "";
+      let i = 0;
+      while (i < raw.length) {
+        if (raw[i] === "\0") {
+          i++;
+          continue;
+        }
+        if (i + 2 > raw.length) break;
+        const x = raw[i];
+        const y = raw[i + 1];
+        if (x === "?" && y === "?") {
+          hasUnstaged = true;
+        } else {
+          if (x !== " " && x !== "?") hasStaged = true;
+          if (y !== " " && y !== "?") hasUnstaged = true;
+        }
+
+        const firstTerminator = raw.indexOf("\0", i);
+        if (firstTerminator === -1) break;
+        i = firstTerminator + 1;
+
+        if (
+          i < raw.length &&
+          (x === "R" || x === "C" || y === "R" || y === "C") &&
+          raw[i] !== "\0"
+        ) {
+          const secondTerminator = raw.indexOf("\0", i);
+          if (secondTerminator === -1) break;
+          i = secondTerminator + 1;
+        }
+      }
+
+      return { hasStaged, hasUnstaged, undetermined: false };
+    }
+
+    function getGitStatusState(): GitStatusState {
       try {
-        const out = execFileSync("git", ["diff", "--cached", "--name-only"], {
-          stdio: ["ignore", "pipe", "ignore"],
-        })
-          .toString()
-          .trim();
-        return out.length > 0;
+        const out = execGitUtf8WithRetry(["status", "--porcelain=v1", "-z"]).toString();
+        return parsePorcelainV1Z(out);
       } catch {
-        return false;
+        try {
+          const stagedOut = execGitUtf8WithRetry(["diff", "--cached", "--name-only"])
+            .toString()
+            .trim();
+          const diffOut = execGitUtf8WithRetry(["diff", "--name-only"]).toString().trim();
+          const untrackedOut = execGitUtf8WithRetry(["ls-files", "--others", "--exclude-standard"])
+            .toString()
+            .trim();
+          return {
+            hasStaged: stagedOut.length > 0,
+            hasUnstaged: diffOut.length > 0 || untrackedOut.length > 0,
+            undetermined: false,
+          };
+        } catch {
+          return { hasStaged: false, hasUnstaged: true, undetermined: true };
+        }
       }
     }
 
-    function hasUnstagedChanges(): boolean {
-      // Detecta modificações não staged (working tree) e também arquivos não rastreados
-      // 1) git diff --name-only -> mudanças não staged em arquivos rastreados
-      // 2) git ls-files --others --exclude-standard -> arquivos novos (untracked)
-      try {
-        const diffOut = execFileSync("git", ["diff", "--name-only"], {
-          stdio: ["ignore", "pipe", "ignore"],
-        })
-          .toString()
-          .trim();
-        if (diffOut.length > 0) return true;
-      } catch {}
+    function hasStaged(): boolean {
+      return getGitStatusState().hasStaged;
+    }
 
-      try {
-        const untrackedOut = execFileSync("git", ["ls-files", "--others", "--exclude-standard"], {
-          stdio: ["ignore", "pipe", "ignore"],
-        })
-          .toString()
-          .trim();
-        return untrackedOut.length > 0;
-      } catch {
-        return false;
-      }
+    function hasUnstagedChanges(): boolean {
+      return getGitStatusState().hasUnstaged;
     }
 
     // Função para verificar e perguntar sobre git add -A
     async function checkAndAskForAdd(): Promise<boolean | "push_success"> {
       const autoAdd = cfg?.autoAdd === true;
       const autoPush = cfg?.autoPush === true;
-
-      if (!hasStaged() && hasUnstagedChanges() && autoPush) {
-        try {
-          // Verificar se há commits para push
-          let ahead = "0";
-          try {
-            ahead = execFileSync("git", ["rev-list", "--count", "@{u}..HEAD"], {
-              stdio: ["ignore", "pipe", "ignore"],
-              encoding: "utf8",
-            })
-              .toString()
-              .trim();
-          } catch {
-            // Se não há upstream, verificar se há commits locais
-            try {
-              const localCommits = execFileSync("git", ["rev-list", "--count", "HEAD"], {
-                stdio: ["ignore", "pipe", "ignore"],
-                encoding: "utf8",
-              })
-                .toString()
-                .trim();
-              ahead = localCommits;
-            } catch {
-              ahead = "0";
-            }
-          }
-
-          if (parseInt(ahead) > 0) {
-            console.log(
-              c.cyan(
-                t(lang, "commit.git.nothingToCommit") ||
-                  "Nothing to commit, but there are unpushed commits."
-              )
-            );
-
-            const stopPushSpinner = showSpinner(
-              t(lang, "commit.pushing") || "Pushing to remote..."
-            );
-            try {
-              const useProgress = cfg?.pushProgress !== false;
-              const pushArgs = ["push", ...(useProgress ? ["--progress"] : [])];
-              const pushOut = execFileSync("git", pushArgs, {
-                stdio: ["ignore", "pipe", useProgress ? "inherit" : "pipe"],
-                encoding: "utf8",
-              });
-              stopPushSpinner();
-              if (pushOut) process.stdout.write(pushOut);
-              console.log(
-                c.green(t(lang, "commit.git.pushed") || "Successfully pushed to remote.")
-              );
-              return "push_success"; // Retorna string para indicar sucesso do push
-            } catch {
-              stopPushSpinner();
-              // Tentar configurar upstream se necessário
-              try {
-                const branch = execFileSync("git", ["rev-parse", "--abbrev-ref", "HEAD"], {
-                  stdio: ["ignore", "pipe", "ignore"],
-                  encoding: "utf8",
-                })
-                  .toString()
-                  .trim();
-
-                let remote = "origin";
-                try {
-                  const remotes = execFileSync("git", ["remote"], {
-                    stdio: ["ignore", "pipe", "ignore"],
-                    encoding: "utf8",
-                  })
-                    .toString()
-                    .trim()
-                    .split("\n")
-                    .filter(Boolean);
-                  if (remotes.length > 0) remote = remotes[0];
-                } catch {}
-
-                if (!branch || branch === "HEAD") {
-                  console.error(c.red("Current branch is detached; cannot push."));
-                  return false;
-                }
-
-                const stopUpSpinner = showSpinner("Setting upstream and pushing...");
-                const useProgress = cfg?.pushProgress !== false;
-                const pushUpArgs = [
-                  "push",
-                  ...(useProgress ? ["--progress"] : []),
-                  "-u",
-                  remote,
-                  branch,
-                ];
-                const pushUpOut = execFileSync("git", pushUpArgs, {
-                  stdio: ["ignore", "pipe", useProgress ? "inherit" : "pipe"],
-                  encoding: "utf8",
-                });
-                stopUpSpinner();
-                if (pushUpOut) process.stdout.write(pushUpOut);
-                console.log(
-                  c.green(t(lang, "commit.git.pushed") || "Successfully pushed to remote.")
-                );
-                return "push_success";
-              } catch (err2: unknown) {
-                const errOut = err2 && err2 instanceof Error ? err2.message : "";
-                if (errOut) process.stderr.write(errOut);
-                console.error(c.red(String(err2)));
-                return false;
-              }
-            }
-          }
-        } catch {
-          // Se não conseguir verificar commits ahead, continuar com fluxo normal
-        }
-      }
 
       // Se não há arquivos staged e não há arquivos modificados
       if (!hasStaged() && !hasUnstagedChanges()) {
@@ -694,7 +684,6 @@ export async function interactiveCommit(
                     return false;
                   }
 
-                  const stopUpSpinner = showSpinner("Setting upstream and pushing...");
                   const useProgress = cfg?.pushProgress !== false;
                   const pushUpArgs = [
                     "push",
@@ -703,11 +692,12 @@ export async function interactiveCommit(
                     remote,
                     branch,
                   ];
-                  const pushUpOut = execFileSync("git", pushUpArgs, {
-                    stdio: ["ignore", "pipe", useProgress ? "inherit" : "pipe"],
-                    encoding: "utf8",
-                  });
-                  stopUpSpinner();
+                  const pushUpOut = runWithSpinner("Setting upstream and pushing...", () =>
+                    execFileSync("git", pushUpArgs, {
+                      stdio: ["ignore", "pipe", useProgress ? "inherit" : "pipe"],
+                      encoding: "utf8",
+                    })
+                  );
                   if (pushUpOut) process.stdout.write(pushUpOut);
                   console.log(
                     c.green(t(lang, "commit.git.pushed") || "Successfully pushed to remote.")
@@ -1120,18 +1110,20 @@ export async function interactiveCommit(
     console.log("\n" + msg + "\n");
 
     try {
-      const stopSpinner = showSpinner(t(lang, "commit.committing") || "Committing changes...");
-      const commitOut = execFileSync("git", ["commit", "-F", ".git/COMMIT_EDITMSG"], {
-        stdio: ["ignore", "pipe", "pipe"],
-        encoding: "utf8",
-        env: {
-          ...process.env,
-          ...(cfg?.preCommitTimeout !== undefined
-            ? { COMMITZERO_PRE_COMMIT_TIMEOUT: String(cfg.preCommitTimeout) }
-            : {}),
-        },
-      });
-      stopSpinner();
+      const commitOut = runWithSpinner(
+        t(lang, "commit.committing") || "Committing changes...",
+        () =>
+          execFileSync("git", ["commit", "-F", ".git/COMMIT_EDITMSG"], {
+            stdio: ["ignore", "pipe", "pipe"],
+            encoding: "utf8",
+            env: {
+              ...process.env,
+              ...(cfg?.preCommitTimeout !== undefined
+                ? { COMMITZERO_PRE_COMMIT_TIMEOUT: String(cfg.preCommitTimeout) }
+                : {}),
+            },
+          })
+      );
       console.log(""); // Linha em branco após o spinner
       if (commitOut) process.stdout.write(commitOut);
 
@@ -1172,7 +1164,6 @@ export async function interactiveCommit(
               console.error(c.red("Current branch is detached; cannot push."));
               return 1;
             }
-            const stopUpSpinner = showSpinner("Setting upstream and pushing...");
             const useProgress = cfg?.pushProgress !== false;
             const pushUpArgs = [
               "push",
@@ -1181,11 +1172,12 @@ export async function interactiveCommit(
               remote,
               branch,
             ];
-            const pushUpOut = execFileSync("git", pushUpArgs, {
-              stdio: ["ignore", "pipe", useProgress ? "inherit" : "pipe"],
-              encoding: "utf8",
-            });
-            stopUpSpinner();
+            const pushUpOut = runWithSpinner("Setting upstream and pushing...", () =>
+              execFileSync("git", pushUpArgs, {
+                stdio: ["ignore", "pipe", useProgress ? "inherit" : "pipe"],
+                encoding: "utf8",
+              })
+            );
             if (pushUpOut) process.stdout.write(pushUpOut);
           } catch (err2: unknown) {
             const errOut = err2 && err2 instanceof Error ? err2.message : "";

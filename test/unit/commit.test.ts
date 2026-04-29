@@ -1,19 +1,23 @@
 /* eslint-disable no-useless-escape */
 import assert from "node:assert";
 import { chmodSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync, rmSync } from "node:fs";
+import { createRequire } from "node:module";
 import os from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 
-async function withGitStub(mode: "a" | "b" | "c", fn: () => Promise<void> | void) {
+async function withGitStub(mode: "a" | "b" | "c" | "d" | "lock", fn: () => Promise<void> | void) {
   const tmp = mkdtempSync(join(os.tmpdir(), "commitzero-git-"));
   const gitPath = join(tmp, "git");
+  const statusCountFile = join(tmp, "status-count");
   const script = `#!/usr/bin/env bash\n
 mode=\"$GIT_STUB_MODE\"\n
 cmd=\"$1\"\n
-if [ \"$cmd\" = \"diff\" ]; then\n  if [ \"$2\" = \"--cached\" ] && [ \"$3\" = \"--name-only\" ]; then\n    if [ \"$mode\" = \"a\" ]; then\n      echo \"\"\n    elif [ \"$mode\" = \"b\" ]; then\n      echo \"\"\n    else\n      echo \"file.txt\"\n    fi\n    exit 0\n  fi\nfi\n
-if [ \"$cmd\" = \"status\" ]; then\n  if [ \"$2\" = \"--porcelain\" ]; then\n    if [ \"$mode\" = \"a\" ]; then\n      echo \"\"\n    elif [ \"$mode\" = \"b\" ]; then\n      echo \" M file.txt\"\n    else\n      echo \"\"\n    fi\n    exit 0\n  fi\nfi\n
-if [ \"$cmd\" = \"add\" ]; then\n  exit 0\nfi\nif [ \"$cmd\" = \"commit\" ]; then\n  exit 0\nfi\nif [ \"$cmd\" = \"push\" ]; then\n  exit 0\nfi\n
+if [ \"$cmd\" = \"status\" ]; then\n  if [ \"$2\" = \"--porcelain=v1\" ] && [ \"$3\" = \"-z\" ]; then\n    if [ \"$mode\" = \"a\" ]; then\n      exit 0\n    elif [ \"$mode\" = \"b\" ]; then\n      printf \" M file.txt\\0\"\n      exit 0\n    elif [ \"$mode\" = \"c\" ]; then\n      printf \"M  file.txt\\0\"\n      exit 0\n    elif [ \"$mode\" = \"d\" ]; then\n      printf \" M file.txt\\0\"\n      exit 0\n    elif [ \"$mode\" = \"lock\" ]; then\n      if [ ! -f \"${statusCountFile}\" ]; then\n        echo \"fatal: Unable to create '${tmp}/.git/index.lock': File exists.\" 1>&2\n        echo \"1\" > \"${statusCountFile}\"\n        exit 128\n      fi\n      printf \" M file.txt\\0\"\n      exit 0\n    fi\n  fi\nfi\n
+if [ \"$cmd\" = \"diff\" ]; then\n  if [ \"$2\" = \"--cached\" ] && [ \"$3\" = \"--name-only\" ]; then\n    echo \"\"\n    exit 0\n  fi\n  if [ \"$2\" = \"--name-only\" ]; then\n    echo \"\"\n    exit 0\n  fi\nfi\n
+if [ \"$cmd\" = \"ls-files\" ]; then\n  exit 0\nfi\n
+if [ \"$cmd\" = \"rev-list\" ]; then\n  echo \"1\"\n  exit 0\nfi\n
+if [ \"$cmd\" = \"add\" ]; then\n  exit 0\nfi\nif [ \"$cmd\" = \"commit\" ]; then\n  if [ \"$mode\" = \"d\" ]; then\n    echo \"nothing to commit\" 1>&2\n    exit 1\n  fi\n  exit 0\nfi\nif [ \"$cmd\" = \"push\" ]; then\n  exit 0\nfi\n
 echo \"Unknown command: $@\" 1>&2\nexit 1\n`;
   writeFileSync(gitPath, script, "utf8");
   chmodSync(gitPath, 0o755);
@@ -34,7 +38,8 @@ echo \"Unknown command: $@\" 1>&2\nexit 1\n`;
 }
 
 async function loadInteractiveCommit() {
-  const mod = await import("../../dist/cjs/cli/commands/commit.js");
+  const require = createRequire(import.meta.url);
+  const mod = require("../../dist/cjs/cli/commands/commit.js");
   return mod.interactiveCommit as (lang: string, cfg?: any) => Promise<number>;
 }
 
@@ -93,6 +98,23 @@ test("interactiveCommit fluxo feliz cria mensagem e commita (autoPush)", async (
       try {
         rmSync(tmp, { recursive: true, force: true });
       } catch {}
+    }
+  });
+});
+
+test("interactiveCommit com alteracoes nao staged e commits a enviar nao faz push-only", async () => {
+  await withGitStub("d", async () => {
+    const prevSkip = process.env.COMMITSKIP_SELECT_PROMPT;
+    process.env.COMMITSKIP_SELECT_PROMPT = "1";
+    try {
+      await withTestAnswers(["core", "add login", "", "n"], async () => {
+        const interactiveCommit = await loadInteractiveCommit();
+        const rc = await interactiveCommit("en", { autoPush: true });
+        assert.strictEqual(rc, 1);
+      });
+    } finally {
+      if (prevSkip === undefined) delete (process.env as any).COMMITSKIP_SELECT_PROMPT;
+      else process.env.COMMITSKIP_SELECT_PROMPT = prevSkip as string;
     }
   });
 });
