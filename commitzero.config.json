@@ -22,5 +22,6 @@
   "versionCheckEnabled": true,
   "versionCheckPeriod": "daily",
   "language": "en",
-  "uiAltScreen": false
+  "uiAltScreen": false,
+  "enforceCommitZero": true
 }
