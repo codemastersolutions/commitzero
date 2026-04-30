@@ -1182,6 +1182,8 @@ export async function interactiveCommit(
             encoding: "utf8",
             env: {
               ...process.env,
+              COMMITZERO: "1",
+              COMMITZERO_RUN: "1",
               ...(cfg?.preCommitTimeout !== undefined
                 ? { COMMITZERO_PRE_COMMIT_TIMEOUT: String(cfg.preCommitTimeout) }
                 : {}),

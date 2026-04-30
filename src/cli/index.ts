@@ -17,6 +17,17 @@ import { c } from "./colors";
 import { interactiveCommit } from "./commands/commit";
 import { initConfig } from "./commands/init";
 
+function isAllowedNonInteractiveGitCommit(): boolean {
+  try {
+    if (existsSync(".git/MERGE_HEAD") || existsSync(".git/MERGE_MSG")) return true;
+    if (existsSync(".git/CHERRY_PICK_HEAD")) return true;
+    if (existsSync(".git/REVERT_HEAD")) return true;
+    if (existsSync(".git/REBASE_HEAD")) return true;
+    if (existsSync(".git/rebase-apply") || existsSync(".git/rebase-merge")) return true;
+  } catch {}
+  return false;
+}
+
 function getCurrentVersion(): string {
   try {
     const pkgPath1 = join(__dirname, "../../../package.json");
@@ -207,6 +218,35 @@ async function main() {
   if (cmd === "check") {
     // Usado pelo hook commit-msg
     try {
+      const enforceCommitZero =
+        (userConfig as UserConfig & { enforceCommitZero?: boolean }).enforceCommitZero ??
+        (userConfig as UserConfig & { commitZero?: { enforceCommitZero?: boolean } })?.commitZero
+          ?.enforceCommitZero ??
+        false;
+
+      if (enforceCommitZero) {
+        const isCommitZeroRun =
+          process.env.COMMITZERO === "1" ||
+          process.env.COMMITZERO === "true" ||
+          process.env.COMMITZERO_RUN === "1";
+        const allowBypass = process.env.COMMITZERO_ALLOW_GIT_COMMIT === "1";
+        if (!isCommitZeroRun && !allowBypass && !isAllowedNonInteractiveGitCommit()) {
+          console.error(
+            c.red(
+              t(lang, "cli.commitzero_required") ||
+                "CommitZero is required for commits in this repository."
+            )
+          );
+          console.error(
+            c.yellow(
+              t(lang, "cli.commitzero_required_hint") ||
+                "Use your package script (e.g. `npm run commit`) or `npx commitzero commit`."
+            )
+          );
+          exit(1);
+        }
+      }
+
       const message = readFileSync(".git/COMMIT_EDITMSG", "utf8");
       const parsed = parseMessage(sanitizeInput(message));
       const optsUsed = { ...defaultOptions, ...userConfig, language: lang };
