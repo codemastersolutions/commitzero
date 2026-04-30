@@ -91,14 +91,20 @@ test("flag guard: -a and --push only valid with commit", () => {
     assert.fail("expected CLI to reject -a without commit");
   } catch (err: any) {
     const output = String((err.stdout || "") + (err.stderr || ""));
-    assert.match(output, /Flags -a\/--add, -p\/--push(?:, --progress-off(?: and --no-alt-screen)?)? are only valid|Flags -a\/--add and -p\/--push are only valid/);
+    assert.match(
+      output,
+      /Flags -a\/--add, -p\/--push(?:, --progress-off(?: and --no-alt-screen)?)? are only valid|Flags -a\/--add and -p\/--push are only valid/
+    );
   }
   try {
     execSync(`node ${CLI} --push`, { encoding: "utf8" });
     assert.fail("expected CLI to reject --push without commit");
   } catch (err: any) {
     const output = String((err.stdout || "") + (err.stderr || ""));
-    assert.match(output, /Flags -a\/--add, -p\/--push(?:, --progress-off(?: and --no-alt-screen)?)? are only valid|Flags -a\/--add and -p\/--push are only valid/);
+    assert.match(
+      output,
+      /Flags -a\/--add, -p\/--push(?:, --progress-off(?: and --no-alt-screen)?)? are only valid|Flags -a\/--add and -p\/--push are only valid/
+    );
   }
 });
 
@@ -124,7 +130,7 @@ test("check without COMMIT_EDITMSG prints error", () => {
   try {
     try {
       execSync(`node ${CLI} check`, { encoding: "utf8", cwd: tmp });
-      assert.fail("expected check to exit with error when COMMIT_EDITMSG missing");
+      assert.fail("expected check to error without COMMIT_EDITMSG");
     } catch (err: any) {
       const output = String((err.stdout || "") + (err.stderr || ""));
       assert.match(
@@ -137,13 +143,47 @@ test("check without COMMIT_EDITMSG prints error", () => {
   }
 });
 
+test("check blocks direct git commit when enforceCommitZero enabled", () => {
+  const tmp = join(process.cwd(), "tmp-wd-check-enforce");
+  const gitDir = join(tmp, ".git");
+  mkdirSync(gitDir, { recursive: true });
+  writeFileSync(
+    join(tmp, "commitzero.config.json"),
+    JSON.stringify({ enforceCommitZero: true }),
+    "utf8"
+  );
+  writeFileSync(join(gitDir, "COMMIT_EDITMSG"), "feat: ok", "utf8");
+  try {
+    try {
+      execSync(`node ${CLI} check`, { encoding: "utf8", cwd: tmp });
+      assert.fail(
+        "expected check to fail when enforceCommitZero is enabled without COMMITZERO env"
+      );
+    } catch (err: any) {
+      const output = String((err.stdout || "") + (err.stderr || ""));
+      assert.match(
+        output,
+        /CommitZero is required|CommitZero é obrigatório|CommitZero es obligatorio/
+      );
+    }
+
+    execSync(`node ${CLI} check`, {
+      encoding: "utf8",
+      cwd: tmp,
+      env: { ...process.env, COMMITZERO: "1", COMMITZERO_RUN: "1" },
+    });
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
 test("install-hooks and uninstall-hooks manage hooks content", () => {
   const tmp = join(process.cwd(), "tmp-wd-hooks");
+  const gitDir = join(tmp, ".git");
   const hooksDir = join(tmp, ".commitzero", "hooks");
   const packageJsonPath = join(tmp, "package.json");
   mkdirSync(hooksDir, { recursive: true });
-  
-  // Create a package.json file to satisfy the project root check
+
   writeFileSync(
     packageJsonPath,
     JSON.stringify(
@@ -159,12 +199,10 @@ test("install-hooks and uninstall-hooks manage hooks content", () => {
       2
     )
   );
-  
-  // Initialize git repository
+
   execSync("git init", { cwd: tmp, stdio: "ignore" });
-  // Configure hooks path to .commitzero/hooks so install respects configured path
   execSync("git config core.hooksPath .commitzero/hooks", { cwd: tmp, stdio: "ignore" });
-  
+
   try {
     const outInstall = execSync(`node ${CLI} install-hooks`, {
       encoding: "utf8",
@@ -190,7 +228,6 @@ test("install-hooks and uninstall-hooks manage hooks content", () => {
     assert.doesNotMatch(cmAfter, /CommitZero managed block/);
     assert.doesNotMatch(prepAfter, /CommitZero managed block/);
 
-    // Verify that package.json scripts are preserved
     const pkg = JSON.parse(readFileSync(packageJsonPath, "utf8"));
     const scripts = pkg.scripts || {};
     assert.ok("commitzero" in scripts);
@@ -198,6 +235,7 @@ test("install-hooks and uninstall-hooks manage hooks content", () => {
     assert.ok("commitzero:uninstall" in scripts);
   } finally {
     rmSync(tmp, { recursive: true, force: true });
+    rmSync(gitDir, { recursive: true, force: true });
   }
 });
 

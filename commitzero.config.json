@@ -16,11 +16,7 @@
   "requireScope": false,
   "maxSubjectLength": 72,
   "allowBreaking": true,
-  "footerKeywords": [
-    "BREAKING CHANGE",
-    "Closes",
-    "Refs"
-  ],
+  "footerKeywords": ["BREAKING CHANGE", "Closes", "Refs"],
   "preCommitCommands": [],
   "preCommitTimeout": "3m",
   "versionCheckEnabled": true,

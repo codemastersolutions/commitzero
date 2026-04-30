@@ -14,6 +14,9 @@ const dicts: Record<Lang, Dict> = {
     "cli.warning": "Warning: {msg}",
     "cli.valid": "Valid commit",
     "cli.readEditmsgError": "Could not read COMMIT_EDITMSG",
+    "cli.commitzero_required": "CommitZero is required for commits in this repository.",
+    "cli.commitzero_required_hint":
+      "Use your package script (e.g. `npm run commit`) or `npx commitzero commit`.",
     "cli.hooksInstalled": "Hooks installed at {path}",
     "cli.hooksRemoved": "Managed blocks removed from hooks",
     "cli.gitNotInitialized":
@@ -125,6 +128,9 @@ const dicts: Record<Lang, Dict> = {
     "cli.warning": "Aviso: {msg}",
     "cli.valid": "Commit válido",
     "cli.readEditmsgError": "Não foi possível ler COMMIT_EDITMSG",
+    "cli.commitzero_required": "CommitZero é obrigatório para commits neste repositório.",
+    "cli.commitzero_required_hint":
+      "Use o script do projeto (ex.: `npm run commit`) ou `npx commitzero commit`.",
     "cli.hooksInstalled": "Hooks instalados em {path}",
     "cli.hooksRemoved": "Blocos gerenciados removidos dos hooks",
     "cli.gitNotInitialized":
@@ -239,6 +245,9 @@ const dicts: Record<Lang, Dict> = {
     "cli.warning": "Advertencia: {msg}",
     "cli.valid": "Commit válido",
     "cli.readEditmsgError": "No se pudo leer COMMIT_EDITMSG",
+    "cli.commitzero_required": "CommitZero es obligatorio para commits en este repositorio.",
+    "cli.commitzero_required_hint":
+      "Usa el script del proyecto (por ejemplo `npm run commit`) o `npx commitzero commit`.",
     "cli.hooksInstalled": "Hooks instalados en {path}",
     "cli.hooksRemoved": "Bloques gestionados eliminados de los hooks",
     "cli.gitNotInitialized":

@@ -12,6 +12,7 @@ export interface UserConfig {
   maxFileSize?: number | string;
   preCommitCommands?: string[];
   preCommitTimeout?: string | number;
+  enforceCommitZero?: boolean;
   versionCheckEnabled?: boolean;
   versionCheckPeriod?: string; // daily | weekly | monthly
   language?: Lang;
@@ -20,6 +21,7 @@ export interface UserConfig {
     uiAltScreen?: boolean;
     pushProgress?: boolean;
     preCommitTimeout?: string | number;
+    enforceCommitZero?: boolean;
     versionCheckEnabled?: boolean;
     versionCheckPeriod?: string; // daily | weekly | monthly
   };
