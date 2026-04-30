@@ -12,7 +12,7 @@
     "chore",
     "revert"
   ],
-  "scopes": [],
+  "scopes": ["asd"],
   "requireScope": false,
   "maxSubjectLength": 72,
   "allowBreaking": true,
