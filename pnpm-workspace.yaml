@@ -1,0 +1,3 @@
+allowBuilds:
+  '@codemastersolutions/commitzero': true
+  esbuild: true
