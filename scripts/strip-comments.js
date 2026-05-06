@@ -23,7 +23,7 @@ async function main() {
     }
 
     // Configurar modo de strip conforme extensão
-    let stripped = body;
+    let stripped;
     if (ext === ".ts" || ext === ".js") {
       stripped = strip(body, { language: "javascript" });
     } else {
