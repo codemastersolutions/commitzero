@@ -31,22 +31,28 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.3
+
       - name: Setup Node
         uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
 
       - name: Instalar dependências
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Verificar READMEs
-        run: npm run verify:readmes
+        run: pnpm verify:readmes
 
       - name: Lint
-        run: npm run lint
+        run: pnpm lint
 
       - name: Executar testes
-        run: npm test
+        run: pnpm test
 
   release:
     name: Release após merge na main
@@ -60,26 +66,32 @@ jobs:
           fetch-tags: true
           ref: main
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.3
+
       - name: Setup Node
         uses: actions/setup-node@v6
         with:
           node-version: "${{ env.NODE_VERSION }}"
           registry-url: "${{ env.NPM_REGISTRY }}"
+          cache: "pnpm"
 
       - name: Instalar dependências
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Verificar READMEs
-        run: npm run verify:readmes
+        run: pnpm verify:readmes
 
       - name: Lint
-        run: npm run lint
+        run: pnpm lint
 
       - name: Executar testes
-        run: npm test
+        run: pnpm test
 
       - name: Build
-        run: npm run build
+        run: pnpm build
 
       - name: Configurar Git
         run: |
@@ -99,13 +111,13 @@ jobs:
           # Incrementa até achar uma tag livre
           while git rev-parse -q --verify "refs/tags/v$NEXT" >/dev/null; do
             echo "Tag v$NEXT já existe. Incrementando ${{ env.BUMP }}..."
-            npm version "${{ env.BUMP }}" --no-git-tag-version
+            pnpm version "${{ env.BUMP }}" --no-git-tag-version
             NEXT=$(node -p "require('./package.json').version")
             echo "Nova versão candidata: $NEXT"
           done
 
           # Commit das mudanças de versão
-          git add package.json package-lock.json || true
+          git add package.json pnpm-lock.yaml || true
           git commit -m "chore(release): v$NEXT"
 
           # Criar tag anotada para a nova versão
@@ -132,4 +144,4 @@ jobs:
           token: "${{ secrets.GITHUB_TOKEN }}"
 
       - name: Publicar no npm
-        run: npm publish --access public --provenance
+        run: pnpm publish --access public --provenance
