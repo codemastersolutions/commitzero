@@ -9,8 +9,8 @@ importers:
   .:
     devDependencies:
       '@codemastersolutions/commitzero':
-        specifier: ^0.0.48
-        version: 0.0.48
+        specifier: ^0.0.49
+        version: 0.0.49
       '@eslint/js':
         specifier: ^10.0.1
         version: 10.0.1(eslint@10.3.0)
@@ -51,8 +51,8 @@ packages:
     resolution: {integrity: sha512-6zABk/ECA/QYSCQ1NGiVwwbQerUCZ+TQbp64Q3AgmfNvurHH0j8TtXa1qbShXA6qqkpAj4V5W8pP6mLe1mcMqA==}
     engines: {node: '>=18'}
 
-  '@codemastersolutions/commitzero@0.0.48':
-    resolution: {integrity: sha512-JCLUThR1pTyQObWr8SUGFnRuXZm/pyiDgY/rLnywb8Lj93Jwi2EoHFon8j9TRoCyNIpHI2wq50Skr4rkj8XGzA==}
+  '@codemastersolutions/commitzero@0.0.49':
+    resolution: {integrity: sha512-3h7w8/1Rmj+5rpFDJG+dWMHsdwR0fk5yR0hgNBujBWn3mzfOSZIevT4o/vzcSdQCJh9JW+T7BtSrxDp3grvRTw==}
     engines: {node: '>=16'}
     hasBin: true
 
@@ -857,7 +857,7 @@ snapshots:
 
   '@bcoe/v8-coverage@1.0.2': {}
 
-  '@codemastersolutions/commitzero@0.0.48': {}
+  '@codemastersolutions/commitzero@0.0.49': {}
 
   '@esbuild/aix-ppc64@0.27.7':
     optional: true
