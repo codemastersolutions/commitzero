@@ -164,7 +164,8 @@ async function main() {
   }
 
   if (cmd === "init") {
-    await initConfig(lang);
+    const custom = args.includes("--custom");
+    await initConfig(lang, custom);
     return;
   }
   if (cmd === "lint") {

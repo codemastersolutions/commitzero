@@ -41,6 +41,7 @@ npx commitzero --help
 ## Guía rápida
 
 - Inicializar configuración: `commitzero init`
+- Inicializar configuración custom (local): `commitzero init --custom`
 - Instalar hooks versionados: `commitzero install-hooks`
 - Hacer un commit interactivo: `commitzero commit`
   - Agregar automáticamente: `commitzero commit -a`
@@ -52,6 +53,7 @@ npx commitzero --help
 
 - Ayuda: `commitzero --help`
 - Inicializar configuración: `commitzero init`
+- Inicializar configuración custom (local): `commitzero init --custom`
 - Lint de mensaje:
   - Vía archivo: `commitzero lint --file tmp/commit.txt`
   - Vía argumento: `commitzero lint -m "feat(core): add x"`
@@ -175,6 +177,9 @@ yarn commitzero lint -m $'feat(core): change\n\nBody text\n\nRefs: 123'
 
 - `commitzero.config.json|js` (opcional):
   - Define reglas, idioma, hooks y comandos de pre-commit usados por la CLI.
+- `commitzero.config.custom.json|js` (opcional, solo local):
+  - Configuración custom (local) que tiene prioridad sobre el archivo de configuración normal y las opciones predeterminadas.
+  - Agregado automáticamente al `.gitignore` cuando se crea con `commitzero init --custom` para mantenerlo local.
 
 ### Ejemplo completo
 

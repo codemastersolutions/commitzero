@@ -27,24 +27,42 @@ export interface UserConfig {
   };
 }
 
+function loadConfigFile(path: string): UserConfig {
+  try {
+    const raw = readFileSync(path, "utf8");
+    return JSON.parse(raw);
+  } catch {
+    return {};
+  }
+}
+
 export function loadConfig(cwd: string = process.cwd()): UserConfig {
+  const customJsonPath = `${cwd}/commitzero.config.custom.json`;
+  const customJsPath = `${cwd}/commitzero.config.custom.js`;
   const jsonPath = `${cwd}/commitzero.config.json`;
   const jsPath = `${cwd}/commitzero.config.js`;
+
+  let config: UserConfig = {};
+
   if (existsSync(jsonPath)) {
-    try {
-      const raw = readFileSync(jsonPath, "utf8");
-      return JSON.parse(raw);
-    } catch {
-      return {};
-    }
-  }
-  if (existsSync(jsPath)) {
+    config = loadConfigFile(jsonPath);
+  } else if (existsSync(jsPath)) {
     try {
       const mod = require(jsPath);
-      return mod?.default ?? mod ?? {};
+      config = mod?.default ?? mod ?? {};
     } catch {
-      return {};
+      config = {};
     }
   }
-  return {};
+
+  if (existsSync(customJsonPath)) {
+    config = { ...config, ...loadConfigFile(customJsonPath) };
+  } else if (existsSync(customJsPath)) {
+    try {
+      const mod = require(customJsPath);
+      config = { ...config, ...(mod?.default ?? mod ?? {}) };
+    } catch {}
+  }
+
+  return config;
 }
