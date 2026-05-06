@@ -1,7 +1,8 @@
-import { existsSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { stdin as input, stdout as output } from "node:process";
 import * as readline from "node:readline";
 import { DEFAULT_LANG, t } from "../../i18n/index.js";
+import { type UserConfig } from "../../config/load.js";
 import { c } from "../colors";
 
 function askWithValidation(
@@ -27,7 +28,7 @@ function askWithValidation(
             const errorMessage =
               typeof validationResult === "string" ? validationResult : "Invalid input";
             console.log(c.red(errorMessage));
-            askQuestion(); // Repetir a pergunta
+            askQuestion();
             return;
           }
         }
@@ -40,9 +41,30 @@ function askWithValidation(
   });
 }
 
-export async function initConfig(lang: import("../../i18n").Lang = DEFAULT_LANG) {
-  const path = "commitzero.config.json";
-  const existed = existsSync(path);
+function addToGitignore(fileName: string) {
+  const gitignorePath = ".gitignore";
+  let content = "";
+  if (existsSync(gitignorePath)) {
+    content = readFileSync(gitignorePath, "utf8");
+  }
+  const lines = content.split(/\r?\n/);
+  if (!lines.includes(fileName)) {
+    if (content && !content.endsWith("\n")) {
+      content += "\n";
+    }
+    content += `${fileName}\n`;
+    writeFileSync(gitignorePath, content, "utf8");
+  }
+}
+
+export async function initConfig(
+  lang: import("../../i18n").Lang = DEFAULT_LANG,
+  custom: boolean = false
+) {
+  const configPath = custom ? "commitzero.config.custom.json" : "commitzero.config.json";
+  const normalConfigPath = "commitzero.config.json";
+  const existed = existsSync(configPath);
+
   if (existed) {
     const isTTY = !!input.isTTY;
     if (!isTTY) {
@@ -53,7 +75,6 @@ export async function initConfig(lang: import("../../i18n").Lang = DEFAULT_LANG)
     try {
       rl = readline.createInterface({ input, output });
 
-      // Validador para respostas y/N
       const yesNoValidator = (answer: string): boolean | string => {
         const trimmed = answer.trim().toLowerCase();
         if (
@@ -95,34 +116,87 @@ export async function initConfig(lang: import("../../i18n").Lang = DEFAULT_LANG)
       } catch {}
     }
   }
-  const tpl = {
-    types: [
-      "feat",
-      "fix",
-      "docs",
-      "style",
-      "refactor",
-      "perf",
-      "test",
-      "build",
-      "ci",
-      "chore",
-      "revert",
-    ],
-    scopes: [],
-    requireScope: false,
-    maxSubjectLength: 72,
-    maxFileSize: "2MB",
-    allowBreaking: true,
-    footerKeywords: ["BREAKING CHANGE", "Closes", "Refs"],
-    preCommitCommands: [],
-    preCommitTimeout: "3m",
-    versionCheckEnabled: true,
-    versionCheckPeriod: "daily",
-    language: existed ? DEFAULT_LANG : lang,
-    uiAltScreen: true,
-  };
-  writeFileSync(path, JSON.stringify(tpl, null, 2) + "\n", "utf8");
+
+  let tpl: UserConfig | undefined;
+  if (custom && existsSync(normalConfigPath)) {
+    const isTTY = !!input.isTTY;
+    if (isTTY) {
+      let rl: readline.Interface | null = null;
+      try {
+        rl = readline.createInterface({ input, output });
+
+        const yesNoValidator = (answer: string): boolean | string => {
+          const trimmed = answer.trim().toLowerCase();
+          if (
+            trimmed === "" ||
+            trimmed === "n" ||
+            trimmed === "no" ||
+            trimmed === "y" ||
+            trimmed === "yes"
+          ) {
+            return true;
+          }
+          return t(lang, "commit.validation.yesNo") || "Please answer with 'y' or 'n'";
+        };
+
+        const ans = await askWithValidation(
+          rl,
+          c.cyan(
+            "Deseja que o arquivo custom seja uma cópia do arquivo normal commitzero.config.json? (y/N) "
+          ),
+          yesNoValidator
+        );
+        const yes = /^y(es)?$/i.test(ans);
+        if (yes) {
+          const normalConfig = readFileSync(normalConfigPath, "utf8");
+          tpl = JSON.parse(normalConfig);
+        }
+      } catch {
+      } finally {
+        rl?.close();
+        try {
+          input.pause?.();
+        } catch {}
+      }
+    }
+  }
+
+  if (!tpl) {
+    tpl = {
+      types: [
+        "feat",
+        "fix",
+        "docs",
+        "style",
+        "refactor",
+        "perf",
+        "test",
+        "build",
+        "ci",
+        "chore",
+        "revert",
+      ],
+      scopes: [],
+      requireScope: false,
+      maxSubjectLength: 72,
+      maxFileSize: "2MB",
+      allowBreaking: true,
+      footerKeywords: ["BREAKING CHANGE", "Closes", "Refs"],
+      preCommitCommands: [],
+      preCommitTimeout: "3m",
+      versionCheckEnabled: true,
+      versionCheckPeriod: "daily",
+      language: existed ? DEFAULT_LANG : lang,
+      uiAltScreen: true,
+    };
+  }
+
+  writeFileSync(configPath, JSON.stringify(tpl, null, 2) + "\n", "utf8");
+
+  if (custom) {
+    addToGitignore("commitzero.config.custom.json");
+  }
+
   if (existed) {
     console.log(c.green(t(lang, "init.overwritten")));
   } else {
