@@ -4,3 +4,4 @@ tmp*
 .pnpm-store
 commitzero.config.custom.json
 .scannerwork
+sonar
