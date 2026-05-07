@@ -6,59 +6,76 @@ import test from "node:test";
 const CLI = join(process.cwd(), "dist", "cjs", "cli", "index.js");
 
 test("lint valid message via CLI", () => {
+  const tmp = join(process.cwd(), "tmp-cli-lint-ok");
+  mkdirSync(tmp, { recursive: true });
   const msg = "feat: ok";
-  writeFileSync("tmp-msg.txt", msg, "utf8");
   try {
+    const file = join(tmp, "tmp-msg.txt");
+    writeFileSync(file, msg, "utf8");
     const out = execSync(`node ${CLI} lint --file tmp-msg.txt`, {
       encoding: "utf8",
+      cwd: tmp,
     });
     assert.match(out, /Valid commit/);
   } finally {
-    rmSync("tmp-msg.txt");
+    rmSync(tmp, { recursive: true, force: true });
   }
 });
 
 test("lint invalid: missing blank line before body via --file", () => {
+  const tmp = join(process.cwd(), "tmp-cli-lint-no-blank");
+  mkdirSync(tmp, { recursive: true });
   const msg = "feat(core): change\nBody without blank line";
-  const file = "tmp-commit-no-blank.txt";
+  const file = join(tmp, "tmp-commit-no-blank.txt");
   writeFileSync(file, msg, "utf8");
   try {
     try {
-      execSync(`node ${CLI} lint --file ${file}`, { encoding: "utf8" });
+      execSync(`node ${CLI} lint --file ${file}`, { encoding: "utf8", cwd: tmp });
       assert.fail("expected CLI to exit with error for missing blank line");
     } catch (err: any) {
       const output = String(err.stdout || err.stderr || "");
       assert.match(output, /blank line required between header and body/);
     }
   } finally {
-    rmSync(file);
+    rmSync(tmp, { recursive: true, force: true });
   }
 });
 
 test("lint valid: blank line before body via --file", () => {
+  const tmp = join(process.cwd(), "tmp-cli-lint-with-blank");
+  mkdirSync(tmp, { recursive: true });
   const msg = "feat(core): change\n\nBody with blank line";
-  const file = "tmp-commit-with-blank.txt";
+  const file = join(tmp, "tmp-commit-with-blank.txt");
   writeFileSync(file, msg, "utf8");
   try {
     const out = execSync(`node ${CLI} lint --file ${file}`, {
       encoding: "utf8",
+      cwd: tmp,
     });
     assert.match(out, /Valid commit/);
   } finally {
-    rmSync(file);
+    rmSync(tmp, { recursive: true, force: true });
   }
 });
 
 test("help output with --help and no args", () => {
-  const out1 = execSync(`node ${CLI} --help`, { encoding: "utf8" });
-  assert.match(out1, /CommitZero CLI/);
-  const out2 = execSync(`node ${CLI}`, { encoding: "utf8" });
-  assert.match(out2, /CommitZero CLI/);
+  const tmp = join(process.cwd(), "tmp-cli-help");
+  mkdirSync(tmp, { recursive: true });
+  try {
+    const out1 = execSync(`node ${CLI} --help`, { encoding: "utf8", cwd: tmp });
+    assert.match(out1, /CommitZero CLI/);
+    const out2 = execSync(`node ${CLI}`, { encoding: "utf8", cwd: tmp });
+    assert.match(out2, /CommitZero CLI/);
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
+  }
 });
 
 test("lint without input shows guidance", () => {
+  const tmp = join(process.cwd(), "tmp-cli-lint-no-input");
+  mkdirSync(tmp, { recursive: true });
   try {
-    execSync(`node ${CLI} lint`, { encoding: "utf8" });
+    execSync(`node ${CLI} lint`, { encoding: "utf8", cwd: tmp });
     assert.fail("expected CLI to error without --file or -m");
   } catch (err: any) {
     const output = String((err.stdout || "") + (err.stderr || ""));
@@ -66,28 +83,40 @@ test("lint without input shows guidance", () => {
       output,
       /Provide --file <path> or -m <message>|Forneça --file <path> ou -m <message>|Proporciona --file <path> o -m <message>/
     );
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
   }
 });
 
 test("lint via -m valid and invalid", () => {
-  const ok = execSync(`node ${CLI} lint -m 'feat: add feature'`, {
-    encoding: "utf8",
-  });
-  assert.match(ok, /Valid commit/);
+  const tmp = join(process.cwd(), "tmp-cli-lint-arg");
+  mkdirSync(tmp, { recursive: true });
   try {
-    execSync(`node ${CLI} lint -m $'feat: bad\nno blank'`, {
+    const ok = execSync(`node ${CLI} lint -m 'feat: add feature'`, {
       encoding: "utf8",
+      cwd: tmp,
     });
-    assert.fail("expected CLI to exit with error for missing blank line");
-  } catch (err: any) {
-    const output = String((err.stdout || "") + (err.stderr || ""));
-    assert.match(output, /blank line required between header and body/);
+    assert.match(ok, /Valid commit/);
+    try {
+      execSync(`node ${CLI} lint -m $'feat: bad\nno blank'`, {
+        encoding: "utf8",
+        cwd: tmp,
+      });
+      assert.fail("expected CLI to exit with error for missing blank line");
+    } catch (err: any) {
+      const output = String((err.stdout || "") + (err.stderr || ""));
+      assert.match(output, /blank line required between header and body/);
+    }
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
   }
 });
 
 test("flag guard: -a and --push only valid with commit", () => {
+  const tmp = join(process.cwd(), "tmp-cli-flag-guard");
+  mkdirSync(tmp, { recursive: true });
   try {
-    execSync(`node ${CLI} -a`, { encoding: "utf8" });
+    execSync(`node ${CLI} -a`, { encoding: "utf8", cwd: tmp });
     assert.fail("expected CLI to reject -a without commit");
   } catch (err: any) {
     const output = String((err.stdout || "") + (err.stderr || ""));
@@ -97,7 +126,7 @@ test("flag guard: -a and --push only valid with commit", () => {
     );
   }
   try {
-    execSync(`node ${CLI} --push`, { encoding: "utf8" });
+    execSync(`node ${CLI} --push`, { encoding: "utf8", cwd: tmp });
     assert.fail("expected CLI to reject --push without commit");
   } catch (err: any) {
     const output = String((err.stdout || "") + (err.stderr || ""));
@@ -105,6 +134,8 @@ test("flag guard: -a and --push only valid with commit", () => {
       output,
       /Flags -a\/--add, -p\/--push(?:, --progress-off(?: and --no-alt-screen)?)? are only valid|Flags -a\/--add and -p\/--push are only valid/
     );
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
   }
 });
 

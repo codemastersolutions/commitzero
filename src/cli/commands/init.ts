@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { stdin as input, stdout as output } from "node:process";
 import * as readline from "node:readline";
-import { DEFAULT_LANG, t } from "../../i18n/index.js";
+import { DEFAULT_LANG, t, type Lang } from "../../i18n/index.js";
 import { type UserConfig } from "../../config/load.js";
 import { c } from "../colors";
 
@@ -57,6 +57,53 @@ function addToGitignore(fileName: string) {
   }
 }
 
+function isLang(v: unknown): v is Lang {
+  return v === "en" || v === "pt" || v === "es";
+}
+
+function readLanguageFromJsonConfig(path: string): Lang | undefined {
+  try {
+    const raw = readFileSync(path, "utf8");
+    const parsed = JSON.parse(raw) as { language?: unknown };
+    if (isLang(parsed?.language)) return parsed.language;
+  } catch {}
+  return undefined;
+}
+
+function isCancelledError(err: unknown): boolean {
+  return err instanceof Error && err.message === "cancelled";
+}
+
+function buildDefaultConfig(lang: Lang): UserConfig {
+  return {
+    types: [
+      "feat",
+      "fix",
+      "docs",
+      "style",
+      "refactor",
+      "perf",
+      "test",
+      "build",
+      "ci",
+      "chore",
+      "revert",
+    ],
+    scopes: [],
+    requireScope: false,
+    maxSubjectLength: 72,
+    maxFileSize: "2MB",
+    allowBreaking: true,
+    footerKeywords: ["BREAKING CHANGE", "Closes", "Refs"],
+    preCommitCommands: [],
+    preCommitTimeout: "3m",
+    versionCheckEnabled: true,
+    versionCheckPeriod: "daily",
+    language: lang,
+    uiAltScreen: true,
+  };
+}
+
 export async function initConfig(
   lang: import("../../i18n").Lang = DEFAULT_LANG,
   custom: boolean = false
@@ -64,11 +111,21 @@ export async function initConfig(
   const configPath = custom ? "commitzero.config.custom.json" : "commitzero.config.json";
   const normalConfigPath = "commitzero.config.json";
   const existed = existsSync(configPath);
+  const promptLang = custom
+    ? (readLanguageFromJsonConfig(normalConfigPath) ?? DEFAULT_LANG)
+    : (readLanguageFromJsonConfig(configPath) ?? lang ?? DEFAULT_LANG);
+  const defaultsLang = custom ? DEFAULT_LANG : existed ? DEFAULT_LANG : (lang ?? DEFAULT_LANG);
+  const existsKey = custom ? "init.custom.exists" : "init.exists";
+  const createdKey = custom ? "init.custom.created" : "init.created";
+  const askOverwriteKey = custom ? "init.custom.askOverwrite" : "init.askOverwrite";
+  const willOverwriteKey = custom ? "init.custom.willOverwrite" : "init.willOverwrite";
+  const confirmOverwriteKey = custom ? "init.custom.confirmOverwrite" : "init.confirmOverwrite";
+  const overwrittenKey = custom ? "init.custom.overwritten" : "init.overwritten";
 
   if (existed) {
     const isTTY = !!input.isTTY;
     if (!isTTY) {
-      console.log(t(lang, "init.exists"));
+      console.log(t(promptLang, existsKey));
       return;
     }
     let rl: readline.Interface | null = null;
@@ -86,28 +143,36 @@ export async function initConfig(
         ) {
           return true;
         }
-        return t(lang, "commit.validation.yesNo") || "Please answer with 'y' or 'n'";
+        return t(promptLang, "commit.validation.yesNo") || "Please answer with 'y' or 'n'";
       };
 
-      const ans = await askWithValidation(rl, c.cyan(t(lang, "init.askOverwrite")), yesNoValidator);
+      const ans = await askWithValidation(
+        rl,
+        c.cyan(t(promptLang, askOverwriteKey)),
+        yesNoValidator
+      );
       const yes = /^y(es)?$/i.test(ans);
       if (!yes) {
-        console.log(c.yellow(t(lang, "init.cancelled")));
+        console.log(c.yellow(t(promptLang, "init.cancelled")));
         return;
       }
-      console.log(c.yellow(t(lang, "init.willOverwrite")));
+      console.log(c.yellow(t(promptLang, willOverwriteKey)));
       const confirm = await askWithValidation(
         rl,
-        c.cyan(t(lang, "init.confirmOverwrite")),
+        c.cyan(t(promptLang, confirmOverwriteKey)),
         yesNoValidator
       );
       const confirmed = /^y(es)?$/i.test(confirm);
       if (!confirmed) {
-        console.log(c.yellow(t(lang, "init.cancelled")));
+        console.log(c.yellow(t(promptLang, "init.cancelled")));
         return;
       }
-    } catch {
-      console.log(c.yellow(t(lang, "init.cancelled")));
+    } catch (err) {
+      if (isCancelledError(err)) {
+        console.log(c.yellow(t(promptLang, "init.cancelled")));
+        return;
+      }
+      console.log(c.yellow(t(promptLang, "init.cancelled")));
       return;
     } finally {
       rl?.close();
@@ -136,22 +201,26 @@ export async function initConfig(
           ) {
             return true;
           }
-          return t(lang, "commit.validation.yesNo") || "Please answer with 'y' or 'n'";
+          return t(promptLang, "commit.validation.yesNo") || "Please answer with 'y' or 'n'";
         };
 
         const ans = await askWithValidation(
           rl,
-          c.cyan(
-            "Deseja que o arquivo custom seja uma cópia do arquivo normal commitzero.config.json? (y/N) "
-          ),
+          c.cyan(t(promptLang, "init.askCustomCopyFromNormal")),
           yesNoValidator
         );
         const yes = /^y(es)?$/i.test(ans);
         if (yes) {
           const normalConfig = readFileSync(normalConfigPath, "utf8");
           tpl = JSON.parse(normalConfig);
+        } else {
+          tpl = buildDefaultConfig(defaultsLang);
         }
-      } catch {
+      } catch (err) {
+        if (isCancelledError(err)) {
+          console.log(c.yellow(t(promptLang, "init.cancelled")));
+          return;
+        }
       } finally {
         rl?.close();
         try {
@@ -162,33 +231,7 @@ export async function initConfig(
   }
 
   if (!tpl) {
-    tpl = {
-      types: [
-        "feat",
-        "fix",
-        "docs",
-        "style",
-        "refactor",
-        "perf",
-        "test",
-        "build",
-        "ci",
-        "chore",
-        "revert",
-      ],
-      scopes: [],
-      requireScope: false,
-      maxSubjectLength: 72,
-      maxFileSize: "2MB",
-      allowBreaking: true,
-      footerKeywords: ["BREAKING CHANGE", "Closes", "Refs"],
-      preCommitCommands: [],
-      preCommitTimeout: "3m",
-      versionCheckEnabled: true,
-      versionCheckPeriod: "daily",
-      language: existed ? DEFAULT_LANG : lang,
-      uiAltScreen: true,
-    };
+    tpl = buildDefaultConfig(defaultsLang);
   }
 
   writeFileSync(configPath, JSON.stringify(tpl, null, 2) + "\n", "utf8");
@@ -198,8 +241,8 @@ export async function initConfig(
   }
 
   if (existed) {
-    console.log(c.green(t(lang, "init.overwritten")));
+    console.log(c.green(t(promptLang, overwrittenKey)));
   } else {
-    console.log(t(lang, "init.created"));
+    console.log(t(promptLang, createdKey));
   }
 }

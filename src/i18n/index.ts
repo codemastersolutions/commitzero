@@ -100,7 +100,16 @@ const dicts: Record<Lang, Dict> = {
     "init.askOverwrite": "commitzero.config.json exists. Overwrite with defaults? (y/N): ",
     "init.willOverwrite": "The file will be overwritten with default values.",
     "init.confirmOverwrite": "Are you sure you want to overwrite? (y/N): ",
+    "init.askCustomCopyFromNormal":
+      "Use commitzero.config.json as the template for commitzero.config.custom.json? (y/N): ",
     "init.overwritten": "File commitzero.config.json overwritten with defaults.",
+    "init.custom.exists": "commitzero.config.custom.json already exists, nothing to do.",
+    "init.custom.created": "File commitzero.config.custom.json created with defaults.",
+    "init.custom.askOverwrite":
+      "commitzero.config.custom.json exists. Overwrite? (y/N): ",
+    "init.custom.willOverwrite": "The file will be overwritten.",
+    "init.custom.confirmOverwrite": "Are you sure you want to overwrite? (y/N): ",
+    "init.custom.overwritten": "File commitzero.config.custom.json overwritten.",
     "init.cancelled": "Operation cancelled by user.",
     "rules.typeInvalid": "invalid type: {type}",
     "rules.typeLower": "type must be lowercase",
@@ -217,7 +226,17 @@ const dicts: Record<Lang, Dict> = {
     "init.askOverwrite": "commitzero.config.json existe. Sobrescrever com valores padrões? (y/N): ",
     "init.willOverwrite": "O arquivo será sobrescrito com os valores padrões.",
     "init.confirmOverwrite": "Tem certeza que deseja sobrescrever? (y/N): ",
+    "init.askCustomCopyFromNormal":
+      "Deseja que o arquivo custom seja uma cópia do arquivo normal commitzero.config.json? (y/N): ",
     "init.overwritten": "Arquivo commitzero.config.json sobrescrito com valores padrões.",
+    "init.custom.exists": "commitzero.config.custom.json já existe, nada a fazer.",
+    "init.custom.created": "Arquivo commitzero.config.custom.json criado com defaults.",
+    "init.custom.askOverwrite":
+      "commitzero.config.custom.json existe. Sobrescrever? (y/N): ",
+    "init.custom.willOverwrite": "O arquivo será sobrescrito.",
+    "init.custom.confirmOverwrite": "Tem certeza que deseja sobrescrever? (y/N): ",
+    "init.custom.overwritten":
+      "Arquivo commitzero.config.custom.json sobrescrito.",
     "init.cancelled": "Operação cancelada pelo usuário.",
     "rules.typeInvalid": "type inválido: {type}",
     "rules.typeLower": "type deve ser minúsculo",
@@ -335,7 +354,17 @@ const dicts: Record<Lang, Dict> = {
       "commitzero.config.json existe. ¿Sobrescribir con valores por defecto? (y/N): ",
     "init.willOverwrite": "El archivo será sobrescrito con los valores por defecto.",
     "init.confirmOverwrite": "¿Seguro que quieres sobrescribir? (y/N): ",
+    "init.askCustomCopyFromNormal":
+      "¿Desea que el archivo custom sea una copia del archivo normal commitzero.config.json? (y/N): ",
     "init.overwritten": "Archivo commitzero.config.json sobrescrito con valores por defecto.",
+    "init.custom.exists": "commitzero.config.custom.json ya existe, nada que hacer.",
+    "init.custom.created": "Archivo commitzero.config.custom.json creado con valores por defecto.",
+    "init.custom.askOverwrite":
+      "commitzero.config.custom.json existe. ¿Sobrescribir? (y/N): ",
+    "init.custom.willOverwrite": "El archivo será sobrescrito.",
+    "init.custom.confirmOverwrite": "¿Seguro que quieres sobrescribir? (y/N): ",
+    "init.custom.overwritten":
+      "Archivo commitzero.config.custom.json sobrescrito.",
     "init.cancelled": "Operación cancelada por el usuario.",
     "rules.typeInvalid": "tipo inválido: {type}",
     "rules.typeLower": "type debe estar en minúsculas",

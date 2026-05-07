@@ -1,0 +1,43 @@
+{
+  "component": {
+    "key": "commitzero",
+    "name": "CommitZero",
+    "qualifier": "TRK",
+    "measures": [
+      {
+        "metric": "coverage",
+        "value": "63.0",
+        "bestValue": false
+      },
+      {
+        "metric": "bugs",
+        "value": "1",
+        "bestValue": false
+      },
+      {
+        "metric": "duplicated_lines_density",
+        "value": "22.9",
+        "bestValue": false
+      },
+      {
+        "metric": "code_smells",
+        "value": "86",
+        "bestValue": false
+      },
+      {
+        "metric": "ncloc",
+        "value": "3785"
+      },
+      {
+        "metric": "vulnerabilities",
+        "value": "0",
+        "bestValue": true
+      },
+      {
+        "metric": "security_hotspots",
+        "value": "32",
+        "bestValue": false
+      }
+    ]
+  }
+}
