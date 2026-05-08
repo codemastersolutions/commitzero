@@ -7,7 +7,7 @@ const target = join(process.cwd(), "dist", "cjs", "hooks", "cleanup.js");
 if (existsSync(target)) {
   try {
     const mod = await import(pathToFileURL(target).href);
-    const fn = (mod && mod.cleanupHooks) || (mod && mod.default && mod.default.cleanupHooks);
+    const fn = mod?.cleanupHooks ?? mod?.default?.cleanupHooks;
     if (typeof fn === "function") {
       try {
         await fn();

@@ -1,3 +1,3 @@
-export * from "./core/rules";
-export * from "./core/parser";
-export * from "./core/formatter";
+export * from "./core/rules.js";
+export * from "./core/parser.js";
+export * from "./core/formatter.js";

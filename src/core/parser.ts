@@ -1,11 +1,10 @@
-import type { ParsedCommit } from "./rules";
+import type { ParsedCommit } from "./rules.js";
 
 export function parseMessage(message: string): ParsedCommit {
   const lines = message.split(/\r?\n/);
   const header = lines[0] || "";
-  const headerMatch = header.match(
-    /^(?<type>[a-z]+)(\((?<scope>[^)]+)\))?(?<bang>!)?:\s(?<subject>.+)$/
-  );
+  const headerMatch =
+    /^(?<type>[a-z]+)(\((?<scope>[^)]+)\))?(?<bang>!)?:\s(?<subject>.+)$/.exec(header);
 
   const type = headerMatch?.groups?.["type"] ?? "";
   const scope = headerMatch?.groups?.["scope"] ?? undefined;
@@ -21,9 +20,9 @@ export function parseMessage(message: string): ParsedCommit {
   let footerStartIdx: number | null = null;
 
   for (const line of rest) {
-    const m = line.match(footerRegex);
-    if (m && m.groups) {
-      if (footerStartIdx === null) footerStartIdx = bodyLines.length;
+    const m = footerRegex.exec(line);
+    if (m?.groups) {
+      footerStartIdx ??= bodyLines.length;
       footers.push({ key: m.groups["key"], value: m.groups["value"] });
     } else {
       bodyLines.push(line);

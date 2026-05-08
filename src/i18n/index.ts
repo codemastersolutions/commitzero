@@ -386,10 +386,10 @@ const dicts: Record<Lang, Dict> = {
 };
 
 export function t(lang: Lang, key: string, params?: Record<string, string | number>): string {
-  const l = (dicts as Record<string, Dict>)[lang] ? lang : DEFAULT_LANG;
-  let s = dicts[l as Lang][key] || key;
+  const l: Lang = Object.prototype.hasOwnProperty.call(dicts, lang) ? lang : DEFAULT_LANG;
+  let s = dicts[l][key] ?? key;
   if (params) {
-    s = s.replace(/\{(\w+)\}/g, (_, k) => String(params[k] ?? ""));
+    s = s.replaceAll(/\{(\w+)\}/g, (_, k) => String(params[k] ?? ""));
   }
   return s;
 }

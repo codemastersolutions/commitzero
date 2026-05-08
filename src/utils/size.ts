@@ -10,18 +10,18 @@ export function parseSizeToBytes(
   }
 
   const s = size.trim().toUpperCase();
-  const match = s.match(/^([\d.]+)([A-Z]*)$/);
+  const match = /^([\d.]+)([A-Z]*)$/.exec(s);
 
   if (!match) {
     // If it doesn't match expected pattern, try parsing as float, assuming bytes
-    const val = parseFloat(s);
-    return isNaN(val) ? defaultBytes : val;
+    const val = Number.parseFloat(s);
+    return Number.isNaN(val) ? defaultBytes : val;
   }
 
-  const value = parseFloat(match[1]);
+  const value = Number.parseFloat(match[1]);
   const unit = match[2];
 
-  if (isNaN(value)) {
+  if (Number.isNaN(value)) {
     return defaultBytes;
   }
 
@@ -49,5 +49,5 @@ export function formatBytes(bytes: number): string {
   const k = 1024;
   const sizes = ["B", "KB", "MB", "GB", "TB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + sizes[i];
+  return Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + sizes[i];
 }

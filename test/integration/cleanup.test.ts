@@ -1,10 +1,11 @@
 import assert from "node:assert";
-import { execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import test from "node:test";
 
-const CLI = join(process.cwd(), "dist", "cjs", "cli", "index.js");
+const CLI = join(process.cwd(), "dist", "esm", "cli", "index.js");
+const NODE = process.execPath;
 
 const HOOK_HEADER = "# CommitZero managed block";
 
@@ -20,7 +21,7 @@ test("cleanup removes managed blocks in hooks directory", () => {
   });
 
   try {
-    const out = execSync(`node ${CLI} cleanup`, { encoding: "utf8", cwd: tmp });
+    const out = execFileSync(NODE, [CLI, "cleanup"], { encoding: "utf8", cwd: tmp });
     assert.match(
       out,
       /Managed blocks removed from hooks|Blocos gerenciados removidos dos hooks|Bloques administrados removidos de los hooks/

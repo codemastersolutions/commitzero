@@ -49,7 +49,12 @@ export function loadConfig(cwd: string = process.cwd()): UserConfig {
   } else if (existsSync(jsPath)) {
     try {
       const mod = require(jsPath);
-      config = mod?.default ?? mod ?? {};
+      const loaded = mod?.default ?? mod;
+      if (loaded && typeof loaded === "object") {
+        config = loaded as UserConfig;
+      } else {
+        config = {};
+      }
     } catch {
       config = {};
     }
@@ -60,7 +65,10 @@ export function loadConfig(cwd: string = process.cwd()): UserConfig {
   } else if (existsSync(customJsPath)) {
     try {
       const mod = require(customJsPath);
-      config = { ...config, ...(mod?.default ?? mod ?? {}) };
+      const override = mod?.default ?? mod;
+      if (override && typeof override === "object") {
+        config = { ...config, ...(override as UserConfig) };
+      }
     } catch {}
   }
 

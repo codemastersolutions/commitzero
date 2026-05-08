@@ -1,9 +1,10 @@
 import assert from "node:assert";
-import { execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import test from "node:test";
-const CLI = join(process.cwd(), "dist", "cjs", "cli", "index.js");
+const CLI = join(process.cwd(), "dist", "esm", "cli", "index.js");
+const NODE = process.execPath;
 
 test("lint valid message via CLI", () => {
   const tmp = join(process.cwd(), "tmp-cli-lint-ok");
@@ -12,7 +13,7 @@ test("lint valid message via CLI", () => {
   try {
     const file = join(tmp, "tmp-msg.txt");
     writeFileSync(file, msg, "utf8");
-    const out = execSync(`node ${CLI} lint --file tmp-msg.txt`, {
+    const out = execFileSync(NODE, [CLI, "lint", "--file", "tmp-msg.txt"], {
       encoding: "utf8",
       cwd: tmp,
     });
@@ -30,7 +31,7 @@ test("lint invalid: missing blank line before body via --file", () => {
   writeFileSync(file, msg, "utf8");
   try {
     try {
-      execSync(`node ${CLI} lint --file ${file}`, { encoding: "utf8", cwd: tmp });
+      execFileSync(NODE, [CLI, "lint", "--file", file], { encoding: "utf8", cwd: tmp });
       assert.fail("expected CLI to exit with error for missing blank line");
     } catch (err: any) {
       const output = String(err.stdout || err.stderr || "");
@@ -48,7 +49,7 @@ test("lint valid: blank line before body via --file", () => {
   const file = join(tmp, "tmp-commit-with-blank.txt");
   writeFileSync(file, msg, "utf8");
   try {
-    const out = execSync(`node ${CLI} lint --file ${file}`, {
+    const out = execFileSync(NODE, [CLI, "lint", "--file", file], {
       encoding: "utf8",
       cwd: tmp,
     });
@@ -62,9 +63,9 @@ test("help output with --help and no args", () => {
   const tmp = join(process.cwd(), "tmp-cli-help");
   mkdirSync(tmp, { recursive: true });
   try {
-    const out1 = execSync(`node ${CLI} --help`, { encoding: "utf8", cwd: tmp });
+    const out1 = execFileSync(NODE, [CLI, "--help"], { encoding: "utf8", cwd: tmp });
     assert.match(out1, /CommitZero CLI/);
-    const out2 = execSync(`node ${CLI}`, { encoding: "utf8", cwd: tmp });
+    const out2 = execFileSync(NODE, [CLI], { encoding: "utf8", cwd: tmp });
     assert.match(out2, /CommitZero CLI/);
   } finally {
     rmSync(tmp, { recursive: true, force: true });
@@ -75,7 +76,7 @@ test("lint without input shows guidance", () => {
   const tmp = join(process.cwd(), "tmp-cli-lint-no-input");
   mkdirSync(tmp, { recursive: true });
   try {
-    execSync(`node ${CLI} lint`, { encoding: "utf8", cwd: tmp });
+    execFileSync(NODE, [CLI, "lint"], { encoding: "utf8", cwd: tmp });
     assert.fail("expected CLI to error without --file or -m");
   } catch (err: any) {
     const output = String((err.stdout || "") + (err.stderr || ""));
@@ -92,13 +93,13 @@ test("lint via -m valid and invalid", () => {
   const tmp = join(process.cwd(), "tmp-cli-lint-arg");
   mkdirSync(tmp, { recursive: true });
   try {
-    const ok = execSync(`node ${CLI} lint -m 'feat: add feature'`, {
+    const ok = execFileSync(NODE, [CLI, "lint", "-m", "feat: add feature"], {
       encoding: "utf8",
       cwd: tmp,
     });
     assert.match(ok, /Valid commit/);
     try {
-      execSync(`node ${CLI} lint -m $'feat: bad\nno blank'`, {
+      execFileSync(NODE, [CLI, "lint", "-m", "feat: bad\nno blank"], {
         encoding: "utf8",
         cwd: tmp,
       });
@@ -116,7 +117,7 @@ test("flag guard: -a and --push only valid with commit", () => {
   const tmp = join(process.cwd(), "tmp-cli-flag-guard");
   mkdirSync(tmp, { recursive: true });
   try {
-    execSync(`node ${CLI} -a`, { encoding: "utf8", cwd: tmp });
+    execFileSync(NODE, [CLI, "-a"], { encoding: "utf8", cwd: tmp });
     assert.fail("expected CLI to reject -a without commit");
   } catch (err: any) {
     const output = String((err.stdout || "") + (err.stderr || ""));
@@ -126,7 +127,7 @@ test("flag guard: -a and --push only valid with commit", () => {
     );
   }
   try {
-    execSync(`node ${CLI} --push`, { encoding: "utf8", cwd: tmp });
+    execFileSync(NODE, [CLI, "--push"], { encoding: "utf8", cwd: tmp });
     assert.fail("expected CLI to reject --push without commit");
   } catch (err: any) {
     const output = String((err.stdout || "") + (err.stderr || ""));
@@ -146,7 +147,7 @@ test("check command reads .git/COMMIT_EDITMSG", () => {
   const editPath = join(gitDir, "COMMIT_EDITMSG");
   try {
     writeFileSync(editPath, "feat: ok", "utf8");
-    const out = execSync(`node ${CLI} check`, { encoding: "utf8", cwd: tmp });
+    const out = execFileSync(NODE, [CLI, "check"], { encoding: "utf8", cwd: tmp });
 
     assert.ok(typeof out === "string");
   } finally {
@@ -160,7 +161,7 @@ test("check without COMMIT_EDITMSG prints error", () => {
   mkdirSync(gitDir, { recursive: true });
   try {
     try {
-      execSync(`node ${CLI} check`, { encoding: "utf8", cwd: tmp });
+      execFileSync(NODE, [CLI, "check"], { encoding: "utf8", cwd: tmp });
       assert.fail("expected check to error without COMMIT_EDITMSG");
     } catch (err: any) {
       const output = String((err.stdout || "") + (err.stderr || ""));
@@ -186,7 +187,7 @@ test("check blocks direct git commit when enforceCommitZero enabled", () => {
   writeFileSync(join(gitDir, "COMMIT_EDITMSG"), "feat: ok", "utf8");
   try {
     try {
-      execSync(`node ${CLI} check`, { encoding: "utf8", cwd: tmp });
+      execFileSync(NODE, [CLI, "check"], { encoding: "utf8", cwd: tmp });
       assert.fail(
         "expected check to fail when enforceCommitZero is enabled without COMMITZERO env"
       );
@@ -198,7 +199,7 @@ test("check blocks direct git commit when enforceCommitZero enabled", () => {
       );
     }
 
-    execSync(`node ${CLI} check`, {
+    execFileSync(NODE, [CLI, "check"], {
       encoding: "utf8",
       cwd: tmp,
       env: { ...process.env, COMMITZERO: "1", COMMITZERO_RUN: "1" },
@@ -231,11 +232,11 @@ test("install-hooks and uninstall-hooks manage hooks content", () => {
     )
   );
 
-  execSync("git init", { cwd: tmp, stdio: "ignore" });
-  execSync("git config core.hooksPath .commitzero/hooks", { cwd: tmp, stdio: "ignore" });
+  execFileSync("git", ["init"], { cwd: tmp, stdio: "ignore" });
+  execFileSync("git", ["config", "core.hooksPath", ".commitzero/hooks"], { cwd: tmp, stdio: "ignore" });
 
   try {
-    const outInstall = execSync(`node ${CLI} install-hooks`, {
+    const outInstall = execFileSync(NODE, [CLI, "install-hooks"], {
       encoding: "utf8",
       cwd: tmp,
     });
@@ -249,7 +250,7 @@ test("install-hooks and uninstall-hooks manage hooks content", () => {
     assert.match(cmContent, /# CommitZero managed block/);
     assert.match(prepContent, /# CommitZero managed block/);
 
-    const outUninstall = execSync(`node ${CLI} uninstall-hooks`, {
+    const outUninstall = execFileSync(NODE, [CLI, "uninstall-hooks"], {
       encoding: "utf8",
       cwd: tmp,
     });
@@ -274,7 +275,7 @@ test("init creates commitzero.config.json with defaults", () => {
   const tmp = join(process.cwd(), "tmp-wd-init");
   mkdirSync(tmp, { recursive: true });
   try {
-    const out1 = execSync(`node ${CLI} init`, { encoding: "utf8", cwd: tmp });
+    const out1 = execFileSync(NODE, [CLI, "init"], { encoding: "utf8", cwd: tmp });
     assert.match(out1, /created/i);
     const cfgPath = join(tmp, "commitzero.config.json");
     assert.ok(existsSync(cfgPath));
@@ -283,7 +284,7 @@ test("init creates commitzero.config.json with defaults", () => {
     const config = JSON.parse(content);
     assert.strictEqual(config.maxFileSize, "2MB");
 
-    const out2 = execSync(`node ${CLI} init`, { encoding: "utf8", cwd: tmp });
+    const out2 = execFileSync(NODE, [CLI, "init"], { encoding: "utf8", cwd: tmp });
     assert.match(out2.toLowerCase(), /already exists|já existe|ya existe/);
   } finally {
     rmSync(tmp, { recursive: true, force: true });

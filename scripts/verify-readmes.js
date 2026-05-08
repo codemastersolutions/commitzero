@@ -19,26 +19,31 @@ function read(file) {
 }
 
 function checkLinks(content, lang) {
-  const results = [];
   if (lang === "en") {
-    results.push(/\(\.\/README\.pt-BR\.md\)/.test(content));
-    results.push(/\(\.\/README\.es\.md\)/.test(content));
-    results.push(/Languages:\s*English\s*\|/i.test(content));
+    return [
+      /\(\.\/README\.pt-BR\.md\)/.test(content),
+      /\(\.\/README\.es\.md\)/.test(content),
+      /Languages:\s*English\s*\|/i.test(content),
+    ].every(Boolean);
   } else if (lang === "pt") {
-    results.push(/\(\.\/README\.md\)/.test(content));
-    results.push(/\(\.\/README\.es\.md\)/.test(content));
-    results.push(/Idiomas:\s*\[English\]/i.test(content));
+    return [
+      /\(\.\/README\.md\)/.test(content),
+      /\(\.\/README\.es\.md\)/.test(content),
+      /Idiomas:\s*\[English\]/i.test(content),
+    ].every(Boolean);
   } else if (lang === "es") {
-    results.push(/\(\.\/README\.md\)/.test(content));
-    results.push(/\(\.\/README\.pt-BR\.md\)/.test(content));
-    results.push(/Idiomas:\s*\[English\]/i.test(content));
+    return [
+      /\(\.\/README\.md\)/.test(content),
+      /\(\.\/README\.pt-BR\.md\)/.test(content),
+      /Idiomas:\s*\[English\]/i.test(content),
+    ].every(Boolean);
   }
-  return results.every(Boolean);
+  return true;
 }
 
 function checkSectionsOrder(content, titles) {
   const indexes = titles.map((t) => content.indexOf(t));
-  if (indexes.some((i) => i === -1)) return false;
+  if (indexes.includes(-1)) return false;
   for (let i = 1; i < indexes.length; i++) {
     if (indexes[i] <= indexes[i - 1]) return false;
   }
@@ -124,9 +129,9 @@ for (const [lang, file] of Object.entries(files)) {
   }
 }
 
-if (!ok) {
+if (ok) {
+  console.log("All README files verified successfully.");
+} else {
   process.exitCode = 1;
   console.error("README verification failed.");
-} else {
-  console.log("All README files verified successfully.");
 }

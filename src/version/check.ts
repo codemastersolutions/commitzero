@@ -67,9 +67,13 @@ function shouldCheck(period: Period, lastCheckedAt?: number): boolean {
 }
 
 function parseSemver(v: string): [number, number, number] | null {
-  const m = v.match(/^(\d+)\.(\d+)\.(\d+)/);
+  const m = /^(\d+)\.(\d+)\.(\d+)/.exec(v);
   if (!m) return null;
-  return [parseInt(m[1], 10), parseInt(m[2], 10), parseInt(m[3], 10)];
+  return [
+    Number.parseInt(m[1], 10),
+    Number.parseInt(m[2], 10),
+    Number.parseInt(m[3], 10),
+  ];
 }
 
 function isNewer(a: string, b: string): boolean {

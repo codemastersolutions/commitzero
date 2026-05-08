@@ -1,7 +1,12 @@
-import { execSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { commitMsgScript, HOOK_HEADER, preCommitScript, prepareCommitMsgScript } from "./scripts";
+import {
+  commitMsgScript,
+  HOOK_HEADER,
+  preCommitScript,
+  prepareCommitMsgScript,
+} from "./scripts.js";
 
 export interface HookOptions {
   hookDir?: string;
@@ -40,7 +45,7 @@ function removeManagedBlock(original: string): string {
 
 function isGitRepository(): boolean {
   try {
-    execSync("git rev-parse --git-dir", { stdio: "ignore" });
+    execFileSync("git", ["rev-parse", "--git-dir"], { stdio: "ignore" });
     return true;
   } catch {
     return false;
@@ -67,25 +72,30 @@ export function getCurrentHooksPath(baseDir?: string): string | null {
   // Prioriza configuração local do repositório para evitar interferência de config global.
   // Em ambientes sem repositório inicializado, retorna null para usar `.git/hooks` padrão.
   try {
-    const configuredLocal = execSync("git config --local --get core.hooksPath", {
+    const configuredLocal = execFileSync("git", ["config", "--local", "--get", "core.hooksPath"], {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "ignore"],
       cwd: baseDir ?? process.cwd(),
     }).trim();
     if (configuredLocal) return configuredLocal;
   } catch {}
-  // Fallback: apenas se houver repositório, a chamada abaixo retornará algo útil.
-  // Evita usar configuração global fora do repositório atual.
   try {
-    const configured = execSync(
-      "git rev-parse --is-inside-work-tree >/dev/null 2>&1 && git config --local --get core.hooksPath",
-      {
-        encoding: "utf8",
-        stdio: ["ignore", "pipe", "ignore"],
-        shell: "/bin/sh",
-        cwd: baseDir ?? process.cwd(),
-      }
-    ).trim();
+    const inside = execFileSync("git", ["rev-parse", "--is-inside-work-tree"], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+      cwd: baseDir ?? process.cwd(),
+    }).trim();
+    if (inside !== "true") return null;
+  } catch {
+    return null;
+  }
+
+  try {
+    const configured = execFileSync("git", ["config", "--local", "--get", "core.hooksPath"], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+      cwd: baseDir ?? process.cwd(),
+    }).trim();
     return configured || null;
   } catch {
     return null;
@@ -94,7 +104,7 @@ export function getCurrentHooksPath(baseDir?: string): string | null {
 
 function removeHooksPath(): void {
   try {
-    execSync("git config --unset core.hooksPath", { stdio: "ignore" });
+    execFileSync("git", ["config", "--unset", "core.hooksPath"], { stdio: "ignore" });
   } catch {
     // Ignore if already unset
   }
@@ -107,7 +117,7 @@ export function isCommitZeroHooksPath(path: string): boolean {
 function isDirectoryEmpty(dir: string): boolean {
   if (!existsSync(dir)) return true;
   try {
-    const files = require("node:fs").readdirSync(dir);
+    const files = readdirSync(dir);
     return files.length === 0;
   } catch {
     return true;
@@ -117,12 +127,11 @@ function isDirectoryEmpty(dir: string): boolean {
 function hasOnlyCommitZeroHooks(dir: string): boolean {
   if (!existsSync(dir)) return true;
   try {
-    const files = require("node:fs").readdirSync(dir);
-    const hookFiles = ["commit-msg", "prepare-commit-msg", "pre-commit"];
+    const files = readdirSync(dir);
+    const hookFiles = new Set(["commit-msg", "prepare-commit-msg", "pre-commit"]);
 
-    // Check if all files are CommitZero hooks
     for (const file of files) {
-      if (!hookFiles.includes(file)) return false;
+      if (!hookFiles.has(file)) return false;
 
       const filePath = join(dir, file);
       try {
@@ -138,6 +147,28 @@ function hasOnlyCommitZeroHooks(dir: string): boolean {
   }
 }
 
+function tryConfigureHooksPath(wantHooksPath: string): string | null {
+  try {
+    execFileSync("git", ["config", "core.hooksPath", wantHooksPath], { stdio: "ignore" });
+    return wantHooksPath;
+  } catch {
+    return null;
+  }
+}
+
+function resolveHookDir(opts: HookOptions): string {
+  if (opts.hookDir) return opts.hookDir;
+  const currentHooksPath = getCurrentHooksPath();
+  const wantCommitZeroPath = ".commitzero/hooks";
+  if (!currentHooksPath) {
+    return tryConfigureHooksPath(wantCommitZeroPath) ?? join(".git", "hooks");
+  }
+  if (opts.forceOverride && !isCommitZeroHooksPath(currentHooksPath)) {
+    return tryConfigureHooksPath(wantCommitZeroPath) ?? currentHooksPath;
+  }
+  return currentHooksPath;
+}
+
 export function installHooks(opts: HookOptions = {}) {
   // Validate project root
   if (!isProjectRoot()) {
@@ -151,33 +182,7 @@ export function installHooks(opts: HookOptions = {}) {
     );
   }
 
-  let hookDir = opts.hookDir;
-
-  if (!hookDir) {
-    const currentHooksPath = getCurrentHooksPath();
-    const wantCommitZeroPath = ".commitzero/hooks";
-    if (!currentHooksPath) {
-      // Configure hooks path to CommitZero-managed directory when not set
-      try {
-        execSync(`git config core.hooksPath ${wantCommitZeroPath}`, { stdio: "ignore" });
-        hookDir = wantCommitZeroPath;
-      } catch {
-        // Fallback to default
-        hookDir = join(".git", "hooks");
-      }
-    } else if (opts.forceOverride && !isCommitZeroHooksPath(currentHooksPath)) {
-      // Override existing hooks path to CommitZero-managed directory if forced
-      try {
-        execSync(`git config core.hooksPath ${wantCommitZeroPath}`, { stdio: "ignore" });
-        hookDir = wantCommitZeroPath;
-      } catch {
-        hookDir = currentHooksPath;
-      }
-    } else {
-      // Respect configured hooks path
-      hookDir = currentHooksPath || join(".git", "hooks");
-    }
-  }
+  const hookDir = resolveHookDir(opts);
 
   ensureDir(hookDir);
   const commitMsgPath = join(hookDir, "commit-msg");
@@ -189,53 +194,33 @@ export function installHooks(opts: HookOptions = {}) {
   writeHook(preCommitPath, preCommitScript());
 }
 
-export function uninstallHooks(opts: HookOptions = {}) {
-  let hookDir = opts.hookDir;
+function resolveUninstallHookDir(opts: HookOptions): string {
+  if (opts.hookDir) return opts.hookDir;
+  const currentHooksPath = getCurrentHooksPath();
+  if (!currentHooksPath) return join(".git", "hooks");
+  return currentHooksPath.startsWith("/")
+    ? currentHooksPath
+    : join(process.cwd(), currentHooksPath);
+}
 
-  if (!hookDir) {
-    const currentHooksPath = getCurrentHooksPath();
-    if (currentHooksPath) {
-      hookDir = currentHooksPath.startsWith("/")
-        ? currentHooksPath
-        : join(process.cwd(), currentHooksPath);
-    } else {
-      hookDir = join(".git", "hooks");
-    }
-  }
+function cleanupHookFile(filePath: string): void {
+  try {
+    const content = readFileSync(filePath, "utf8");
+    const cleaned = removeManagedBlock(content);
+    writeHook(filePath, cleaned.trim() ? cleaned : "");
+  } catch {}
+}
+
+export function uninstallHooks(opts: HookOptions = {}) {
+  const hookDir = resolveUninstallHookDir(opts);
 
   const commitMsgPath = join(hookDir, "commit-msg");
   const prepareMsgPath = join(hookDir, "prepare-commit-msg");
   const preCommitPath = join(hookDir, "pre-commit");
 
-  try {
-    const c = readFileSync(commitMsgPath, "utf8");
-    const cleaned = removeManagedBlock(c);
-    if (cleaned.trim()) {
-      writeHook(commitMsgPath, cleaned);
-    } else {
-      rmSync(commitMsgPath, { force: true });
-    }
-  } catch {}
-
-  try {
-    const p = readFileSync(prepareMsgPath, "utf8");
-    const cleaned = removeManagedBlock(p);
-    if (cleaned.trim()) {
-      writeHook(prepareMsgPath, cleaned);
-    } else {
-      rmSync(prepareMsgPath, { force: true });
-    }
-  } catch {}
-
-  try {
-    const pc = readFileSync(preCommitPath, "utf8");
-    const cleaned = removeManagedBlock(pc);
-    if (cleaned.trim()) {
-      writeHook(preCommitPath, cleaned);
-    } else {
-      rmSync(preCommitPath, { force: true });
-    }
-  } catch {}
+  cleanupHookFile(commitMsgPath);
+  cleanupHookFile(prepareMsgPath);
+  cleanupHookFile(preCommitPath);
 
   // Check if we should remove the hooks directory and unset hooks path
   const currentHooksPath = getCurrentHooksPath();

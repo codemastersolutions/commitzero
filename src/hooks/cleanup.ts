@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { getCurrentHooksPath } from "./install";
-import { HOOK_HEADER } from "./scripts";
+import { getCurrentHooksPath } from "./install.js";
+import { HOOK_HEADER } from "./scripts.js";
 
 function removeManagedBlock(original: string): string {
   const start = `${HOOK_HEADER} START`;
@@ -40,11 +40,10 @@ export function cleanupHooks(cwd?: string) {
   const start = cwd || process.env.INIT_CWD || process.cwd();
   const root = findProjectRoot(start);
   const configured = getCurrentHooksPath(root);
-  const hookDir = configured
-    ? configured.startsWith("/")
-      ? configured
-      : join(root, configured)
-    : join(root, ".git", "hooks");
+  let hookDir = join(root, ".git", "hooks");
+  if (configured) {
+    hookDir = configured.startsWith("/") ? configured : join(root, configured);
+  }
   const commitMsgPath = join(hookDir, "commit-msg");
   const prepareMsgPath = join(hookDir, "prepare-commit-msg");
   const preCommitPath = join(hookDir, "pre-commit");
@@ -75,8 +74,4 @@ export function cleanupHooks(cwd?: string) {
 
   // Intencionalmente não remove scripts do package.json.
   // A desinstalação dos hooks deve apenas limpar os blocos gerenciados nos arquivos de hook.
-}
-
-if (require.main === module) {
-  cleanupHooks();
 }
