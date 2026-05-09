@@ -1,6 +1,6 @@
 import assert from "node:assert";
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { chmodSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import test from "node:test";
 import { resolveGitBin } from "../../dist/esm/utils/binaries.js";
@@ -33,7 +33,7 @@ test("pre-commit add without command prints error", () => {
     } catch (err: any) {
       const code = typeof err?.status === "number" ? err.status : undefined;
       assert.strictEqual(code, 2);
-      const output = String((err.stdout || "") + (err.stderr || ""));
+      const output = String(err.stdout) + String(err.stderr);
       assert.match(
         output,
         /Provide a command|Forneça um comando|Proporciona un comando|Provide a command to add\/remove/
@@ -90,7 +90,7 @@ test("pre-commit add, duplicate, remove, not found", () => {
       execFileSync(NODE, [CLI, "pre-commit", "remove", "echo ok"], { encoding: "utf8", cwd: tmp });
       assert.fail("expected CLI to exit with error when removing non-existent command");
     } catch (err: any) {
-      const output = String((err.stdout || "") + (err.stderr || ""));
+      const output = String(err.stdout) + String(err.stderr);
       assert.match(output, /Command not found|Comando não encontrado|Comando no encontrado/);
     }
   } finally {
@@ -111,7 +111,7 @@ test("pre-commit run success then failure stops sequence", () => {
       execFileSync(NODE, [CLI, "pre-commit"], { encoding: "utf8", cwd: tmp });
       assert.fail("expected CLI to exit with error on failing pre-commit");
     } catch (err: any) {
-      const output = String((err.stdout || "") + (err.stderr || ""));
+      const output = String(err.stdout) + String(err.stderr);
       assert.match(output, /Running pre-commit:|Executando pre-commit:|Ejecutando pre-commit:/);
       assert.match(output, /Pre-commit failed on:|Pre-commit falhou em:|Pre-commit falló en:/);
     }
@@ -172,7 +172,7 @@ test("pre-commit fails when file size exceeds limit", () => {
       execFileSync(NODE, [CLI, "pre-commit"], { encoding: "utf8", cwd: tmp });
       assert.fail("expected CLI to exit with error due to file size limit");
     } catch (err: any) {
-      const output = String((err.stdout || "") + (err.stderr || ""));
+      const output = String(err.stdout) + String(err.stderr);
       assert.match(
         output,
         /File size limit exceeded|Limite de tamanho de arquivo excedido|Límite de tamaño de archivo excedido/
@@ -214,7 +214,7 @@ test("pre-commit fails when file size exceeds limit (string format)", () => {
       execFileSync(NODE, [CLI, "pre-commit"], { encoding: "utf8", cwd: tmp });
       assert.fail("expected CLI to exit with error due to file size limit");
     } catch (err: any) {
-      const output = String((err.stdout || "") + (err.stderr || ""));
+      const output = String(err.stdout) + String(err.stderr);
       assert.match(
         output,
         /File size limit exceeded|Limite de tamanho de arquivo excedido|Límite de tamaño de archivo excedido/
@@ -245,7 +245,7 @@ test("pre-commit times out when command exceeds configured timeout", () => {
       });
       assert.fail("expected CLI to exit with timeout error on long pre-commit command");
     } catch (err: any) {
-      const output = String((err.stdout || "") + (err.stderr || ""));
+      const output = String(err.stdout) + String(err.stderr);
       assert.match(output, /Running pre-commit:|Executando pre-commit:|Ejecutando pre-commit:/);
       assert.match(
         output,
@@ -270,7 +270,7 @@ test("pre-commit rejects invalid quoted command", () => {
       execFileSync(NODE, [CLI, "pre-commit"], { encoding: "utf8", cwd: tmp });
       assert.fail("expected CLI to exit with invalid command error");
     } catch (err: any) {
-      const output = String((err.stdout || "") + (err.stderr || ""));
+      const output = String(err.stdout) + String(err.stderr);
       assert.match(output, /Invalid pre-commit command:/);
     }
   } finally {
@@ -291,9 +291,144 @@ test("pre-commit rejects command that requires a shell", () => {
       execFileSync(NODE, [CLI, "pre-commit"], { encoding: "utf8", cwd: tmp });
       assert.fail("expected CLI to exit when command requires a shell");
     } catch (err: any) {
-      const output = String((err.stdout || "") + (err.stderr || ""));
+      const output = String(err.stdout) + String(err.stderr);
       assert.match(output, /requires a shell and is not allowed/);
     }
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test("pre-commit runs allowed executables (aliases, system bins and absolute path)", () => {
+  const tmp = join(process.cwd(), "tmp-precommit-exec-allow");
+  mkdirSync(tmp, { recursive: true });
+  try {
+    const absDir = join(tmp, "bin");
+    mkdirSync(absDir, { recursive: true });
+    const absExe = join(absDir, "ok.sh");
+    writeFileSync(absExe, "#!/usr/bin/env sh\nexit 0\n", "utf8");
+    chmodSync(absExe, 0o755);
+
+    const cfgPath = join(tmp, "commitzero.config.json");
+    const cfg = {
+      preCommitCommands: [
+        "node -e \\\"console.log('ok')\\\"",
+        "git --version",
+        "ls",
+        `${absExe} arg1`,
+      ],
+    };
+    writeFileSync(cfgPath, JSON.stringify(cfg, null, 2), "utf8");
+    const out = execFileSync(NODE, [CLI, "pre-commit"], { encoding: "utf8", cwd: tmp });
+    assert.match(
+      out,
+      /Pre-commit commands completed successfully\.|Comandos de pre-commit concluídos com sucesso\.|Comandos de pre-commit completados exitosamente\./
+    );
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test("pre-commit rejects empty command string", () => {
+  const tmp = join(process.cwd(), "tmp-precommit-empty-command");
+  mkdirSync(tmp, { recursive: true });
+  try {
+    const cfgPath = join(tmp, "commitzero.config.json");
+    const cfg = { preCommitCommands: ["   "] };
+    writeFileSync(cfgPath, JSON.stringify(cfg, null, 2), "utf8");
+    try {
+      execFileSync(NODE, [CLI, "pre-commit"], { encoding: "utf8", cwd: tmp });
+      assert.fail("expected CLI to exit with invalid command error");
+    } catch (err: any) {
+      const output = String(err.stdout) + String(err.stderr);
+      assert.match(output, /Invalid pre-commit command:/);
+    }
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test("pre-commit rejects trailing escape in command", () => {
+  const tmp = join(process.cwd(), "tmp-precommit-trailing-escape");
+  mkdirSync(tmp, { recursive: true });
+  try {
+    const cfgPath = join(tmp, "commitzero.config.json");
+    const cfg = { preCommitCommands: ['node -e "console.log(1)"\\'] };
+    writeFileSync(cfgPath, JSON.stringify(cfg, null, 2), "utf8");
+    try {
+      execFileSync(NODE, [CLI, "pre-commit"], { encoding: "utf8", cwd: tmp });
+      assert.fail("expected CLI to exit with invalid command error");
+    } catch (err: any) {
+      const output = String(err.stdout) + String(err.stderr);
+      assert.match(output, /Invalid pre-commit command:/);
+    }
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test("pre-commit rejects non-resolvable executable", () => {
+  const tmp = join(process.cwd(), "tmp-precommit-nonresolvable");
+  mkdirSync(tmp, { recursive: true });
+  try {
+    const cfgPath = join(tmp, "commitzero.config.json");
+    const cfg = { preCommitCommands: ["commitzero-not-a-real-bin --version"] };
+    writeFileSync(cfgPath, JSON.stringify(cfg, null, 2), "utf8");
+    try {
+      execFileSync(NODE, [CLI, "pre-commit"], { encoding: "utf8", cwd: tmp });
+      assert.fail("expected CLI to exit with not allowed executable error");
+    } catch (err: any) {
+      const output = String(err.stdout) + String(err.stderr);
+      assert.match(output, /Pre-commit command is not allowed/);
+    }
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test("pre-commit handles spawn error for executable path", () => {
+  const tmp = join(process.cwd(), "tmp-precommit-spawn-error");
+  mkdirSync(tmp, { recursive: true });
+  try {
+    const badExecDir = join(tmp, "badexec");
+    mkdirSync(badExecDir, { recursive: true, mode: 0o755 });
+    const cfgPath = join(tmp, "commitzero.config.json");
+    const cfg = { preCommitCommands: [badExecDir] };
+    writeFileSync(cfgPath, JSON.stringify(cfg, null, 2), "utf8");
+    try {
+      execFileSync(NODE, [CLI, "pre-commit"], { encoding: "utf8", cwd: tmp });
+      assert.fail("expected CLI to exit with error on spawn failure");
+    } catch (err: any) {
+      const output = String(err.stdout) + String(err.stderr);
+      assert.match(output, /Pre-commit failed on:/);
+    }
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test("pre-commit ignores missing staged files and succeeds when within limit", () => {
+  const tmp = join(process.cwd(), "tmp-precommit-missing-staged");
+  mkdirSync(tmp, { recursive: true });
+  try {
+    execFileSync(GIT, ["init"], { cwd: tmp, stdio: "ignore" });
+    execFileSync(GIT, ["config", "user.email", "test@example.com"], { cwd: tmp, stdio: "ignore" });
+    execFileSync(GIT, ["config", "user.name", "Test User"], { cwd: tmp, stdio: "ignore" });
+
+    const filePath = join(tmp, "small.txt");
+    writeFileSync(filePath, "a".repeat(10), "utf8");
+    execFileSync(GIT, ["add", "small.txt"], { cwd: tmp, stdio: "ignore" });
+    rmSync(filePath, { force: true });
+
+    const cfgPath = join(tmp, "commitzero.config.json");
+    const cfg = { maxFileSize: 1024, preCommitCommands: ['node -e "1+1"'] };
+    writeFileSync(cfgPath, JSON.stringify(cfg, null, 2), "utf8");
+
+    const out = execFileSync(NODE, [CLI, "pre-commit"], { encoding: "utf8", cwd: tmp });
+    assert.match(
+      out,
+      /Pre-commit commands completed successfully\.|Comandos de pre-commit concluídos com sucesso\.|Comandos de pre-commit completados exitosamente\./
+    );
   } finally {
     rmSync(tmp, { recursive: true, force: true });
   }

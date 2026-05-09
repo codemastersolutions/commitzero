@@ -94,3 +94,49 @@ test("subject, footer and breaking options cover warnings and errors", () => {
   );
   assert.equal(res3.valid, false);
 });
+
+test("subject rules cover empty and period-ending subjects", () => {
+  const res1 = lintCommit({ type: "feat", subject: "   " }, defaultOptions);
+  assert.equal(res1.valid, false);
+  const res2 = lintCommit({ type: "feat", subject: "add x." }, defaultOptions);
+  assert.equal(res2.valid, false);
+});
+
+test("footer rules require blank line before footers when footers exist", () => {
+  const res = lintCommit(
+    {
+      type: "feat",
+      subject: "add x",
+      footers: [{ key: "Refs", value: "123" }],
+      meta: { header: "feat: add x", hasBlankAfterHeader: true, hasBlankBeforeFooter: false },
+    },
+    defaultOptions
+  );
+  assert.equal(res.valid, false);
+});
+
+test("breaking rules allow breaking when configured and footer is present", () => {
+  const ok = lintCommit(
+    {
+      type: "feat",
+      subject: "add x",
+      isBreaking: true,
+      footers: [{ key: "BREAKING CHANGE", value: "details" }],
+      meta: { header: "feat!: add x", hasBlankAfterHeader: true, hasBlankBeforeFooter: true },
+    },
+    defaultOptions
+  );
+  assert.equal(ok.valid, true);
+
+  const notAllowed = lintCommit(
+    {
+      type: "feat",
+      subject: "add x",
+      isBreaking: true,
+      footers: [{ key: "BREAKING CHANGE", value: "details" }],
+      meta: { header: "feat!: add x", hasBlankAfterHeader: true, hasBlankBeforeFooter: true },
+    },
+    { ...defaultOptions, allowBreaking: false }
+  );
+  assert.equal(notAllowed.valid, false);
+});

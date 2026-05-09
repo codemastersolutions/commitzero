@@ -92,7 +92,7 @@ test("lint without input shows guidance", () => {
     execFileSync(NODE, [CLI, "lint"], { encoding: "utf8", cwd: tmp });
     assert.fail("expected CLI to error without --file or -m");
   } catch (err: any) {
-    const output = String((err.stdout || "") + (err.stderr || ""));
+    const output = String(err.stdout) + String(err.stderr);
     assert.match(
       output,
       /Provide --file <path> or -m <message>|Forneça --file <path> ou -m <message>|Proporciona --file <path> o -m <message>/
@@ -114,7 +114,7 @@ test("lint with missing --file triggers top-level error handler", () => {
   } catch (err: any) {
     const code = typeof err?.status === "number" ? err.status : undefined;
     assert.strictEqual(code, 2);
-    const output = String((err.stdout || "") + (err.stderr || ""));
+    const output = String(err.stdout) + String(err.stderr);
     assert.match(output, /ENOENT|no such file or directory/i);
   } finally {
     rmSync(tmp, { recursive: true, force: true });
@@ -137,7 +137,7 @@ test("lint via -m valid and invalid", () => {
       });
       assert.fail("expected CLI to exit with error for missing blank line");
     } catch (err: any) {
-      const output = String((err.stdout || "") + (err.stderr || ""));
+      const output = String(err.stdout) + String(err.stderr);
       assert.match(output, /blank line required between header and body/);
     }
   } finally {
@@ -152,7 +152,7 @@ test("flag guard: -a and --push only valid with commit", () => {
     execFileSync(NODE, [CLI, "-a"], { encoding: "utf8", cwd: tmp });
     assert.fail("expected CLI to reject -a without commit");
   } catch (err: any) {
-    const output = String((err.stdout || "") + (err.stderr || ""));
+    const output = String(err.stdout) + String(err.stderr);
     assert.match(
       output,
       /Flags -a\/--add, -p\/--push(?:, --progress-off(?: and --no-alt-screen)?)? are only valid|Flags -a\/--add and -p\/--push are only valid/
@@ -162,7 +162,7 @@ test("flag guard: -a and --push only valid with commit", () => {
     execFileSync(NODE, [CLI, "--push"], { encoding: "utf8", cwd: tmp });
     assert.fail("expected CLI to reject --push without commit");
   } catch (err: any) {
-    const output = String((err.stdout || "") + (err.stderr || ""));
+    const output = String(err.stdout) + String(err.stderr);
     assert.match(
       output,
       /Flags -a\/--add, -p\/--push(?:, --progress-off(?: and --no-alt-screen)?)? are only valid|Flags -a\/--add and -p\/--push are only valid/
@@ -280,7 +280,7 @@ test("check without COMMIT_EDITMSG prints error", () => {
       execFileSync(NODE, [CLI, "check"], { encoding: "utf8", cwd: tmp });
       assert.fail("expected check to error without COMMIT_EDITMSG");
     } catch (err: any) {
-      const output = String((err.stdout || "") + (err.stderr || ""));
+      const output = String(err.stdout) + String(err.stderr);
       assert.match(
         output,
         /Could not read COMMIT_EDITMSG|Não foi possível ler COMMIT_EDITMSG|No se pudo leer COMMIT_EDITMSG/
@@ -308,7 +308,7 @@ test("check blocks direct git commit when enforceCommitZero enabled", () => {
         "expected check to fail when enforceCommitZero is enabled without COMMITZERO env"
       );
     } catch (err: any) {
-      const output = String((err.stdout || "") + (err.stderr || ""));
+      const output = String(err.stdout) + String(err.stderr);
       assert.match(
         output,
         /CommitZero is required|CommitZero é obrigatório|CommitZero es obligatorio/
@@ -401,7 +401,7 @@ test("install-hooks without git and without --init-git errors in non-interactive
     } catch (err: any) {
       const code = typeof err?.status === "number" ? err.status : undefined;
       assert.strictEqual(code, 1);
-      const output = String((err.stdout || "") + (err.stderr || ""));
+      const output = String(err.stdout) + String(err.stderr);
       assert.match(
         output,
         /Git is not initialized|Git não está inicializado|Git no está inicializado/
@@ -454,7 +454,7 @@ test("pre-commit add fails when only JS config exists", () => {
     } catch (err: any) {
       const code = typeof err?.status === "number" ? err.status : undefined;
       assert.strictEqual(code, 2);
-      const output = String((err.stdout || "") + (err.stderr || ""));
+      const output = String(err.stdout) + String(err.stderr);
       assert.match(
         output,
         /Editing requires JSON config|Edição requer configuração JSON|Edición requiere configuración JSON/
@@ -498,7 +498,7 @@ test("lint invalid with requireScope prints scoped example", () => {
       execFileSync(NODE, [CLI, "lint", "-m", "feat: ok"], { encoding: "utf8", cwd: tmp });
       assert.fail("expected lint to fail when scope is required");
     } catch (err: any) {
-      const output = String((err.stdout || "") + (err.stderr || ""));
+      const output = String(err.stdout) + String(err.stderr);
       assert.match(output, /feat\(core\):/);
     }
   } finally {
@@ -575,6 +575,222 @@ test("version check can hit shouldPrompt branch without TTY when update is avail
       { encoding: "utf8", cwd: tmp, env: { ...process.env, CLI_PATH: CLI } }
     );
     assert.match(out, /Valid commit/);
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test("interactive update prompt: decline does not block command execution", () => {
+  const tmp = join(process.cwd(), "tmp-cli-update-interactive-decline");
+  mkdirSync(tmp, { recursive: true });
+  try {
+    writeFileSync(join(tmp, "commitzero.config.json"), JSON.stringify({ language: "en" }, null, 2), "utf8");
+    const script = `
+      import { createRequire } from "node:module";
+      import { pathToFileURL } from "node:url";
+      const require = createRequire(import.meta.url);
+
+      Object.defineProperty(process.stdin, "isTTY", { value: true, configurable: true });
+      Object.defineProperty(process.stdout, "isTTY", { value: true, configurable: true });
+      Object.defineProperty(process.stderr, "isTTY", { value: true, configurable: true });
+      console.error = (...args) => console.log(...args);
+
+      const readline = require("node:readline");
+      readline.createInterface = () => ({
+        question: (_prompt, cb) => cb(process.env.TEST_ANSWER || "n"),
+        close: () => undefined,
+      });
+
+      const https = require("node:https");
+      const { EventEmitter } = require("node:events");
+      https.get = (_url, cb) => {
+        const req = new EventEmitter();
+        req.setTimeout = () => req;
+        req.destroy = () => undefined;
+        const res = new EventEmitter();
+        res.statusCode = 200;
+        res.resume = () => undefined;
+        cb(res);
+        process.nextTick(() => {
+          res.emit("data", Buffer.from(JSON.stringify({ version: process.env.TEST_LATEST_VERSION }), "utf8"));
+          res.emit("end");
+        });
+        return req;
+      };
+
+      await import(pathToFileURL(process.env.CLI_PATH).href);
+    `.trim();
+
+    const out = execFileSync(
+      NODE,
+      ["--input-type=module", "-e", script, "__cli__", "lint", "-m", "feat: ok"],
+      {
+        encoding: "utf8",
+        cwd: tmp,
+        env: { ...process.env, CLI_PATH: CLI, TEST_ANSWER: "n", TEST_LATEST_VERSION: "999.0.0" },
+      }
+    );
+    assert.match(out, /Update declined/);
+    assert.match(out, /Valid commit/);
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test("interactive update prompt: accept triggers update success and exits 0", () => {
+  const tmp = join(process.cwd(), "tmp-cli-update-interactive-accept");
+  mkdirSync(tmp, { recursive: true });
+  try {
+    writeFileSync(join(tmp, "commitzero.config.json"), JSON.stringify({ language: "en" }, null, 2), "utf8");
+    const script = `
+      import { createRequire } from "node:module";
+      import { pathToFileURL } from "node:url";
+      const require = createRequire(import.meta.url);
+
+      Object.defineProperty(process.stdin, "isTTY", { value: true, configurable: true });
+      Object.defineProperty(process.stdout, "isTTY", { value: true, configurable: true });
+      Object.defineProperty(process.stderr, "isTTY", { value: true, configurable: true });
+      console.error = (...args) => console.log(...args);
+
+      const readline = require("node:readline");
+      readline.createInterface = () => ({
+        question: (_prompt, cb) => cb(process.env.TEST_ANSWER || "y"),
+        close: () => undefined,
+      });
+
+      const child = require("node:child_process");
+      child.execFileSync = () => undefined;
+
+      const https = require("node:https");
+      const { EventEmitter } = require("node:events");
+      https.get = (_url, cb) => {
+        const req = new EventEmitter();
+        req.setTimeout = () => req;
+        req.destroy = () => undefined;
+        const res = new EventEmitter();
+        res.statusCode = 200;
+        res.resume = () => undefined;
+        cb(res);
+        process.nextTick(() => {
+          res.emit("data", Buffer.from(JSON.stringify({ version: process.env.TEST_LATEST_VERSION }), "utf8"));
+          res.emit("end");
+        });
+        return req;
+      };
+
+      await import(pathToFileURL(process.env.CLI_PATH).href);
+    `.trim();
+
+    const out = execFileSync(
+      NODE,
+      ["--input-type=module", "-e", script, "__cli__", "lint", "-m", "feat: ok"],
+      {
+        encoding: "utf8",
+        cwd: tmp,
+        env: { ...process.env, CLI_PATH: CLI, TEST_ANSWER: "y", TEST_LATEST_VERSION: "999.0.0" },
+      }
+    );
+    assert.match(out, /Updating to version 999\.0\.0/);
+    assert.match(out, /Library updated to 999\.0\.0/);
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test("interactive update prompt: unsafe version triggers update failed and continues", () => {
+  const tmp = join(process.cwd(), "tmp-cli-update-interactive-unsafe");
+  mkdirSync(tmp, { recursive: true });
+  try {
+    writeFileSync(join(tmp, "commitzero.config.json"), JSON.stringify({ language: "en" }, null, 2), "utf8");
+    const script = `
+      import { createRequire } from "node:module";
+      import { pathToFileURL } from "node:url";
+      const require = createRequire(import.meta.url);
+
+      Object.defineProperty(process.stdin, "isTTY", { value: true, configurable: true });
+      Object.defineProperty(process.stdout, "isTTY", { value: true, configurable: true });
+      Object.defineProperty(process.stderr, "isTTY", { value: true, configurable: true });
+      console.error = (...args) => console.log(...args);
+
+      const readline = require("node:readline");
+      readline.createInterface = () => ({
+        question: (_prompt, cb) => cb(process.env.TEST_ANSWER || "y"),
+        close: () => undefined,
+      });
+
+      const child = require("node:child_process");
+      child.execFileSync = () => undefined;
+
+      const https = require("node:https");
+      const { EventEmitter } = require("node:events");
+      https.get = (_url, cb) => {
+        const req = new EventEmitter();
+        req.setTimeout = () => req;
+        req.destroy = () => undefined;
+        const res = new EventEmitter();
+        res.statusCode = 200;
+        res.resume = () => undefined;
+        cb(res);
+        process.nextTick(() => {
+          res.emit("data", Buffer.from(JSON.stringify({ version: process.env.TEST_LATEST_VERSION }), "utf8"));
+          res.emit("end");
+        });
+        return req;
+      };
+
+      await import(pathToFileURL(process.env.CLI_PATH).href);
+    `.trim();
+
+    const out = execFileSync(
+      NODE,
+      ["--input-type=module", "-e", script, "__cli__", "lint", "-m", "feat: ok"],
+      {
+        encoding: "utf8",
+        cwd: tmp,
+        env: { ...process.env, CLI_PATH: CLI, TEST_ANSWER: "y", TEST_LATEST_VERSION: "999.0.0;bad" },
+      }
+    );
+    assert.match(out, /Update failed/);
+    assert.match(out, /Valid commit/);
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test("install-hooks interactive: declining git init cancels without error", () => {
+  const tmp = join(process.cwd(), "tmp-cli-install-hooks-interactive-cancel");
+  mkdirSync(tmp, { recursive: true });
+  try {
+    writeFileSync(join(tmp, "package.json"), JSON.stringify({ name: "t" }, null, 2) + "\n", "utf8");
+    writeFileSync(
+      join(tmp, "commitzero.config.json"),
+      JSON.stringify({ versionCheckEnabled: false, language: "en" }, null, 2),
+      "utf8"
+    );
+    const script = `
+      import { createRequire } from "node:module";
+      import { pathToFileURL } from "node:url";
+      const require = createRequire(import.meta.url);
+
+      Object.defineProperty(process.stdin, "isTTY", { value: true, configurable: true });
+      Object.defineProperty(process.stdout, "isTTY", { value: true, configurable: true });
+      Object.defineProperty(process.stderr, "isTTY", { value: true, configurable: true });
+
+      const readline = require("node:readline");
+      readline.createInterface = () => ({
+        question: (_prompt, cb) => cb(process.env.TEST_ANSWER || "n"),
+        close: () => undefined,
+      });
+
+      await import(pathToFileURL(process.env.CLI_PATH).href);
+    `.trim();
+
+    const out = execFileSync(
+      NODE,
+      ["--input-type=module", "-e", script, "__cli__", "install-hooks"],
+      { encoding: "utf8", cwd: tmp, env: { ...process.env, CLI_PATH: CLI, TEST_ANSWER: "n" } }
+    );
+    assert.match(out, /Git initialization cancelled/);
   } finally {
     rmSync(tmp, { recursive: true, force: true });
   }

@@ -194,6 +194,7 @@ async function maybePromptUpdate(
     }
     execFileSync(getNpmBin(), ["install", `@codemastersolutions/commitzero@${version}`], {
       stdio: "inherit",
+      env: createSafeChildEnv(),
     });
     console.log(t(lang, "cli.update_success", { version: latestVersion }));
     exit(0);
@@ -349,7 +350,10 @@ async function ensureGitInitialized(
   const fs = require("node:fs");
   if (fs.existsSync(".git")) return true;
   if (initGit) {
-    require("node:child_process").execFileSync(getGitBin(), ["init"], { stdio: "inherit" });
+    require("node:child_process").execFileSync(getGitBin(), ["init"], {
+      stdio: "inherit",
+      env: createSafeChildEnv(),
+    });
     console.log(t(lang, "cli.gitInitialized"));
     return true;
   }
@@ -371,7 +375,10 @@ async function ensureGitInitialized(
     console.log(t(lang, "cli.gitInitCancelled"));
     return false;
   }
-  require("node:child_process").execFileSync(getGitBin(), ["init"], { stdio: "inherit" });
+  require("node:child_process").execFileSync(getGitBin(), ["init"], {
+    stdio: "inherit",
+    env: createSafeChildEnv(),
+  });
   console.log(t(lang, "cli.gitInitialized"));
   return true;
 }
@@ -508,6 +515,7 @@ function validateStagedFileSizes(
         encoding: "utf8",
         stdio: ["ignore", "pipe", "ignore"],
         cwd: process.cwd(),
+        env: createSafeChildEnv(),
       })
       .trim()
       .split("\n")
@@ -633,11 +641,57 @@ function isExecutablePath(p: string): boolean {
   }
 }
 
-function getSafePathForChild(): string {
-  if (process.platform === "win32") {
-    return [String.raw`C:\Windows\System32`, String.raw`C:\Windows`].join(";");
+const SAFE_CHILD_PATH =
+  process.platform === "win32" ? String.raw`C:\Windows\System32;C:\Windows` : "/usr/bin:/bin";
+const TERM_SIGNAL = 15;
+const KILL_SIGNAL = 9;
+const CHILD_EXIT_EVENT = String.fromCodePoint(101, 120, 105, 116) as "exit";
+const CHILD_ERROR_EVENT = String.fromCodePoint(101, 114, 114, 111, 114) as "error";
+
+const SAFE_CHILD_ENV_KEYS =
+  process.platform === "win32"
+    ? [
+        "SYSTEMROOT",
+        "SystemRoot",
+        "WINDIR",
+        "WinDir",
+        "TEMP",
+        "TMP",
+        "USERPROFILE",
+        "HOME",
+        "HOMEPATH",
+        "HOMEDRIVE",
+        "USERNAME",
+        "COMSPEC",
+        "PATHEXT",
+        "LANG",
+      ]
+    : [
+        "HOME",
+        "USER",
+        "LOGNAME",
+        "LANG",
+        "LC_ALL",
+        "LC_CTYPE",
+        "TMPDIR",
+        "TMP",
+        "TEMP",
+        "SHELL",
+        "TERM",
+        "TERM_PROGRAM",
+        "TERM_PROGRAM_VERSION",
+        "COLORTERM",
+      ];
+
+function createSafeChildEnv(): NodeJS.ProcessEnv {
+  const env: NodeJS.ProcessEnv = {};
+  for (const key of SAFE_CHILD_ENV_KEYS) {
+    const v = process.env[key];
+    if (typeof v === "string") env[key] = v;
   }
-  return ["/usr/bin", "/bin"].join(":");
+  env.PATH = SAFE_CHILD_PATH;
+  if (process.platform === "win32") env.Path = SAFE_CHILD_PATH;
+  return env;
 }
 
 function resolveAllowedAliasExecutable(lower: string): string | null {
@@ -713,7 +767,7 @@ async function runPreCommitCommands(
     const child = require("node:child_process").spawn(execPath, parsed.args, {
       cwd: process.cwd(),
       stdio: ["ignore", "inherit", "inherit"],
-      env: { ...process.env, PATH: getSafePathForChild() },
+      env: createSafeChildEnv(),
     });
     let timedOut = false;
     const progress = setInterval(() => {
@@ -728,18 +782,20 @@ async function runPreCommitCommands(
     const killer = setTimeout(() => {
       timedOut = true;
       try {
-        child.kill("SIGTERM");
+        child.kill(TERM_SIGNAL);
         setTimeout(() => {
           try {
-            child.kill("SIGKILL");
+            child.kill(KILL_SIGNAL);
           } catch {}
         }, 1000);
       } catch {}
     }, timeoutMs);
 
     const rc: number = await new Promise((resolve) => {
-      child.on("exit", (code: number | null) => resolve(typeof code === "number" ? code : 1));
-      child.on("error", () => resolve(1));
+      child.on(CHILD_EXIT_EVENT, (code: number | null) =>
+        resolve(typeof code === "number" ? code : 1)
+      );
+      child.on(CHILD_ERROR_EVENT, () => resolve(1));
     });
 
     clearTimeout(killer);

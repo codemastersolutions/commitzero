@@ -86,7 +86,9 @@ async function main() {
   console.log("\nSimulação concluída com sucesso.");
 }
 
-main().catch((e) => {
+try {
+  await main();
+} catch (e) {
   console.error(e);
   process.exit(1);
-});
+}

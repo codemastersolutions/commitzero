@@ -18,3 +18,35 @@ test("parse without blank lines", () => {
   assert.equal(m.meta?.hasBlankAfterHeader, false);
   assert.ok(!m.meta?.hasBlankBeforeFooter);
 });
+
+test("parse header only keeps body undefined and footers empty", () => {
+  const m = parseMessage("feat: ok");
+  assert.strictEqual(m.type, "feat");
+  assert.strictEqual(m.scope, undefined);
+  assert.strictEqual(m.subject, "ok");
+  assert.strictEqual(m.body, undefined);
+  assert.deepStrictEqual(m.footers, []);
+  assert.strictEqual(m.isBreaking, false);
+  assert.strictEqual(m.meta?.hasBlankAfterHeader, false);
+  assert.strictEqual(m.meta?.hasBlankBeforeFooter, false);
+});
+
+test("parse breaking change via bang", () => {
+  const m = parseMessage("feat!: breaking");
+  assert.strictEqual(m.type, "feat");
+  assert.strictEqual(m.isBreaking, true);
+});
+
+test("parse footer without blank line before footer", () => {
+  const m = parseMessage("feat: ok\n\nBody\nRefs: 1");
+  assert.strictEqual(m.body, "Body");
+  assert.strictEqual(m.footers?.length, 1);
+  assert.strictEqual(m.meta?.hasBlankBeforeFooter, false);
+});
+
+test("parse footer immediately after header does not count as having blank before footer", () => {
+  const m = parseMessage("feat: ok\nRefs: 1");
+  assert.strictEqual(m.body, undefined);
+  assert.strictEqual(m.footers?.length, 1);
+  assert.strictEqual(m.meta?.hasBlankBeforeFooter, false);
+});

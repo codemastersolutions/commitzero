@@ -150,6 +150,18 @@ test("t() falls back to default language and key when missing", () => {
   assert.strictEqual(t("en", "cli.warning", {}), "Warning: ");
 });
 
+test("t() replaces multiple placeholders and supports non-default language", () => {
+  assert.strictEqual(t("pt" as any, "cli.warning", { msg: "opa" }), "Aviso: opa");
+  assert.strictEqual(
+    t("en", "cli.preCommitTimeout", { time: 100, cmd: "node -e 1" }),
+    "Pre-commit timed out after 100 on: node -e 1"
+  );
+  assert.strictEqual(
+    t("en", "cli.preCommitTimeout", { cmd: "node -e 1" } as any),
+    "Pre-commit timed out after  on: node -e 1"
+  );
+});
+
 test("colors respect NO_COLOR, FORCE_COLOR and TTY", () => {
   withTTY(false, () => {
     withEnvVar("NO_COLOR", undefined, () => {
@@ -161,7 +173,8 @@ test("colors respect NO_COLOR, FORCE_COLOR and TTY", () => {
 
   withTTY(false, () => {
     withEnvVar("FORCE_COLOR", "1", () => {
-      assert.match(c.red("x"), /\u001b\[31mx\u001b\[0m/);
+      const esc = String.fromCodePoint(27);
+      assert.strictEqual(c.red("x"), `${esc}[31mx${esc}[0m`);
     });
   });
 
@@ -169,6 +182,31 @@ test("colors respect NO_COLOR, FORCE_COLOR and TTY", () => {
     withEnvVar("NO_COLOR", "1", () => {
       withEnvVar("FORCE_COLOR", undefined, () => {
         assert.strictEqual(c.red("x"), "x");
+      });
+    });
+  });
+});
+
+test("colors expose all formatters", () => {
+  const esc = String.fromCodePoint(27);
+  withTTY(false, () => {
+    withEnvVar("FORCE_COLOR", "1", () => {
+      assert.strictEqual(c.bold("x"), `${esc}[1mx${esc}[0m`);
+      assert.strictEqual(c.dim("x"), `${esc}[2mx${esc}[0m`);
+      assert.strictEqual(c.red("x"), `${esc}[31mx${esc}[0m`);
+      assert.strictEqual(c.green("x"), `${esc}[32mx${esc}[0m`);
+      assert.strictEqual(c.yellow("x"), `${esc}[33mx${esc}[0m`);
+      assert.strictEqual(c.blue("x"), `${esc}[34mx${esc}[0m`);
+      assert.strictEqual(c.magenta("x"), `${esc}[35mx${esc}[0m`);
+      assert.strictEqual(c.cyan("x"), `${esc}[36mx${esc}[0m`);
+      assert.strictEqual(c.gray("x"), `${esc}[90mx${esc}[0m`);
+    });
+  });
+  withTTY(true, () => {
+    withEnvVar("NO_COLOR", "1", () => {
+      withEnvVar("FORCE_COLOR", undefined, () => {
+        assert.strictEqual(c.bold("x"), "x");
+        assert.strictEqual(c.gray("x"), "x");
       });
     });
   });
