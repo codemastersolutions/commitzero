@@ -8,10 +8,14 @@ import { inspect } from "node:util";
 import { formatMessage } from "../../core/formatter.js";
 import { defaultOptions, lintCommit, type ParsedCommit } from "../../core/rules.js";
 import { t, type Lang } from "../../i18n/index.js";
+import { resolveGitBin } from "../../utils/binaries.js";
 import { c } from "../colors.js";
 import { select } from "./select.js";
 
 type TestAnswerCtx = { answers: string[] | null; index: number; raw: string | null };
+function getGitBin(): string {
+  return resolveGitBin();
+}
 function initTestAnswerCtx(): TestAnswerCtx {
   try {
     const raw = process.env.COMMITZERO_TEST_ANSWERS ?? null;
@@ -89,13 +93,6 @@ function resolveCliVersionSuffix(): string {
       return envVersion ? ` v${envVersion}` : "";
     }
   }
-}
-
-function ensureGitAvailableInNodeTest(): void {
-  if (process.env.NODE_TEST !== "1") return;
-  try {
-    execFileSync("git", ["--version"], { stdio: ["ignore", "pipe", "ignore"] });
-  } catch {}
 }
 
 function isInteractiveInput(): boolean {
@@ -226,7 +223,7 @@ function gitCommitEditMsg(cfg: InteractiveCommitCfg | undefined): string {
   if (cfg?.preCommitTimeout !== undefined) {
     env.COMMITZERO_PRE_COMMIT_TIMEOUT = String(cfg.preCommitTimeout);
   }
-  return execFileSync("git", ["commit", "-F", ".git/COMMIT_EDITMSG"], {
+  return execFileSync(getGitBin(), ["commit", "-F", ".git/COMMIT_EDITMSG"], {
     stdio: ["ignore", "pipe", "pipe"],
     encoding: "utf8",
     env,
@@ -235,7 +232,7 @@ function gitCommitEditMsg(cfg: InteractiveCommitCfg | undefined): string {
 
 function getCurrentBranchName(): string | null {
   try {
-    const branch = execFileSync("git", ["rev-parse", "--abbrev-ref", "HEAD"], {
+    const branch = execFileSync(getGitBin(), ["rev-parse", "--abbrev-ref", "HEAD"], {
       stdio: ["ignore", "pipe", "ignore"],
       encoding: "utf8",
     })
@@ -250,7 +247,7 @@ function getCurrentBranchName(): string | null {
 
 function getDefaultRemoteName(): string {
   try {
-    const out = execFileSync("git", ["remote"], {
+    const out = execFileSync(getGitBin(), ["remote"], {
       stdio: ["ignore", "pipe", "ignore"],
       encoding: "utf8",
     })
@@ -269,7 +266,7 @@ function getDefaultRemoteName(): string {
 function gitPush(cfg: InteractiveCommitCfg | undefined, withUpstream: boolean): string {
   const useProgress = cfg?.pushProgress !== false;
   if (!withUpstream) {
-    return execFileSync("git", ["push", ...(useProgress ? ["--progress"] : [])], {
+    return execFileSync(getGitBin(), ["push", ...(useProgress ? ["--progress"] : [])], {
       stdio: ["ignore", "pipe", useProgress ? "inherit" : "pipe"],
       encoding: "utf8",
     });
@@ -280,7 +277,7 @@ function gitPush(cfg: InteractiveCommitCfg | undefined, withUpstream: boolean): 
   }
   const remote = getDefaultRemoteName();
   return execFileSync(
-    "git",
+    getGitBin(),
     ["push", ...(useProgress ? ["--progress"] : []), "-u", remote, branch],
     {
       stdio: ["ignore", "pipe", useProgress ? "inherit" : "pipe"],
@@ -362,7 +359,7 @@ function execGitUtf8(
   args: string[],
   stdio: ["ignore", "pipe", "pipe"] | undefined = undefined
 ): string {
-  return execFileSync("git", args, {
+  return execFileSync(getGitBin(), args, {
     stdio: stdio ?? ["ignore", "pipe", "pipe"],
     encoding: "utf8",
   });
@@ -466,14 +463,14 @@ function parseCount(raw: string): number {
 
 function getAheadCount(): number {
   try {
-    const out = execFileSync("git", ["rev-list", "--count", "@{u}..HEAD"], {
+    const out = execFileSync(getGitBin(), ["rev-list", "--count", "@{u}..HEAD"], {
       stdio: ["ignore", "pipe", "ignore"],
       encoding: "utf8",
     }).toString();
     return parseCount(out);
   } catch {
     try {
-      const out = execFileSync("git", ["rev-list", "--count", "HEAD"], {
+      const out = execFileSync(getGitBin(), ["rev-list", "--count", "HEAD"], {
         stdio: ["ignore", "pipe", "ignore"],
         encoding: "utf8",
       }).toString();
@@ -486,7 +483,7 @@ function getAheadCount(): number {
 
 function gitAddAll(lang: Lang): boolean {
   try {
-    const out = execFileSync("git", ["add", "-A"], {
+    const out = execFileSync(getGitBin(), ["add", "-A"], {
       stdio: ["ignore", "pipe", "pipe"],
       encoding: "utf8",
     });
@@ -1107,8 +1104,6 @@ export async function interactiveCommit(lang: Lang, cfg?: InteractiveCommitCfg):
   const version = resolveCliVersionSuffix();
   console.log(c.green(c.bold(`CommitZero CLI${version}`)));
   console.log();
-
-  ensureGitAvailableInNodeTest();
   const testCtx = initTestAnswerCtx();
 
   const checkResult = await checkAndAskForAdd(lang, cfg, testCtx);

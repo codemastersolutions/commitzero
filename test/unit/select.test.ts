@@ -1,6 +1,6 @@
 import assert from "node:assert";
 import test from "node:test";
-import { select } from "../../dist/cjs/cli/commands/select.js";
+import { select } from "../../dist/esm/cli/commands/select.js";
 
 test("select resolves first item value when not TTY", async () => {
   const orig = process.stdin.isTTY;

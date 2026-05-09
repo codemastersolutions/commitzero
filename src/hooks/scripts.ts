@@ -35,7 +35,8 @@ export function commitMsgScript(): string {
     '  if [ ! -f ".git/hooks/commit-msg" ] && [ ! -f ".git/hooks/prepare-commit-msg" ]; then',
     "    exit 0",
     "  fi",
-    '  if ! grep -q "$START_MARK" ".git/hooks/commit-msg" 2>/dev/null && \\',
+    String.raw`  if ! grep -q "$START_MARK" ".git/hooks/commit-msg" 2>/dev/null && ` +
+      String.fromCodePoint(92),
     '     ! grep -q "$START_MARK" ".git/hooks/prepare-commit-msg" 2>/dev/null; then',
     "    exit 0",
     "  fi",

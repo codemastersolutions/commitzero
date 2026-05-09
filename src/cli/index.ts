@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /* eslint-disable no-control-regex */
-import { existsSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, statSync, writeFileSync, accessSync, constants } from "node:fs";
 import { createRequire } from "node:module";
-import { dirname, join } from "node:path";
+import { dirname, isAbsolute, join } from "node:path";
 import { argv, exit } from "node:process";
 import { fileURLToPath } from "node:url";
 import { inspect } from "node:util";
@@ -13,6 +13,7 @@ import { cleanupHooks } from "../hooks/cleanup.js";
 import { getCurrentHooksPath, installHooks, uninstallHooks } from "../hooks/install.js";
 import { updateScripts as ensureScripts } from "../hooks/postinstall.js";
 import { DEFAULT_LANG, t } from "../i18n/index.js";
+import { resolveGitBin, resolveNpmBin } from "../utils/binaries.js";
 import { formatBytes, parseSizeToBytes } from "../utils/size.js";
 import { formatDurationMs, parseTimeToMs } from "../utils/time.js";
 import { checkForUpdate } from "../version/check.js";
@@ -22,6 +23,14 @@ import { initConfig } from "./commands/init.js";
 
 const require = createRequire(import.meta.url);
 const __dirname = dirname(fileURLToPath(import.meta.url));
+
+function getGitBin(): string {
+  return resolveGitBin();
+}
+
+function getNpmBin(): string {
+  return resolveNpmBin();
+}
 
 function isAllowedNonInteractiveGitCommit(): boolean {
   try {
@@ -183,7 +192,7 @@ async function maybePromptUpdate(
     if (!semverPattern.test(version)) {
       throw new Error(`Unsafe latestVersion: "${version}"`);
     }
-    execFileSync("npm", ["install", `@codemastersolutions/commitzero@${version}`], {
+    execFileSync(getNpmBin(), ["install", `@codemastersolutions/commitzero@${version}`], {
       stdio: "inherit",
     });
     console.log(t(lang, "cli.update_success", { version: latestVersion }));
@@ -340,7 +349,7 @@ async function ensureGitInitialized(
   const fs = require("node:fs");
   if (fs.existsSync(".git")) return true;
   if (initGit) {
-    require("node:child_process").execFileSync("git", ["init"], { stdio: "inherit" });
+    require("node:child_process").execFileSync(getGitBin(), ["init"], { stdio: "inherit" });
     console.log(t(lang, "cli.gitInitialized"));
     return true;
   }
@@ -362,7 +371,7 @@ async function ensureGitInitialized(
     console.log(t(lang, "cli.gitInitCancelled"));
     return false;
   }
-  require("node:child_process").execFileSync("git", ["init"], { stdio: "inherit" });
+  require("node:child_process").execFileSync(getGitBin(), ["init"], { stdio: "inherit" });
   console.log(t(lang, "cli.gitInitialized"));
   return true;
 }
@@ -495,7 +504,7 @@ function validateStagedFileSizes(
   const maxFileSize = parseSizeToBytes(cfg.maxFileSize ?? 2 * 1024 * 1024);
   try {
     const stagedFiles = require("node:child_process")
-      .execFileSync("git", ["diff", "--cached", "--name-only"], {
+      .execFileSync(getGitBin(), ["diff", "--cached", "--name-only"], {
         encoding: "utf8",
         stdio: ["ignore", "pipe", "ignore"],
         cwd: process.cwd(),
@@ -556,7 +565,7 @@ function consumeCommandChar(state: ParseCommandLineState, ch: string): void {
     return;
   }
 
-  if (ch === "\\") {
+  if (ch === String.fromCodePoint(92)) {
     state.escaping = true;
     return;
   }
@@ -612,6 +621,67 @@ function parseCommandLine(
   return { file: state.args[0], args: state.args.slice(1), requiresShell: state.requiresShell };
 }
 
+function isExecutablePath(p: string): boolean {
+  if (!p) return false;
+  if (!existsSync(p)) return false;
+  if (process.platform === "win32") return true;
+  try {
+    accessSync(p, constants.X_OK);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function getSafePathForChild(): string {
+  if (process.platform === "win32") {
+    return [String.raw`C:\Windows\System32`, String.raw`C:\Windows`].join(";");
+  }
+  return ["/usr/bin", "/bin"].join(":");
+}
+
+function resolveAllowedAliasExecutable(lower: string): string | null {
+  if (lower === "node" || lower === "node.exe") return process.execPath;
+  if (lower === "npm" || lower === "npm.exe" || lower === "npm.cmd") return getNpmBin();
+  if (lower === "git" || lower === "git.exe") return getGitBin();
+  return null;
+}
+
+function resolveWindowsSystemExecutable(name: string): string | null {
+  const sys32 = String.raw`C:\Windows\System32`;
+  const win = String.raw`C:\Windows`;
+  const suffixes = ["", ".exe", ".cmd", ".bat"];
+  for (const suf of suffixes) {
+    const fileName = `${name}${suf}`;
+    const candidate1 = join(sys32, fileName);
+    if (isExecutablePath(candidate1)) return candidate1;
+    const candidate2 = join(win, fileName);
+    if (isExecutablePath(candidate2)) return candidate2;
+  }
+  return null;
+}
+
+function resolveUnixSystemExecutable(name: string): string | null {
+  for (const base of ["/usr/bin", "/bin"]) {
+    const candidate = join(base, name);
+    if (isExecutablePath(candidate)) return candidate;
+  }
+  return null;
+}
+
+function resolvePreCommitExecutable(file: string): string | null {
+  const f = (file ?? "").trim();
+  if (!f) return null;
+
+  const lower = f.toLowerCase();
+  if (isAbsolute(f)) return isExecutablePath(f) ? f : null;
+  const alias = resolveAllowedAliasExecutable(lower);
+  if (alias) return alias;
+  return process.platform === "win32"
+    ? resolveWindowsSystemExecutable(f)
+    : resolveUnixSystemExecutable(f);
+}
+
 async function runPreCommitCommands(
   lang: import("../i18n").Lang,
   commands: string[],
@@ -633,9 +703,17 @@ async function runPreCommitCommands(
 
     console.log(t(lang, "cli.preCommitRun", { cmd: command }));
     const startTs = Date.now();
-    const child = require("node:child_process").spawn(parsed.file, parsed.args, {
+    const execPath = resolvePreCommitExecutable(parsed.file);
+    if (!execPath) {
+      console.error(`Pre-commit command is not allowed (requires absolute path): ${command}`);
+      exit(1);
+      return;
+    }
+
+    const child = require("node:child_process").spawn(execPath, parsed.args, {
       cwd: process.cwd(),
       stdio: ["ignore", "inherit", "inherit"],
+      env: { ...process.env, PATH: getSafePathForChild() },
     });
     let timedOut = false;
     const progress = setInterval(() => {

@@ -5,3 +5,4 @@ tmp*
 commitzero.config.custom.json
 .scannerwork
 sonar
+coverage

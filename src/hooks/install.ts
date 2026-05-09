@@ -1,6 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { resolveGitBin } from "../utils/binaries.js";
 import {
   commitMsgScript,
   HOOK_HEADER,
@@ -11,6 +12,10 @@ import {
 export interface HookOptions {
   hookDir?: string;
   forceOverride?: boolean;
+}
+
+function getGitBin(): string {
+  return resolveGitBin();
 }
 
 function ensureDir(dir: string) {
@@ -45,7 +50,7 @@ function removeManagedBlock(original: string): string {
 
 function isGitRepository(): boolean {
   try {
-    execFileSync("git", ["rev-parse", "--git-dir"], { stdio: "ignore" });
+    execFileSync(getGitBin(), ["rev-parse", "--git-dir"], { stdio: "ignore" });
     return true;
   } catch {
     return false;
@@ -72,15 +77,19 @@ export function getCurrentHooksPath(baseDir?: string): string | null {
   // Prioriza configuração local do repositório para evitar interferência de config global.
   // Em ambientes sem repositório inicializado, retorna null para usar `.git/hooks` padrão.
   try {
-    const configuredLocal = execFileSync("git", ["config", "--local", "--get", "core.hooksPath"], {
-      encoding: "utf8",
-      stdio: ["ignore", "pipe", "ignore"],
-      cwd: baseDir ?? process.cwd(),
-    }).trim();
+    const configuredLocal = execFileSync(
+      getGitBin(),
+      ["config", "--local", "--get", "core.hooksPath"],
+      {
+        encoding: "utf8",
+        stdio: ["ignore", "pipe", "ignore"],
+        cwd: baseDir ?? process.cwd(),
+      }
+    ).trim();
     if (configuredLocal) return configuredLocal;
   } catch {}
   try {
-    const inside = execFileSync("git", ["rev-parse", "--is-inside-work-tree"], {
+    const inside = execFileSync(getGitBin(), ["rev-parse", "--is-inside-work-tree"], {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "ignore"],
       cwd: baseDir ?? process.cwd(),
@@ -91,7 +100,7 @@ export function getCurrentHooksPath(baseDir?: string): string | null {
   }
 
   try {
-    const configured = execFileSync("git", ["config", "--local", "--get", "core.hooksPath"], {
+    const configured = execFileSync(getGitBin(), ["config", "--local", "--get", "core.hooksPath"], {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "ignore"],
       cwd: baseDir ?? process.cwd(),
@@ -104,7 +113,7 @@ export function getCurrentHooksPath(baseDir?: string): string | null {
 
 function removeHooksPath(): void {
   try {
-    execFileSync("git", ["config", "--unset", "core.hooksPath"], { stdio: "ignore" });
+    execFileSync(getGitBin(), ["config", "--unset", "core.hooksPath"], { stdio: "ignore" });
   } catch {
     // Ignore if already unset
   }
@@ -149,7 +158,7 @@ function hasOnlyCommitZeroHooks(dir: string): boolean {
 
 function tryConfigureHooksPath(wantHooksPath: string): string | null {
   try {
-    execFileSync("git", ["config", "core.hooksPath", wantHooksPath], { stdio: "ignore" });
+    execFileSync(getGitBin(), ["config", "core.hooksPath", wantHooksPath], { stdio: "ignore" });
     return wantHooksPath;
   } catch {
     return null;
