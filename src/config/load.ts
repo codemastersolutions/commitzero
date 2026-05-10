@@ -12,6 +12,7 @@ export interface UserConfig {
   maxFileSize?: number | string;
   preCommitCommands?: string[];
   preCommitTimeout?: string | number;
+  enforceCommitZero?: boolean;
   versionCheckEnabled?: boolean;
   versionCheckPeriod?: string; // daily | weekly | monthly
   language?: Lang;
@@ -20,29 +21,56 @@ export interface UserConfig {
     uiAltScreen?: boolean;
     pushProgress?: boolean;
     preCommitTimeout?: string | number;
+    enforceCommitZero?: boolean;
     versionCheckEnabled?: boolean;
     versionCheckPeriod?: string; // daily | weekly | monthly
   };
 }
 
+function loadConfigFile(path: string): UserConfig {
+  try {
+    const raw = readFileSync(path, "utf8");
+    return JSON.parse(raw);
+  } catch {
+    return {};
+  }
+}
+
 export function loadConfig(cwd: string = process.cwd()): UserConfig {
+  const customJsonPath = `${cwd}/commitzero.config.custom.json`;
+  const customJsPath = `${cwd}/commitzero.config.custom.js`;
   const jsonPath = `${cwd}/commitzero.config.json`;
   const jsPath = `${cwd}/commitzero.config.js`;
+
+  let config: UserConfig = {};
+
   if (existsSync(jsonPath)) {
-    try {
-      const raw = readFileSync(jsonPath, "utf8");
-      return JSON.parse(raw);
-    } catch {
-      return {};
-    }
-  }
-  if (existsSync(jsPath)) {
+    config = loadConfigFile(jsonPath);
+  } else if (existsSync(jsPath)) {
     try {
       const mod = require(jsPath);
-      return mod?.default ?? mod ?? {};
+      const loaded = mod?.default ?? mod;
+      if (loaded && typeof loaded === "object") {
+        config = loaded as UserConfig;
+      } else {
+        config = {};
+      }
     } catch {
-      return {};
+      config = {};
     }
   }
-  return {};
+
+  if (existsSync(customJsonPath)) {
+    config = { ...config, ...loadConfigFile(customJsonPath) };
+  } else if (existsSync(customJsPath)) {
+    try {
+      const mod = require(customJsPath);
+      const override = mod?.default ?? mod;
+      if (override && typeof override === "object") {
+        config = { ...config, ...(override as UserConfig) };
+      }
+    } catch {}
+  }
+
+  return config;
 }

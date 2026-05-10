@@ -18,19 +18,19 @@ async function main() {
     let body = source;
     if (source.startsWith("#!/")) {
       const idx = source.indexOf("\n");
-      shebang = idx !== -1 ? source.slice(0, idx + 1) : source;
-      body = idx !== -1 ? source.slice(idx + 1) : "";
+      shebang = idx === -1 ? source : source.slice(0, idx + 1);
+      body = idx === -1 ? "" : source.slice(idx + 1);
     }
 
     // Configurar modo de strip conforme extensão
-    let stripped = body;
+    let stripped;
     if (ext === ".ts" || ext === ".js") {
       stripped = strip(body, { language: "javascript" });
     } else {
       stripped = body;
     }
 
-    stripped = stripped.replace(/\n{3,}/g, "\n\n");
+    stripped = stripped.replaceAll(/\n{3,}/g, "\n\n");
 
     const result = shebang + stripped;
     if (result !== source) {
@@ -40,7 +40,9 @@ async function main() {
   }
 }
 
-main().catch((err) => {
+try {
+  await main();
+} catch (err) {
   console.error("comments:strip failed", err);
   process.exitCode = 1;
-});
+}

@@ -1,4 +1,4 @@
-import type { ParsedCommit } from "./rules";
+import type { ParsedCommit } from "./rules.js";
 
 export function formatMessage(commit: ParsedCommit): string {
   const scope = commit.scope ? `(${commit.scope})` : "";
@@ -6,7 +6,7 @@ export function formatMessage(commit: ParsedCommit): string {
   const header = `${commit.type}${scope}${bang}: ${commit.subject}`;
   const parts = [header];
   if (commit.body) parts.push("", commit.body);
-  if (commit.footers && commit.footers.length) {
+  if (commit.footers?.length) {
     parts.push("", ...commit.footers.map((f) => `${f.key}: ${f.value}`));
   }
   return parts.join("\n");

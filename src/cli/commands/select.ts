@@ -1,4 +1,5 @@
-import { c } from "../colors";
+import { c } from "../colors.js";
+import * as readline from "node:readline";
 
 interface Item {
   value: string;
@@ -82,13 +83,72 @@ function renderItems(items: Item[], selected: number, maxVisible?: number): numb
   return lines;
 }
 
+function questionWithSigint(rl: readline.Interface, question: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const onSigint = () => {
+      rl.removeListener("SIGINT", onSigint);
+      reject(new Error("cancelled"));
+    };
+    rl.once("SIGINT", onSigint);
+    rl.question(question, (answer) => {
+      rl.removeListener("SIGINT", onSigint);
+      resolve(answer ?? "");
+    });
+  });
+}
+
+function renderLineModeMenu(prompt: string, items: Item[], header?: string): void {
+  try {
+    if (header) {
+      process.stdout.write(c.green(c.bold(header)) + "\n\n");
+    }
+    process.stdout.write(c.bold(prompt) + "\n");
+    for (let i = 0; i < items.length; i++) {
+      const it = items[i];
+      const label = it.label ?? it.value;
+      const desc = it.description ? `  ${it.description}` : "";
+      process.stdout.write(`${i + 1}) ${label}${desc}\n`);
+    }
+    process.stdout.write("\n");
+  } catch {}
+}
+
+async function selectLineMode(
+  stdin: NodeJS.ReadStream,
+  stdout: NodeJS.WriteStream,
+  prompt: string,
+  items: Item[],
+  header?: string
+): Promise<string | undefined> {
+  const rl = readline.createInterface({ input: stdin, output: stdout });
+  try {
+    for (;;) {
+      renderLineModeMenu(prompt, items, header);
+      const answer = (await questionWithSigint(rl, "Select an option: ")).trim();
+      const idx = answer === "" ? 1 : Number.parseInt(answer, 10);
+      if (!Number.isFinite(idx) || idx < 1 || idx > items.length) {
+        process.stdout.write(c.red("Invalid selection.") + "\n\n");
+        continue;
+      }
+      return items[idx - 1]?.value;
+    }
+  } finally {
+    try {
+      rl.close();
+    } catch {}
+    try {
+      stdin.pause?.();
+    } catch {}
+  }
+}
+
 export async function select(
   prompt: string,
   items: Item[],
   header?: string,
   opts?: { useAltScreen?: boolean }
-): Promise<string> {
-  return new Promise((resolve) => {
+): Promise<string | undefined> {
+  return new Promise((resolve, reject) => {
     const stdin = process.stdin;
     const stdout = process.stdout;
     const isTTY = !!stdin.isTTY;
@@ -102,6 +162,17 @@ export async function select(
       } catch {}
       return resolve(items[0]?.value);
     }
+    if (items.length === 0) {
+      try {
+        stdin.pause?.();
+      } catch {}
+      return resolve(undefined);
+    }
+
+    const fallbackLineMode = () => {
+      selectLineMode(stdin, stdout, prompt, items, header).then(resolve).catch(reject);
+    };
+
     let selected = 0;
     let cleaned = false;
 
@@ -110,11 +181,11 @@ export async function select(
       if (key === "\x03") {
         // Ctrl+C
         cleanup();
-        process.exit(0);
+        reject(new Error("cancelled"));
       } else if (key === "\r" || key === "\n") {
         // Enter
         cleanup();
-        resolve(items[selected].value);
+        resolve(items[selected]?.value);
       } else if (key === "\x1b[A" || key === "k") {
         // Up arrow or k
         selected = selected > 0 ? selected - 1 : items.length - 1;
@@ -130,7 +201,11 @@ export async function select(
       }
     };
 
-    stdin.setRawMode?.(true);
+    try {
+      stdin.setRawMode?.(true);
+    } catch {
+      return fallbackLineMode();
+    }
     stdin.resume();
     stdin.on("data", onData);
     // Use alternate screen by default to ensure stable rendering regardless of
@@ -157,7 +232,6 @@ export async function select(
       maxVisible = rows > 0 ? Math.max(1, Math.min(items.length, rows - overhead)) : undefined;
     };
     recomputeMaxVisible();
-    let renderedLines = 0;
     if (header) {
       clearLine();
       process.stdout.write(c.green(c.bold(header)) + "\n");
@@ -166,8 +240,7 @@ export async function select(
     renderPrompt(prompt);
     // Anchor the cursor at the prompt line so we can clear/redraw
     saveCursor();
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    renderedLines = overhead + renderItems(items, selected, maxVisible);
+    renderItems(items, selected, maxVisible);
 
     const onResize = () => {
       recomputeMaxVisible();

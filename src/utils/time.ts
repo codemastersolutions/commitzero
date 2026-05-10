@@ -3,13 +3,13 @@ export function parseTimeToMs(input: string | number | undefined, defaultMs = 18
   if (typeof input === "number" && Number.isFinite(input)) return Math.max(0, Math.floor(input));
   const str = String(input).trim().toLowerCase();
   // Plain milliseconds
-  if (/^\d+$/.test(str)) return Math.max(0, parseInt(str, 10));
+  if (/^\d+$/.test(str)) return Math.max(0, Number.parseInt(str, 10));
   // Seconds, e.g. 5s
-  const secMatch = str.match(/^(\d+(?:\.\d+)?)s$/);
-  if (secMatch) return Math.max(0, Math.floor(parseFloat(secMatch[1]) * 1000));
+  const secMatch = /^(\d+(?:\.\d+)?)s$/.exec(str);
+  if (secMatch) return Math.max(0, Math.floor(Number.parseFloat(secMatch[1]) * 1000));
   // Minutes, e.g. 5m
-  const minMatch = str.match(/^(\d+(?:\.\d+)?)m$/);
-  if (minMatch) return Math.max(0, Math.floor(parseFloat(minMatch[1]) * 60000));
+  const minMatch = /^(\d+(?:\.\d+)?)m$/.exec(str);
+  if (minMatch) return Math.max(0, Math.floor(Number.parseFloat(minMatch[1]) * 60000));
   // Fallback to default
   return defaultMs;
 }
