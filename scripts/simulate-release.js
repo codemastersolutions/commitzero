@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 
 function log(step) {
@@ -7,7 +7,7 @@ function log(step) {
 }
 
 function run(cmd, opts = {}) {
-  return execSync(cmd, { stdio: "inherit", ...opts });
+  return execFileSync(cmd.file, cmd.args, { stdio: "inherit", ...opts });
 }
 
 function parseArgs() {
@@ -18,7 +18,7 @@ function parseArgs() {
     if (a === "--ignore-readmes") opts.ignoreReadmes = true;
     if (a === "--no-dry-publish") opts.dryPublish = false;
   }
-  if (!opts.bump) {
+  if (opts.bump === null) {
     console.error(
       "Uso: node scripts/simulate-release.js <patch|minor|major> [--ignore-readmes] [--no-dry-publish]"
     );
@@ -43,25 +43,25 @@ function bumpVersion(v, type) {
 async function main() {
   const { bump, ignoreReadmes, dryPublish } = parseArgs();
   log("Instalando dependências (npm ci)");
-  run("npm ci");
+  run({ file: "npm", args: ["ci"] });
 
-  if (!ignoreReadmes) {
+  if (ignoreReadmes) {
+    log("Ignorando verificação dos READMEs por opção");
+  } else {
     log("Verificando READMEs (npm run verify:readmes)");
     try {
-      run("npm run verify:readmes");
+      run({ file: "npm", args: ["run", "verify:readmes"] });
     } catch {
       console.error("\nFalha na verificação dos READMEs — simulação interrompida.");
       process.exit(1);
     }
-  } else {
-    log("Ignorando verificação dos READMEs por opção");
   }
 
   log("Executando testes (npm test)");
-  run("npm test");
+  run({ file: "npm", args: ["test"] });
 
   log("Build (npm run build)");
-  run("npm run build");
+  run({ file: "npm", args: ["run", "build"] });
 
   const current = readVersion();
   const next = bumpVersion(current, bump);
@@ -75,9 +75,9 @@ async function main() {
   console.log(`Simulação: criar release para tag v${next}`);
 
   log(`Simulando publicação no npm (${dryPublish ? "dry-run" : "real"})`);
-  const publishCmd = `npm publish --access public ${dryPublish ? "--dry-run" : ""}`.trim();
+  const publishArgs = ["publish", "--access", "public", ...(dryPublish ? ["--dry-run"] : [])];
   try {
-    run(publishCmd);
+    run({ file: "npm", args: publishArgs });
   } catch {
     console.error("\nPublicação (simulada) falhou. Verifique o conteúdo que será publicado.");
     process.exit(1);
@@ -86,7 +86,9 @@ async function main() {
   console.log("\nSimulação concluída com sucesso.");
 }
 
-main().catch((e) => {
+try {
+  await main();
+} catch (e) {
   console.error(e);
   process.exit(1);
-});
+}

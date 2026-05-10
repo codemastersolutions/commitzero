@@ -63,7 +63,7 @@ export function updateScripts(targetDir: string) {
 
 function findConsumerRoot(): string | null {
   const initCwd = process.env.INIT_CWD || "";
-  if (initCwd && initCwd.trim()) return initCwd;
+  if (initCwd?.trim()) return initCwd;
   // Fallback: ascend until we find a package.json that is not this package
   let dir = process.cwd();
   for (let i = 0; i < 6; i++) {

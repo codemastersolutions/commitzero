@@ -21,6 +21,6 @@
   "preCommitTimeout": "3m",
   "versionCheckEnabled": true,
   "versionCheckPeriod": "daily",
-  "language": "en",
-  "uiAltScreen": false
+  "language": "pt",
+  "uiAltScreen": true
 }

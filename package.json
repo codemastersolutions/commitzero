@@ -35,28 +35,37 @@
   "scripts": {
     "build:esm": "tsc -p tsconfig.esm.json",
     "build:cjs": "tsc -p tsconfig.cjs.json",
-    "build": "npm run build:esm && npm run build:cjs && node scripts/postbuild-cjs.js",
+    "build": "pnpm run build:esm && pnpm run build:cjs && node scripts/postbuild-cjs.js",
     "clean": "rm -rf dist",
-    "pretest": "npm run build",
-    "test": "node --import tsx --test test/unit/select.test.ts test/unit/formatter.test.ts test/unit/rules.test.ts test/unit/parser.test.ts test/integration/cleanup.test.ts test/integration/cli.test.ts test/integration/precommit.test.ts && COMMITSKIP_SELECT_PROMPT=1 node --import tsx --test test/unit/commit.test.ts",
-    "coverage": "npm run build && COMMITSKIP_ADD_PROMPT=1 c8 -r text-summary node --import tsx --test test/unit/select.test.ts test/unit/formatter.test.ts test/unit/rules.test.ts test/unit/parser.test.ts test/integration/cleanup.test.ts test/integration/cli.test.ts test/integration/precommit.test.ts",
-    "coverage:subset": "npm run build && c8 -r text-summary node --import tsx --test test/unit/select.test.ts test/unit/formatter.test.ts test/integration/cleanup.test.ts test/integration/cli.test.ts test/integration/precommit.test.ts",
+    "pretest": "pnpm run build",
+    "test": "node --import tsx --test test/unit/select.test.ts test/unit/formatter.test.ts test/unit/rules.test.ts test/unit/parser.test.ts test/unit/load-config.test.ts test/unit/hooks-install.test.ts test/unit/branches.test.ts test/unit/i18n.test.ts test/integration/cleanup.test.ts test/integration/cli.test.ts test/integration/precommit.test.ts && COMMITSKIP_SELECT_PROMPT=1 node --import tsx --test test/unit/commit.test.ts",
+    "coverage": "pnpm run build && COMMITSKIP_ADD_PROMPT=1 c8 --exclude \"**/cli/commands/**\" -r text-summary -r lcov node --import tsx --test test/unit/select.test.ts test/unit/formatter.test.ts test/unit/rules.test.ts test/unit/parser.test.ts test/unit/load-config.test.ts test/unit/hooks-install.test.ts test/unit/branches.test.ts test/unit/i18n.test.ts test/unit/commit.test.ts test/integration/cleanup.test.ts test/integration/cli.test.ts test/integration/precommit.test.ts",
+    "coverage:subset": "pnpm run build && c8 -r text-summary -r lcov node --import tsx --test test/unit/select.test.ts test/unit/formatter.test.ts test/integration/cleanup.test.ts test/integration/cli.test.ts test/integration/precommit.test.ts",
     "verify:readmes": "node scripts/verify-readmes.js",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
     "format": "prettier --write \"**/*.{ts,js,json,md}\"",
     "format:check": "prettier --check \"**/*.{ts,js,json,md}\"",
-    "comments:strip": "node scripts/strip-comments.js && npm run format",
+    "comments:strip": "node scripts/strip-comments.js && pnpm run format",
     "simulate:release": "node scripts/simulate-release.js",
+    "sonar:up": "docker compose -f docker-compose.sonarqube.yml up -d",
+    "sonar:down": "docker compose -f docker-compose.sonarqube.yml down -v",
+    "sonar:auth:check": "node --input-type=module -e \"const host=process.env.SONAR_HOST_URL || 'http://sonarqube.codemastersolucoes.com'; const token=process.env.SONAR_TOKEN; const login=process.env.SONAR_LOGIN; const password=process.env.SONAR_PASSWORD; const url=new URL('/api/authentication/validate', host); const headers={}; if(token){ headers.Authorization='Basic ' + Buffer.from(token + ':').toString('base64'); console.log('Auth: token (len=' + token.length + ')'); } else if(login && password){ headers.Authorization='Basic ' + Buffer.from(login + ':' + password).toString('base64'); console.log('Auth: login/password'); } else { console.error('Provide SONAR_TOKEN or SONAR_LOGIN and SONAR_PASSWORD'); process.exit(1); } const res=await fetch(url,{headers}); const body=await res.text(); console.log('HTTP ' + res.status); console.log(body);\"",
+    "sonar:scan": "sonar -Dsonar.host.url=https://sonarqube.codemastersolucoes.com -Dsonar.token=process.env.SONAR_TOKEN -Dsonar.projectKey=codemastersolutions_commitzero_eb012d27-7d59-454a-907f-b31e016f7358",
+    "sonar:export:metrics": "node --input-type=module -e \"import fs from 'node:fs'; import path from 'node:path'; const host=process.env.SONAR_HOST_URL || 'http://sonarqube.codemastersolucoes.com'; const token=process.env.SONAR_TOKEN; const login=process.env.SONAR_LOGIN; const password=process.env.SONAR_PASSWORD; let auth=''; if(token){ auth='Basic ' + Buffer.from(token + ':').toString('base64'); } else if(login && password){ auth='Basic ' + Buffer.from(login + ':' + password).toString('base64'); } else { console.error('Provide SONAR_TOKEN or SONAR_LOGIN and SONAR_PASSWORD'); process.exit(1); } const dir=path.resolve('sonar'); fs.mkdirSync(dir,{recursive:true}); const url=new URL('/api/measures/component', host); url.searchParams.set('component','commitzero'); url.searchParams.set('metricKeys','bugs,vulnerabilities,security_hotspots,code_smells,coverage,duplicated_lines_density,ncloc'); const res=await fetch(url,{headers:{Authorization:auth}}); if(!res.ok){throw new Error('HTTP ' + res.status + ' ' + res.statusText);} const json=await res.json(); fs.writeFileSync(path.join(dir,'metrics.json'), JSON.stringify(json,null,2)+'\\\\n'); console.log('Wrote sonar/metrics.json');\"",
+    "sonar:export:quality-gate": "node --input-type=module -e \"import fs from 'node:fs'; import path from 'node:path'; const host=process.env.SONAR_HOST_URL || 'http://sonarqube.codemastersolucoes.com'; const token=process.env.SONAR_TOKEN; const login=process.env.SONAR_LOGIN; const password=process.env.SONAR_PASSWORD; let auth=''; if(token){ auth='Basic ' + Buffer.from(token + ':').toString('base64'); } else if(login && password){ auth='Basic ' + Buffer.from(login + ':' + password).toString('base64'); } else { console.error('Provide SONAR_TOKEN or SONAR_LOGIN and SONAR_PASSWORD'); process.exit(1); } const dir=path.resolve('sonar'); fs.mkdirSync(dir,{recursive:true}); const url=new URL('/api/qualitygates/project_status', host); url.searchParams.set('projectKey','commitzero'); const res=await fetch(url,{headers:{Authorization:auth}}); if(!res.ok){throw new Error('HTTP ' + res.status + ' ' + res.statusText);} const json=await res.json(); fs.writeFileSync(path.join(dir,'quality-gate.json'), JSON.stringify(json,null,2)+'\\\\n'); console.log('Wrote sonar/quality-gate.json');\"",
+    "sonar:export:issues": "node --input-type=module -e \"import fs from 'node:fs'; import path from 'node:path'; const host=process.env.SONAR_HOST_URL || 'http://sonarqube.codemastersolucoes.com'; const token=process.env.SONAR_TOKEN; const login=process.env.SONAR_LOGIN; const password=process.env.SONAR_PASSWORD; let auth=''; if(token){ auth='Basic ' + Buffer.from(token + ':').toString('base64'); } else if(login && password){ auth='Basic ' + Buffer.from(login + ':' + password).toString('base64'); } else { console.error('Provide SONAR_TOKEN or SONAR_LOGIN and SONAR_PASSWORD'); process.exit(1); } const dir=path.resolve('sonar'); fs.mkdirSync(dir,{recursive:true}); const pageSize=500; let page=1; const issues=[]; while(true){ const url=new URL('/api/issues/search', host); url.searchParams.set('componentKeys','commitzero'); url.searchParams.set('statuses','OPEN,REOPENED,CONFIRMED'); url.searchParams.set('ps', String(pageSize)); url.searchParams.set('p', String(page)); const res=await fetch(url,{headers:{Authorization:auth}}); if(!res.ok){throw new Error('HTTP ' + res.status + ' ' + res.statusText);} const json=await res.json(); issues.push(...(json.issues||[])); const total=Number(json.total||0); if(page*pageSize>=total) break; page++; } fs.writeFileSync(path.join(dir,'issues.json'), JSON.stringify({projectKey:'commitzero', exportedAt:new Date().toISOString(), issues},null,2)+'\\\\n'); console.log('Wrote sonar/issues.json (' + issues.length + ' issues)');\"",
+    "sonar:export:hotspots": "node --input-type=module -e \"import fs from 'node:fs'; import path from 'node:path'; const host=process.env.SONAR_HOST_URL || 'http://sonarqube.codemastersolucoes.com'; const token=process.env.SONAR_TOKEN; const login=process.env.SONAR_LOGIN; const password=process.env.SONAR_PASSWORD; let auth=''; if(token){ auth='Basic ' + Buffer.from(token + ':').toString('base64'); } else if(login && password){ auth='Basic ' + Buffer.from(login + ':' + password).toString('base64'); } else { console.error('Provide SONAR_TOKEN or SONAR_LOGIN and SONAR_PASSWORD'); process.exit(1); } const dir=path.resolve('sonar'); fs.mkdirSync(dir,{recursive:true}); const pageSize=500; let page=1; const hotspots=[]; while(true){ const url=new URL('/api/hotspots/search', host); url.searchParams.set('projectKey','commitzero'); url.searchParams.set('ps', String(pageSize)); url.searchParams.set('p', String(page)); const res=await fetch(url,{headers:{Authorization:auth}}); if(!res.ok){ if(res.status === 403 || res.status === 401){ let body=''; try{ body = await res.text(); }catch{} fs.writeFileSync(path.join(dir,'hotspots.json'), JSON.stringify({projectKey:'commitzero', exportedAt:new Date().toISOString(), hotspots: [], error: { status: res.status, body: body.slice(0, 500) }},null,2)+'\\\\n'); console.log('Hotspots export skipped: HTTP ' + res.status + ' (missing permissions or feature not available)'); process.exit(0); } throw new Error('HTTP ' + res.status + ' ' + res.statusText); } const json=await res.json(); hotspots.push(...(json.hotspots||[])); const paging=json.paging||{}; const total=Number(paging.total||0); if(page*pageSize>=total) break; page++; } fs.writeFileSync(path.join(dir,'hotspots.json'), JSON.stringify({projectKey:'commitzero', exportedAt:new Date().toISOString(), hotspots},null,2)+'\\\\n'); console.log('Wrote sonar/hotspots.json (' + hotspots.length + ' hotspots)');\"",
+    "sonar:export": "pnpm sonar:export:metrics && pnpm sonar:export:quality-gate && pnpm sonar:export:issues && pnpm sonar:export:hotspots",
     "postinstall": "node ./scripts/postinstall-shim.js",
     "preuninstall": "node ./scripts/cleanup-shim.js || true",
     "uninstall": "node ./scripts/cleanup-shim.js || true",
     "postuninstall": "node ./scripts/cleanup-shim.js || true",
     "commitzero": "commitzero",
-    "commitzero:install": "npm run commitzero install-hooks",
-    "commitzero:uninstall": "npm run commitzero uninstall-hooks",
-    "commit": "npm run commitzero commit",
-    "commit:push": "npm run commitzero -- commit --push"
+    "commitzero:install": "pnpm run commitzero install-hooks",
+    "commitzero:uninstall": "pnpm run commitzero uninstall-hooks",
+    "commit": "pnpm run commitzero commit",
+    "commit:push": "pnpm run commitzero commit --add --push"
   },
   "exports": {
     ".": {
@@ -69,7 +78,7 @@
   "module": "./dist/esm/index.js",
   "types": "./dist/esm/index.d.ts",
   "bin": {
-    "commitzero": "./dist/cjs/cli/index.js"
+    "commitzero": "./dist/esm/cli/index.js"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org",
@@ -83,7 +92,7 @@
     "CHANGELOG.md"
   ],
   "devDependencies": {
-    "@codemastersolutions/commitzero": "^0.0.48",
+    "@codemastersolutions/commitzero": "^0.0.49",
     "@eslint/js": "^10.0.1",
     "@types/node": "^24.12.2",
     "c8": "^11.0.0",

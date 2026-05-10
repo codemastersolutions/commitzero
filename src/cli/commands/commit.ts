@@ -1,16 +1,21 @@
 /* eslint-disable no-control-regex */
-import { execFileSync, execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { stdin as input, stdout as output } from "node:process";
 import * as readline from "node:readline";
-import { formatMessage } from "../../core/formatter";
-import { defaultOptions, lintCommit, type ParsedCommit } from "../../core/rules";
+import { inspect } from "node:util";
+import { formatMessage } from "../../core/formatter.js";
+import { defaultOptions, lintCommit, type ParsedCommit } from "../../core/rules.js";
 import { t, type Lang } from "../../i18n/index.js";
-import { c } from "../colors";
-import { select } from "./select";
+import { resolveGitBin } from "../../utils/binaries.js";
+import { c } from "../colors.js";
+import { select } from "./select.js";
 
 type TestAnswerCtx = { answers: string[] | null; index: number; raw: string | null };
+function getGitBin(): string {
+  return resolveGitBin();
+}
 function initTestAnswerCtx(): TestAnswerCtx {
   try {
     const raw = process.env.COMMITZERO_TEST_ANSWERS ?? null;
@@ -55,12 +60,713 @@ function runWithSpinner<T>(message: string, fn: () => T): T {
 function sanitizeInputSafe(input: string): string {
   // Remove caracteres de controle perigosos, mas preserva caracteres Unicode válidos e espaços
   return input
-    .replace(/[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F]/g, "") // Remove caracteres de controle
-    .replace(/[\u0000-\u001F\u007F-\u009F]/g, (match) => {
+    .replaceAll(/[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F]/g, "") // Remove caracteres de controle
+    .replaceAll(/[\u0000-\u001F\u007F-\u009F]/g, (match) => {
       // Preserva espaços (0x20) e tabs (0x09) se necessário
       return match === "\x20" ? match : "";
     }) // Remove caracteres de controle Unicode mas preserva espaços
-    .replace(/[\u2028\u2029]/g, ""); // Remove separadores de linha Unicode
+    .replaceAll(/[\u2028\u2029]/g, ""); // Remove separadores de linha Unicode
+}
+
+type InteractiveCommitCfg = Partial<typeof defaultOptions> & {
+  autoAdd?: boolean;
+  autoPush?: boolean;
+  pushProgress?: boolean;
+  uiAltScreen?: boolean;
+  preCommitTimeout?: string | number;
+};
+
+function resolveCliVersionSuffix(): string {
+  try {
+    const pkgPath1 = join(__dirname, "../../../../package.json");
+    const raw1 = readFileSync(pkgPath1, "utf8");
+    const pkg1 = JSON.parse(raw1);
+    return pkg1?.version ? ` v${pkg1.version}` : "";
+  } catch {
+    try {
+      const pkgPath2 = require.resolve("@codemastersolutions/commitzero/package.json");
+      const raw2 = readFileSync(pkgPath2, "utf8");
+      const pkg2 = JSON.parse(raw2);
+      return pkg2?.version ? ` v${pkg2.version}` : "";
+    } catch {
+      const envVersion = process.env.npm_package_version;
+      return envVersion ? ` v${envVersion}` : "";
+    }
+  }
+}
+
+function isInteractiveInput(): boolean {
+  const forceNonInteractive =
+    process.env.COMMITSKIP_INPUT_PROMPT === "1" ||
+    process.env.CI === "true" ||
+    process.env.NODE_TEST === "1";
+  return !!process.stdin.isTTY && !forceNonInteractive;
+}
+
+function isYesAnswer(answer: string): boolean {
+  return /^y(es)?$/i.test((answer || "").trim());
+}
+
+function createYesNoValidator(lang: Lang): (answer: string) => boolean | string {
+  return (answer: string): boolean | string => {
+    const trimmed = answer.trim().toLowerCase();
+    if (
+      trimmed === "" ||
+      trimmed === "n" ||
+      trimmed === "no" ||
+      trimmed === "y" ||
+      trimmed === "yes"
+    ) {
+      return true;
+    }
+    return t(lang, "commit.validation.yesNo") || "Please answer with 'y' or 'n'";
+  };
+}
+
+function validateScopeValue(lang: Lang, value: string): string | null {
+  const s = value.trim();
+  if (s === "") return null;
+  const patternOk = /^[\p{L}\p{N}\p{M}\p{P}\p{S}\- .]+$/u.test(s);
+  if (!patternOk) return t(lang, "rules.scopePattern") || "Scope contains invalid characters.";
+  if (s !== s.toLowerCase()) return t(lang, "rules.scopeLower") || "Scope must be lowercase.";
+  return null;
+}
+
+async function promptScope(
+  rl: readline.Interface,
+  lang: Lang,
+  isScopeRequired: boolean,
+  testCtx: TestAnswerCtx
+): Promise<string> {
+  for (;;) {
+    const scope = await askWithCharacterCount(
+      rl,
+      c.cyan(t(lang, "commit.prompt.scope")),
+      50,
+      testCtx,
+      isScopeRequired,
+      lang,
+      true
+    );
+    const err = validateScopeValue(lang, scope);
+    if (!err) return scope;
+    console.log(c.red(err));
+  }
+}
+
+async function promptCommitParts(
+  rl: readline.Interface,
+  lang: Lang,
+  cfg: InteractiveCommitCfg | undefined,
+  testCtx: TestAnswerCtx
+): Promise<{
+  scope: string;
+  subject: string;
+  body: string;
+  isBreaking: boolean;
+  breakingDetails: string;
+}> {
+  const scope = await promptScope(rl, lang, !!cfg?.requireScope, testCtx);
+  if (!isInteractiveInput()) console.log();
+
+  const subject = await askWithCharacterCount(
+    rl,
+    c.cyan(t(lang, "commit.prompt.subject")),
+    cfg?.maxSubjectLength || 72,
+    testCtx,
+    true,
+    lang,
+    true
+  );
+  const body = await askWithCharacterCount(
+    rl,
+    c.cyan(t(lang, "commit.prompt.body")),
+    500,
+    testCtx,
+    false,
+    lang,
+    true
+  );
+
+  const yesNoValidator = createYesNoValidator(lang);
+
+  const breakingAns = await askWithValidation(
+    rl,
+    c.cyan(t(lang, "commit.prompt.breaking")),
+    yesNoValidator,
+    testCtx,
+    false,
+    lang
+  );
+  const isBreaking = isYesAnswer(breakingAns);
+  const breakingDetails = isBreaking
+    ? await askWithCharacterCount(
+        rl,
+        c.cyan(t(lang, "commit.prompt.breakingDetails")),
+        200,
+        testCtx,
+        false,
+        lang,
+        true
+      )
+    : "";
+
+  return { scope, subject, body, isBreaking, breakingDetails };
+}
+
+function gitCommitEditMsg(cfg: InteractiveCommitCfg | undefined): string {
+  const env: Record<string, string> = {
+    ...(process.env as Record<string, string>),
+    COMMITZERO: "1",
+    COMMITZERO_RUN: "1",
+  };
+  if (cfg?.preCommitTimeout !== undefined) {
+    env.COMMITZERO_PRE_COMMIT_TIMEOUT = String(cfg.preCommitTimeout);
+  }
+  return execFileSync(getGitBin(), ["commit", "-F", ".git/COMMIT_EDITMSG"], {
+    stdio: ["ignore", "pipe", "pipe"],
+    encoding: "utf8",
+    env,
+  });
+}
+
+function getCurrentBranchName(): string | null {
+  try {
+    const branch = execFileSync(getGitBin(), ["rev-parse", "--abbrev-ref", "HEAD"], {
+      stdio: ["ignore", "pipe", "ignore"],
+      encoding: "utf8",
+    })
+      .toString()
+      .trim();
+    if (!branch || branch === "HEAD") return null;
+    return branch;
+  } catch {
+    return null;
+  }
+}
+
+function getDefaultRemoteName(): string {
+  try {
+    const out = execFileSync(getGitBin(), ["remote"], {
+      stdio: ["ignore", "pipe", "ignore"],
+      encoding: "utf8",
+    })
+      .toString()
+      .trim();
+    const first = out
+      .split("\n")
+      .map((s) => s.trim())
+      .find((s) => s.length > 0);
+    return first || "origin";
+  } catch {
+    return "origin";
+  }
+}
+
+function gitPush(cfg: InteractiveCommitCfg | undefined, withUpstream: boolean): string {
+  const useProgress = cfg?.pushProgress !== false;
+  if (!withUpstream) {
+    return execFileSync(getGitBin(), ["push", ...(useProgress ? ["--progress"] : [])], {
+      stdio: ["ignore", "pipe", useProgress ? "inherit" : "pipe"],
+      encoding: "utf8",
+    });
+  }
+  const branch = getCurrentBranchName();
+  if (!branch) {
+    throw new Error("Current branch is detached; cannot push.");
+  }
+  const remote = getDefaultRemoteName();
+  return execFileSync(
+    getGitBin(),
+    ["push", ...(useProgress ? ["--progress"] : []), "-u", remote, branch],
+    {
+      stdio: ["ignore", "pipe", useProgress ? "inherit" : "pipe"],
+      encoding: "utf8",
+    }
+  );
+}
+
+function pushAfterCommitIfNeeded(lang: Lang, cfg: InteractiveCommitCfg | undefined): number {
+  if (!cfg?.autoPush) return 0;
+  const stopPushSpinner = showSpinner(t(lang, "commit.pushing") || "Pushing to remote...");
+  try {
+    const pushOut = gitPush(cfg, false);
+    stopPushSpinner();
+    if (pushOut) process.stdout.write(pushOut);
+    return 0;
+  } catch {
+    stopPushSpinner();
+    try {
+      const pushUpOut = runWithSpinner("Setting upstream and pushing...", () => gitPush(cfg, true));
+      if (pushUpOut) process.stdout.write(pushUpOut);
+      return 0;
+    } catch (error_: unknown) {
+      const errOut = error_ && error_ instanceof Error ? error_.message : "";
+      if (errOut) process.stderr.write(errOut);
+      console.error(c.red(String(error_)));
+      return 1;
+    }
+  }
+}
+
+type GitStatusState = { hasStaged: boolean; hasUnstaged: boolean; undetermined: boolean };
+
+function sleepSync(ms: number): void {
+  if (ms <= 0) return;
+  const arr = new Int32Array(new SharedArrayBuffer(4));
+  Atomics.wait(arr, 0, 0, ms);
+}
+
+function readGitErrorText(err: unknown): string {
+  const anyErr = err as Record<string, unknown>;
+  const stderr = anyErr?.stderr;
+
+  let stderrText = "";
+  if (Buffer.isBuffer(stderr)) stderrText = stderr.toString("utf8");
+  else if (typeof stderr === "string") stderrText = stderr;
+
+  const rawMessage = anyErr?.message;
+  let messageText = "";
+  if (typeof rawMessage === "string") {
+    messageText = rawMessage;
+  } else if (rawMessage instanceof Error) {
+    messageText = rawMessage.message;
+  } else if (rawMessage !== undefined) {
+    try {
+      messageText = JSON.stringify(rawMessage);
+    } catch {
+      messageText = inspect(rawMessage);
+    }
+  }
+
+  return `${messageText}\n${stderrText}`.trim();
+}
+
+function isTransientGitError(err: unknown): boolean {
+  const text = readGitErrorText(err).toLowerCase();
+  return (
+    text.includes("index.lock") ||
+    text.includes("could not lock") ||
+    text.includes("unable to create") ||
+    text.includes("another git process") ||
+    text.includes("fatal: unable to") ||
+    text.includes("fatal: could not") ||
+    text.includes("resource temporarily unavailable")
+  );
+}
+
+function execGitUtf8(
+  args: string[],
+  stdio: ["ignore", "pipe", "pipe"] | undefined = undefined
+): string {
+  return execFileSync(getGitBin(), args, {
+    stdio: stdio ?? ["ignore", "pipe", "pipe"],
+    encoding: "utf8",
+  });
+}
+
+function execGitUtf8WithRetry(args: string[], maxRetries: number = 6): string {
+  let lastErr: unknown;
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return execGitUtf8(args);
+    } catch (err: unknown) {
+      lastErr = err;
+      if (!isTransientGitError(err) || attempt === maxRetries) break;
+      sleepSync(50 * (attempt + 1));
+    }
+  }
+  throw lastErr;
+}
+
+function parsePorcelainV1Z(out: string): GitStatusState {
+  const applyXY = (state: { hasStaged: boolean; hasUnstaged: boolean }, x: string, y: string) => {
+    if (x === "?" && y === "?") {
+      state.hasUnstaged = true;
+      return;
+    }
+    if (x !== " " && x !== "?") state.hasStaged = true;
+    if (y !== " " && y !== "?") state.hasUnstaged = true;
+  };
+
+  const consumePath = (raw: string, from: number): number => {
+    const term = raw.indexOf("\0", from);
+    return term === -1 ? raw.length : term + 1;
+  };
+
+  const shouldConsumeSecondPath = (x: string, y: string): boolean => {
+    return x === "R" || x === "C" || y === "R" || y === "C";
+  };
+
+  const raw = out ?? "";
+  const state = { hasStaged: false, hasUnstaged: false };
+  let i = 0;
+
+  while (i < raw.length) {
+    if (raw[i] === "\0") {
+      i++;
+      continue;
+    }
+    if (i + 2 > raw.length) break;
+
+    const x = raw[i];
+    const y = raw[i + 1];
+    applyXY(state, x, y);
+
+    const next = consumePath(raw, i);
+    if (next >= raw.length) break;
+    i = next;
+
+    if (!shouldConsumeSecondPath(x, y) || i >= raw.length || raw[i] === "\0") continue;
+    i = consumePath(raw, i);
+  }
+
+  return { hasStaged: state.hasStaged, hasUnstaged: state.hasUnstaged, undetermined: false };
+}
+
+function getGitStatusState(): GitStatusState {
+  try {
+    const out = execGitUtf8WithRetry(["status", "--porcelain=v1", "-z"]);
+    return parsePorcelainV1Z(out);
+  } catch {
+    try {
+      const stagedOut = execGitUtf8WithRetry(["diff", "--cached", "--name-only"]).trim();
+      const diffOut = execGitUtf8WithRetry(["diff", "--name-only"]).trim();
+      const untrackedOut = execGitUtf8WithRetry([
+        "ls-files",
+        "--others",
+        "--exclude-standard",
+      ]).trim();
+      return {
+        hasStaged: stagedOut.length > 0,
+        hasUnstaged: diffOut.length > 0 || untrackedOut.length > 0,
+        undetermined: false,
+      };
+    } catch {
+      return { hasStaged: false, hasUnstaged: true, undetermined: true };
+    }
+  }
+}
+
+function hasStaged(): boolean {
+  return getGitStatusState().hasStaged;
+}
+
+function hasUnstagedChanges(): boolean {
+  return getGitStatusState().hasUnstaged;
+}
+
+function parseCount(raw: string): number {
+  const n = Number.parseInt((raw || "").trim(), 10);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function getAheadCount(): number {
+  try {
+    const out = execFileSync(getGitBin(), ["rev-list", "--count", "@{u}..HEAD"], {
+      stdio: ["ignore", "pipe", "ignore"],
+      encoding: "utf8",
+    }).toString();
+    return parseCount(out);
+  } catch {
+    try {
+      const out = execFileSync(getGitBin(), ["rev-list", "--count", "HEAD"], {
+        stdio: ["ignore", "pipe", "ignore"],
+        encoding: "utf8",
+      }).toString();
+      return parseCount(out);
+    } catch {
+      return 0;
+    }
+  }
+}
+
+function gitAddAll(lang: Lang): boolean {
+  try {
+    const out = execFileSync(getGitBin(), ["add", "-A"], {
+      stdio: ["ignore", "pipe", "pipe"],
+      encoding: "utf8",
+    });
+    if (out) process.stdout.write(out);
+    console.log(c.green(t(lang, "commit.git.added") || "Files added to staging area."));
+    return true;
+  } catch (err: unknown) {
+    const errOut = err && err instanceof Error ? err.message : "";
+    if (errOut) process.stderr.write(errOut);
+    console.error(c.red(String(err)));
+    return false;
+  }
+}
+
+async function pushIfAhead(
+  lang: Lang,
+  cfg: InteractiveCommitCfg | undefined
+): Promise<"push_success" | false> {
+  const ahead = getAheadCount();
+  if (ahead <= 0) return false;
+  console.log(
+    c.cyan(
+      t(lang, "commit.git.nothingToCommit") || "Nothing to commit, but there are unpushed commits."
+    )
+  );
+  const stop = showSpinner(t(lang, "commit.pushing") || "Pushing to remote...");
+  try {
+    const pushOut = gitPush(cfg, false);
+    stop();
+    if (pushOut) process.stdout.write(pushOut);
+    console.log(c.green(t(lang, "commit.git.pushed") || "Successfully pushed to remote."));
+    return "push_success";
+  } catch {
+    stop();
+  }
+  try {
+    const pushUpOut = runWithSpinner("Setting upstream and pushing...", () => gitPush(cfg, true));
+    if (pushUpOut) process.stdout.write(pushUpOut);
+    console.log(c.green(t(lang, "commit.git.pushed") || "Successfully pushed to remote."));
+    return "push_success";
+  } catch (error_: unknown) {
+    const errOut = error_ && error_ instanceof Error ? error_.message : "";
+    if (errOut) process.stderr.write(errOut);
+    console.error(c.red(String(error_)));
+    return false;
+  }
+}
+
+async function promptAddIfNeeded(
+  lang: Lang,
+  testCtx: TestAnswerCtx,
+  skipBehavior: "abort" | "continue"
+): Promise<boolean | "skip"> {
+  const skipAddPrompt =
+    process.env.COMMITSKIP_ADD_PROMPT === "1" ||
+    process.env.CI === "true" ||
+    process.env.NODE_TEST === "1";
+  if (skipAddPrompt) return skipBehavior === "continue" ? "skip" : false;
+  const isInteractive = !!input.isTTY && !!output.isTTY;
+  if (!isInteractive) return false;
+
+  const yesNoValidator = createYesNoValidator(lang);
+
+  const localRl = readline.createInterface({ input, output });
+  try {
+    const ans = await askWithValidation(
+      localRl,
+      c.cyan(t(lang, "commit.git.askAdd")),
+      yesNoValidator,
+      testCtx,
+      false,
+      lang
+    );
+    return isYesAnswer(ans);
+  } catch {
+    console.log(c.yellow(t(lang, "commit.cancelled")));
+    return false;
+  } finally {
+    localRl.close();
+    try {
+      input.pause?.();
+    } catch {}
+  }
+}
+
+function getAddScenario(params: {
+  staged: boolean;
+  unstaged: boolean;
+  autoAdd: boolean;
+  autoPush: boolean;
+}):
+  | "NO_CHANGES"
+  | "AUTO_ADD"
+  | "AUTO_PUSH_PROMPT"
+  | "PROMPT_ADD_ABORT"
+  | "PROMPT_ADD_CONTINUE"
+  | "DEFAULT" {
+  const { staged, unstaged, autoAdd, autoPush } = params;
+  if (!staged && !unstaged) return "NO_CHANGES";
+  if (autoAdd && unstaged) return "AUTO_ADD";
+  if (staged && unstaged && !autoAdd) return "PROMPT_ADD_CONTINUE";
+  if (autoPush && unstaged && !autoAdd) return "AUTO_PUSH_PROMPT";
+  if (!staged && unstaged && !autoAdd && !autoPush) return "PROMPT_ADD_ABORT";
+  return "DEFAULT";
+}
+
+async function handleNoChangesScenario(
+  lang: Lang,
+  cfg: InteractiveCommitCfg | undefined,
+  autoPush: boolean
+): Promise<boolean | "push_success"> {
+  if (autoPush) {
+    const pushed = await pushIfAhead(lang, cfg);
+    if (pushed === "push_success") return "push_success";
+  }
+  console.error(c.red(t(lang, "commit.git.abort")));
+  return false;
+}
+
+function handleAutoAddScenario(lang: Lang, autoPush: boolean): boolean {
+  if (!gitAddAll(lang)) return false;
+  return hasStaged() || autoPush;
+}
+
+async function handleAutoPushPromptScenario(
+  lang: Lang,
+  cfg: InteractiveCommitCfg | undefined,
+  testCtx: TestAnswerCtx
+): Promise<boolean> {
+  const wantsAdd = await promptAddIfNeeded(lang, testCtx, "continue");
+  if (wantsAdd === true && !gitAddAll(lang)) return false;
+  return hasStaged() || !!cfg?.autoPush;
+}
+
+async function handlePromptAddContinueScenario(
+  lang: Lang,
+  cfg: InteractiveCommitCfg | undefined,
+  testCtx: TestAnswerCtx
+): Promise<boolean> {
+  const wantsAdd = await promptAddIfNeeded(lang, testCtx, "continue");
+  if (wantsAdd === true && !gitAddAll(lang)) return false;
+  return hasStaged() || !!cfg?.autoPush;
+}
+
+async function handlePromptAddAbortScenario(lang: Lang, testCtx: TestAnswerCtx): Promise<boolean> {
+  const wantsAdd = await promptAddIfNeeded(lang, testCtx, "abort");
+  if (wantsAdd !== true) {
+    console.error(c.red(t(lang, "commit.git.abort")));
+    return false;
+  }
+  if (!gitAddAll(lang)) return false;
+  return hasStaged();
+}
+
+async function checkAndAskForAdd(
+  lang: Lang,
+  cfg: InteractiveCommitCfg | undefined,
+  testCtx: TestAnswerCtx
+): Promise<boolean | "push_success"> {
+  const autoAdd = cfg?.autoAdd === true;
+  const autoPush = cfg?.autoPush === true;
+  const staged = hasStaged();
+  const unstaged = hasUnstagedChanges();
+  const scenario = getAddScenario({ staged, unstaged, autoAdd, autoPush });
+
+  switch (scenario) {
+    case "NO_CHANGES":
+      return handleNoChangesScenario(lang, cfg, autoPush);
+    case "AUTO_ADD":
+      return handleAutoAddScenario(lang, autoPush);
+    case "AUTO_PUSH_PROMPT":
+      return handleAutoPushPromptScenario(lang, cfg, testCtx);
+    case "PROMPT_ADD_CONTINUE":
+      return handlePromptAddContinueScenario(lang, cfg, testCtx);
+    case "PROMPT_ADD_ABORT":
+      return handlePromptAddAbortScenario(lang, testCtx);
+    default:
+      return hasStaged();
+  }
+}
+
+async function selectCommitType(
+  lang: Lang,
+  cfg: InteractiveCommitCfg | undefined
+): Promise<string | null> {
+  const types = cfg?.types?.length ? cfg.types : defaultOptions.types;
+  const items = types.map((ty) => ({
+    value: ty,
+    label: `${ty}:`,
+    description: t(lang, `type.desc.${ty}`),
+  }));
+  try {
+    const selected = await select(c.bold(t(lang, "commit.select.type")), items, undefined, {
+      useAltScreen: cfg?.uiAltScreen,
+    });
+    return selected || null;
+  } catch {
+    return null;
+  }
+}
+
+async function promptCommitPartsSafely(
+  lang: Lang,
+  cfg: InteractiveCommitCfg | undefined,
+  testCtx: TestAnswerCtx
+): Promise<Awaited<ReturnType<typeof promptCommitParts>> | null> {
+  const rl = readline.createInterface({ input, output });
+  try {
+    return await promptCommitParts(rl, lang, cfg, testCtx);
+  } catch {
+    return null;
+  } finally {
+    rl.close();
+    try {
+      input.pause?.();
+    } catch {}
+  }
+}
+
+function buildParsedCommit(
+  type: string,
+  parts: Awaited<ReturnType<typeof promptCommitParts>>
+): ParsedCommit {
+  const { scope, subject, body, isBreaking, breakingDetails } = parts;
+  const footers = isBreaking ? [{ key: "BREAKING CHANGE", value: breakingDetails }] : [];
+  const scopePart = scope ? `(${scope})` : "";
+  const breakingMark = isBreaking && !subject.includes("!") ? "!" : "";
+  return {
+    type,
+    scope: scope || undefined,
+    subject,
+    body: body || undefined,
+    isBreaking,
+    footers,
+    meta: {
+      header: `${type}${scopePart}${breakingMark}: ${subject}`,
+      hasBlankAfterHeader: !!body,
+      hasBlankBeforeFooter: footers.length > 0,
+    },
+  };
+}
+
+function validateCommitOrExit(
+  lang: Lang,
+  cfg: InteractiveCommitCfg | undefined,
+  commit: ParsedCommit
+): number | null {
+  const result = lintCommit(commit, { ...defaultOptions, ...cfg, language: lang });
+  if (!result.valid) {
+    console.error(
+      c.red(t(lang, "cli.invalid")) + "\n" + result.errors.map((e) => c.red(`- ${e}`)).join("\n")
+    );
+    return 1;
+  }
+  if (result.warnings.length) {
+    console.warn(
+      result.warnings.map((w) => c.yellow(t(lang, "cli.warning", { msg: w }))).join("\n")
+    );
+  }
+  return null;
+}
+
+function writeAndPrintCommitMessage(lang: Lang, msg: string): void {
+  writeFileSync(".git/COMMIT_EDITMSG", msg, "utf8");
+  const createdHdr = t(lang, "commit.created", { msg: "" }).trimEnd();
+  console.log("\n" + c.green(createdHdr));
+  console.log("\n" + msg + "\n");
+}
+
+function commitAndPush(lang: Lang, cfg: InteractiveCommitCfg | undefined): number {
+  try {
+    const commitOut = runWithSpinner(t(lang, "commit.committing") || "Committing changes...", () =>
+      gitCommitEditMsg(cfg)
+    );
+    console.log("");
+    if (commitOut) process.stdout.write(commitOut);
+    return pushAfterCommitIfNeeded(lang, cfg);
+  } catch (err: unknown) {
+    const errOut = err && err instanceof Error ? err.message : "";
+    if (errOut) process.stderr.write(errOut);
+    console.error(c.red(String(err)));
+    return 1;
+  }
 }
 
 function askWithCharacterCount(
@@ -73,6 +779,43 @@ function askWithCharacterCount(
   nextLineInput: boolean = false
 ): Promise<string> {
   return new Promise((resolve, reject) => {
+    const readFromCtx = (): string | undefined => {
+      if (ctx?.answers && ctx.index < ctx.answers.length) {
+        const answer = ctx.answers[ctx.index++];
+        if (answer === "__SIGINT__") {
+          throw new Error("SIGINT");
+        }
+        const sanitizedAnswer = sanitizeInputSafe(answer);
+        if (isRequired && (!sanitizedAnswer || sanitizedAnswer.trim().length === 0)) {
+          if (process.env.NODE_TEST === "1") {
+            return sanitizedAnswer;
+          }
+        }
+        return sanitizedAnswer;
+      }
+
+      if (ctx?.raw) {
+        if (ctx.raw.includes("__SIGINT__")) {
+          throw new Error("SIGINT");
+        }
+        return sanitizeInputSafe(ctx.raw);
+      }
+
+      return undefined;
+    };
+
+    const resolveFromCtxIfAny = (): boolean => {
+      try {
+        const fromCtx = readFromCtx();
+        if (fromCtx === undefined) return false;
+        resolve(fromCtx);
+        return true;
+      } catch (err) {
+        reject(err);
+        return true;
+      }
+    };
+
     const promptWithCount = (currentInput: string = "", cursorPos: number = 0) => {
       const count = currentInput.length;
       const countDisplay = maxLength ? ` (${count}/${maxLength})` : ` (${count})`;
@@ -83,34 +826,7 @@ function askWithCharacterCount(
       return { prompt, inputPrefix, cursorPos };
     };
 
-    if (ctx?.answers && ctx.index < ctx.answers.length) {
-      const answer = ctx.answers[ctx.index++];
-      if (answer === "__SIGINT__") {
-        return reject(new Error("SIGINT"));
-      }
-
-      const sanitizedAnswer = sanitizeInputSafe(answer);
-
-      // Validação imediata para campos obrigatórios em modo de teste
-      if (isRequired && (!sanitizedAnswer || sanitizedAnswer.trim().length === 0)) {
-        // Em modo de teste, aceitar resposta vazia para não quebrar testes
-        if (process.env.NODE_TEST === "1") {
-          resolve(sanitizedAnswer);
-          return;
-        }
-      }
-
-      resolve(sanitizedAnswer);
-      return;
-    }
-
-    if (ctx?.raw) {
-      if (ctx.raw.includes("__SIGINT__")) {
-        return reject(new Error("SIGINT"));
-      }
-      resolve(sanitizeInputSafe(ctx.raw));
-      return;
-    }
+    if (resolveFromCtxIfAny()) return;
 
     let currentInput = "";
     let cursorPosition = 0;
@@ -134,60 +850,23 @@ function askWithCharacterCount(
     // Modo interativo com contador em tempo real e suporte a cursor
     const stdin = process.stdin;
     const wasRaw = stdin.isRaw;
+    const maxLengthValidator = (answer: string): boolean | string => {
+      if (!maxLength) return true;
+      if (answer.length <= maxLength) return true;
+      return `Entrada excede o limite de ${maxLength} caracteres. Tente novamente.`;
+    };
     if (typeof (stdin as NodeJS.ReadStream & { setRawMode?: unknown }).setRawMode !== "function") {
-      const askFallback = () => {
-        if (nextLineInput) {
-          console.log(q);
-        }
-        rl.question(nextLineInput ? "" : q, (answer: string) => {
-          const sanitized = sanitizeInputSafe((answer ?? "").trim());
-          if (maxLength && sanitized.length > maxLength) {
-            console.log(
-              c.red(`Entrada excede o limite de ${maxLength} caracteres. Tente novamente.`)
-            );
-            return askFallback();
-          }
-          if (isRequired && (!sanitized || sanitized.trim().length === 0)) {
-            const errorMessage = lang
-              ? t(lang, "commit.validation.required") ||
-                "Este campo é obrigatório. Por favor, forneça uma resposta."
-              : "Este campo é obrigatório. Por favor, forneça uma resposta.";
-            console.log(c.red(errorMessage));
-            return askFallback();
-          }
-          resolve(sanitized);
-        });
-      };
-      askFallback();
+      askWithValidation(rl, q, maxLengthValidator, undefined, isRequired, lang, nextLineInput)
+        .then(resolve)
+        .catch(reject);
       return;
     }
     try {
       stdin.setRawMode(true);
     } catch {
-      const askFallback = () => {
-        if (nextLineInput) {
-          console.log(q);
-        }
-        rl.question(nextLineInput ? "" : q, (answer: string) => {
-          const sanitized = sanitizeInputSafe((answer ?? "").trim());
-          if (maxLength && sanitized.length > maxLength) {
-            console.log(
-              c.red(`Entrada excede o limite de ${maxLength} caracteres. Tente novamente.`)
-            );
-            return askFallback();
-          }
-          if (isRequired && (!sanitized || sanitized.trim().length === 0)) {
-            const errorMessage = lang
-              ? t(lang, "commit.validation.required") ||
-                "Este campo é obrigatório. Por favor, forneça uma resposta."
-              : "Este campo é obrigatório. Por favor, forneça uma resposta.";
-            console.log(c.red(errorMessage));
-            return askFallback();
-          }
-          resolve(sanitized);
-        });
-      };
-      askFallback();
+      askWithValidation(rl, q, maxLengthValidator, undefined, isRequired, lang, nextLineInput)
+        .then(resolve)
+        .catch(reject);
       return;
     }
     stdin.resume();
@@ -254,122 +933,113 @@ function askWithCharacterCount(
     // Mostrar prompt inicial
     updatePrompt();
 
-    const onKeypress = (key: string) => {
-      if (key === "\u0003") {
-        // Ctrl+C
-        cleanup();
-        reject(new Error("SIGINT"));
-        return;
-      }
-
-      if (key === "\r" || key === "\n") {
-        // Enter
-        const sanitizedInput = sanitizeInputSafe(currentInput);
-        if (maxLength && sanitizedInput.length > maxLength) {
-          showErrorAndContinue(
-            `Entrada excede o limite de ${maxLength} caracteres. Tente novamente.`
-          );
-          return;
-        }
-
-        // Validação imediata para campos obrigatórios
-        if (isRequired && (!sanitizedInput || sanitizedInput.trim().length === 0)) {
-          const errorMessage = lang
-            ? t(lang, "commit.validation.required") ||
-              "Este campo é obrigatório. Por favor, forneça uma resposta."
-            : "Este campo é obrigatório. Por favor, forneça uma resposta.";
-          showErrorAndContinue(errorMessage);
-          return;
-        }
-
-        process.stdout.write("\n");
-        cleanup();
-        resolve(sanitizedInput);
-        return;
-      }
-
-      if (key === "\u007f" || key === "\b") {
-        // Backspace
-        if (cursorPosition > 0) {
-          currentInput =
-            currentInput.slice(0, cursorPosition - 1) + currentInput.slice(cursorPosition);
-          cursorPosition--;
-          updatePrompt();
-        }
-        return;
-      }
-
-      if (key === "\u001b[D") {
-        // Seta esquerda
-        if (cursorPosition > 0) {
-          cursorPosition--;
-          updatePrompt();
-        }
-        return;
-      }
-
-      if (key === "\u001b[C") {
-        // Seta direita
-        if (cursorPosition < currentInput.length) {
-          cursorPosition++;
-          updatePrompt();
-        }
-        return;
-      }
-
-      if (key === "\u001b[H" || key === "\u001b[1~") {
-        // Home
-        cursorPosition = 0;
-        updatePrompt();
-        return;
-      }
-
-      if (key === "\u001b[F" || key === "\u001b[4~") {
-        // End
-        cursorPosition = currentInput.length;
-        updatePrompt();
-        return;
-      }
-
-      if (key === "\u001b[3~") {
-        // Delete
-        if (cursorPosition < currentInput.length) {
-          currentInput =
-            currentInput.slice(0, cursorPosition) + currentInput.slice(cursorPosition + 1);
-          updatePrompt();
-        }
-        return;
-      }
-
-      // Ignorar sequências de escape e caracteres de controle perigosos
-      if (key.startsWith("\u001b") || key.charCodeAt(0) < 32) {
-        return;
-      }
-
-      // Filtrar caracteres potencialmente perigosos antes de adicionar
-      const safeChar = sanitizeInputSafe(key);
-      if (safeChar && safeChar.length > 0) {
-        // Inserir caractere na posição do cursor
-        currentInput =
-          currentInput.slice(0, cursorPosition) + safeChar + currentInput.slice(cursorPosition);
-        cursorPosition += safeChar.length;
-        updatePrompt();
-      }
-    };
-
-    const cleanup = () => {
+    function cleanup() {
       stdin.removeListener("data", onKeypress);
       stdin.setRawMode(wasRaw);
       if (!wasRaw) {
         stdin.pause();
       }
       process.removeListener("SIGINT", onSigInt);
-    };
+    }
 
-    const onSigInt = () => {
+    function onSigInt() {
       cleanup();
       reject(new Error("SIGINT"));
-    };
+    }
+
+    function handleEnter() {
+      const sanitizedInput = sanitizeInputSafe(currentInput);
+      if (maxLength && sanitizedInput.length > maxLength) {
+        showErrorAndContinue(
+          `Entrada excede o limite de ${maxLength} caracteres. Tente novamente.`
+        );
+        return;
+      }
+      if (isRequired && (!sanitizedInput || sanitizedInput.trim().length === 0)) {
+        const errorMessage = lang
+          ? t(lang, "commit.validation.required") ||
+            "Este campo é obrigatório. Por favor, forneça uma resposta."
+          : "Este campo é obrigatório. Por favor, forneça uma resposta.";
+        showErrorAndContinue(errorMessage);
+        return;
+      }
+      process.stdout.write("\n");
+      cleanup();
+      resolve(sanitizedInput);
+    }
+
+    function handleBackspace() {
+      if (cursorPosition <= 0) return;
+      currentInput = currentInput.slice(0, cursorPosition - 1) + currentInput.slice(cursorPosition);
+      cursorPosition--;
+      updatePrompt();
+    }
+
+    function handleLeft() {
+      if (cursorPosition <= 0) return;
+      cursorPosition--;
+      updatePrompt();
+    }
+
+    function handleRight() {
+      if (cursorPosition >= currentInput.length) return;
+      cursorPosition++;
+      updatePrompt();
+    }
+
+    function handleHome() {
+      cursorPosition = 0;
+      updatePrompt();
+    }
+
+    function handleEnd() {
+      cursorPosition = currentInput.length;
+      updatePrompt();
+    }
+
+    function handleDelete() {
+      if (cursorPosition >= currentInput.length) return;
+      currentInput = currentInput.slice(0, cursorPosition) + currentInput.slice(cursorPosition + 1);
+      updatePrompt();
+    }
+
+    function handleChar(ch: string) {
+      const safeChar = sanitizeInputSafe(ch);
+      if (!safeChar) return;
+      currentInput =
+        currentInput.slice(0, cursorPosition) + safeChar + currentInput.slice(cursorPosition);
+      cursorPosition += safeChar.length;
+      updatePrompt();
+    }
+
+    function onKeypress(key: string) {
+      const handlers: Record<string, (() => void) | undefined> = {
+        "\u0003": () => {
+          cleanup();
+          reject(new Error("SIGINT"));
+        },
+        "\r": handleEnter,
+        "\n": handleEnter,
+        "\u007f": handleBackspace,
+        "\b": handleBackspace,
+        "\u001b[D": handleLeft,
+        "\u001b[C": handleRight,
+        "\u001b[H": handleHome,
+        "\u001b[1~": handleHome,
+        "\u001b[F": handleEnd,
+        "\u001b[4~": handleEnd,
+        "\u001b[3~": handleDelete,
+      };
+
+      const handler = handlers[key];
+      if (handler) {
+        handler();
+        return;
+      }
+      const codePoint = key.codePointAt(0);
+      if (key.startsWith("\u001b") || codePoint === undefined || codePoint < 32) return;
+      handleChar(key);
+    }
 
     stdin.on("data", onKeypress);
     process.on("SIGINT", onSigInt);
@@ -385,885 +1055,101 @@ function askWithValidation(
   lang?: Lang,
   nextLineInput: boolean = false
 ): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const askQuestion = () => {
-      if (ctx && ctx.answers) {
-        const ans = (ctx.answers[ctx.index++] ?? "").trim();
-        if (ans === "__SIGINT__") {
-          return reject(new Error("cancelled"));
-        }
+  const forceNonInteractive =
+    process.env.COMMITSKIP_INPUT_PROMPT === "1" ||
+    process.env.CI === "true" ||
+    process.env.NODE_TEST === "1";
+  const isInteractive = !!input.isTTY && !forceNonInteractive;
 
-        const sanitizedAns = sanitizeInputSafe(ans);
+  const requiredErrorMessage =
+    (lang ? t(lang, "commit.validation.required") : "") ||
+    "This field is required. Please provide a value.";
 
-        // Validação imediata para campos obrigatórios
-        if (isRequired && (!sanitizedAns || sanitizedAns.trim().length === 0)) {
-          // Em modo de teste, aceitar resposta vazia para não quebrar testes
-          if (process.env.NODE_TEST === "1") {
-            return resolve(sanitizedAns);
-          }
-          // Em modo normal, mostrar erro e perguntar novamente
-          const errorMessage = lang
-            ? t(lang, "commit.validation.required") ||
-              "Este campo é obrigatório. Por favor, forneça uma resposta."
-            : "Este campo é obrigatório. Por favor, forneça uma resposta.";
-          console.log(c.red(errorMessage));
-          return askQuestion();
-        }
+  const getValidationError = (value: string): string | null => {
+    if (isRequired && (!value || value.trim().length === 0)) return requiredErrorMessage;
+    if (!validator) return null;
+    const validationResult = validator(value);
+    if (validationResult === true) return null;
+    return typeof validationResult === "string" ? validationResult : "Invalid input.";
+  };
 
-        // Aplicar validação se fornecida
-        if (validator) {
-          const validationResult = validator(sanitizedAns);
-          if (validationResult !== true) {
-            // Em modo de teste, aceitar resposta inválida para não quebrar testes
-            if (process.env.NODE_TEST === "1") {
-              return resolve(sanitizedAns);
-            }
-            // Em modo normal, mostrar erro e perguntar novamente
-            const errorMsg =
-              typeof validationResult === "string" ? validationResult : "Resposta inválida.";
-            console.log(c.red(errorMsg));
-            return askQuestion();
-          }
-        }
+  const readFromCtx = (): string | null => {
+    if (!ctx?.answers) return null;
+    const ans = (ctx.answers[ctx.index++] ?? "").trim();
+    if (ans === "__SIGINT__") {
+      throw new Error("cancelled");
+    }
+    return sanitizeInputSafe(ans);
+  };
 
-        return resolve(sanitizedAns);
-      }
+  const readNonInteractive = (): string => {
+    try {
+      input.pause?.();
+    } catch {}
+    return "";
+  };
 
-      // Respeitar CI/mode não-interativo: não abrir prompt
-      const forceNonInteractive =
-        process.env.COMMITSKIP_INPUT_PROMPT === "1" ||
-        process.env.CI === "true" ||
-        process.env.NODE_TEST === "1";
-      const isInteractive = !!input.isTTY && !forceNonInteractive;
-      if (!isInteractive) {
-        try {
-          input.pause?.();
-        } catch {}
-        return resolve("");
-      }
-
+  const readInteractive = (): Promise<string> => {
+    return new Promise((resolve, reject) => {
       const onSigint = () => {
         rl.removeListener("SIGINT", onSigint);
         reject(new Error("cancelled"));
       };
-
       rl.once("SIGINT", onSigint);
-      if (nextLineInput) {
-        console.log(q);
-      }
+      if (nextLineInput) console.log(q);
       rl.question(nextLineInput ? "" : q, (answer: string) => {
         rl.removeListener("SIGINT", onSigint);
-        const trimmedAnswer = sanitizeInputSafe(answer.trim());
-
-        // Validação imediata para campos obrigatórios
-        if (isRequired && (!trimmedAnswer || trimmedAnswer.trim().length === 0)) {
-          const errorMessage = lang
-            ? t(lang, "commit.validation.required") ||
-              "Este campo é obrigatório. Por favor, forneça uma resposta."
-            : "Este campo é obrigatório. Por favor, forneça uma resposta.";
-          console.log(c.red(errorMessage));
-          return askQuestion();
-        }
-
-        // Aplicar validação se fornecida
-        if (validator) {
-          const validationResult = validator(trimmedAnswer);
-          if (validationResult !== true) {
-            const errorMsg =
-              typeof validationResult === "string" ? validationResult : "Resposta inválida.";
-            console.log(c.red(errorMsg));
-            return askQuestion();
-          }
-        }
-
-        resolve(trimmedAnswer);
+        resolve(sanitizeInputSafe((answer ?? "").trim()));
       });
-    };
+    });
+  };
 
-    askQuestion();
-  });
+  return (async () => {
+    for (;;) {
+      const ctxValue = readFromCtx();
+      let value: string;
+      if (ctxValue !== null) value = ctxValue;
+      else if (isInteractive) value = await readInteractive();
+      else value = readNonInteractive();
+      const err = getValidationError(value);
+      if (!err) return value;
+      if (process.env.NODE_TEST === "1") return value;
+      console.log(c.red(err));
+    }
+  })();
 }
 
-export async function interactiveCommit(
-  lang: Lang,
-  cfg?: Partial<typeof defaultOptions> & {
-    autoAdd?: boolean;
-    autoPush?: boolean;
-    pushProgress?: boolean;
-    uiAltScreen?: boolean;
-    preCommitTimeout?: string | number;
-  }
-): Promise<number> {
-  // Exibir header primeiro, antes de qualquer outra mensagem
-  let version = "";
-  try {
-    const pkgPath1 = join(__dirname, "../../../../package.json");
-    const raw1 = readFileSync(pkgPath1, "utf8");
-    const pkg1 = JSON.parse(raw1);
-    version = pkg1?.version ? ` v${pkg1.version}` : "";
-  } catch {
-    try {
-      const pkgPath2 = require.resolve("@codemastersolutions/commitzero/package.json");
-      const raw2 = readFileSync(pkgPath2, "utf8");
-      const pkg2 = JSON.parse(raw2);
-      version = pkg2?.version ? ` v${pkg2.version}` : "";
-    } catch {
-      const envVersion = process.env.npm_package_version;
-      if (envVersion) version = ` v${envVersion}`;
-    }
-  }
+export async function interactiveCommit(lang: Lang, cfg?: InteractiveCommitCfg): Promise<number> {
+  const version = resolveCliVersionSuffix();
   console.log(c.green(c.bold(`CommitZero CLI${version}`)));
   console.log();
-
   const testCtx = initTestAnswerCtx();
-  let rl: readline.Interface | null = null;
-  if (process.env.NODE_TEST === "1") {
-    try {
-      execSync("which git", { stdio: ["ignore", "pipe", "ignore"] })
-        .toString()
-        .trim();
-    } catch {}
+
+  const checkResult = await checkAndAskForAdd(lang, cfg, testCtx);
+  if (checkResult === false) return 1;
+  if (checkResult === "push_success") return 0;
+
+  const type = await selectCommitType(lang, cfg);
+  if (!type) {
+    console.log(c.yellow(t(lang, "commit.cancelled")));
+    return 130;
   }
-  try {
-    function sleepSync(ms: number): void {
-      if (ms <= 0) return;
-      const arr = new Int32Array(new SharedArrayBuffer(4));
-      Atomics.wait(arr, 0, 0, ms);
-    }
 
-    function readGitErrorText(err: unknown): string {
-      const anyErr = err as Record<string, unknown>;
-      const stderr = anyErr?.stderr;
-      const stderrText = Buffer.isBuffer(stderr)
-        ? stderr.toString("utf8")
-        : typeof stderr === "string"
-          ? stderr
-          : "";
-      const messageText = anyErr?.message ? String(anyErr.message) : "";
-      return `${messageText}\n${stderrText}`.trim();
-    }
+  console.log();
+  console.log(c.green(c.bold(t(lang, "commit.chosen.type", { type }))));
+  console.log();
 
-    function isTransientGitError(err: unknown): boolean {
-      const text = readGitErrorText(err).toLowerCase();
-      return (
-        text.includes("index.lock") ||
-        text.includes("could not lock") ||
-        text.includes("unable to create") ||
-        text.includes("another git process") ||
-        text.includes("fatal: unable to") ||
-        text.includes("fatal: could not") ||
-        text.includes("resource temporarily unavailable")
-      );
-    }
-
-    function execGitUtf8(
-      args: string[],
-      stdio: ["ignore", "pipe", "pipe"] | undefined = undefined
-    ) {
-      return execFileSync("git", args, {
-        stdio: stdio ?? ["ignore", "pipe", "pipe"],
-        encoding: "utf8",
-      });
-    }
-
-    function execGitUtf8WithRetry(args: string[], maxRetries: number = 6): string {
-      let lastErr: unknown;
-      for (let attempt = 0; attempt <= maxRetries; attempt++) {
-        try {
-          return execGitUtf8(args);
-        } catch (err: unknown) {
-          lastErr = err;
-          if (!isTransientGitError(err) || attempt === maxRetries) break;
-          sleepSync(50 * (attempt + 1));
-        }
-      }
-      throw lastErr;
-    }
-
-    type GitStatusState = { hasStaged: boolean; hasUnstaged: boolean; undetermined: boolean };
-
-    function parsePorcelainV1Z(out: string): GitStatusState {
-      let hasStaged = false;
-      let hasUnstaged = false;
-      const raw = out ?? "";
-      let i = 0;
-      while (i < raw.length) {
-        if (raw[i] === "\0") {
-          i++;
-          continue;
-        }
-        if (i + 2 > raw.length) break;
-        const x = raw[i];
-        const y = raw[i + 1];
-        if (x === "?" && y === "?") {
-          hasUnstaged = true;
-        } else {
-          if (x !== " " && x !== "?") hasStaged = true;
-          if (y !== " " && y !== "?") hasUnstaged = true;
-        }
-
-        const firstTerminator = raw.indexOf("\0", i);
-        if (firstTerminator === -1) break;
-        i = firstTerminator + 1;
-
-        if (
-          i < raw.length &&
-          (x === "R" || x === "C" || y === "R" || y === "C") &&
-          raw[i] !== "\0"
-        ) {
-          const secondTerminator = raw.indexOf("\0", i);
-          if (secondTerminator === -1) break;
-          i = secondTerminator + 1;
-        }
-      }
-
-      return { hasStaged, hasUnstaged, undetermined: false };
-    }
-
-    function getGitStatusState(): GitStatusState {
-      try {
-        const out = execGitUtf8WithRetry(["status", "--porcelain=v1", "-z"]).toString();
-        return parsePorcelainV1Z(out);
-      } catch {
-        try {
-          const stagedOut = execGitUtf8WithRetry(["diff", "--cached", "--name-only"])
-            .toString()
-            .trim();
-          const diffOut = execGitUtf8WithRetry(["diff", "--name-only"]).toString().trim();
-          const untrackedOut = execGitUtf8WithRetry(["ls-files", "--others", "--exclude-standard"])
-            .toString()
-            .trim();
-          return {
-            hasStaged: stagedOut.length > 0,
-            hasUnstaged: diffOut.length > 0 || untrackedOut.length > 0,
-            undetermined: false,
-          };
-        } catch {
-          return { hasStaged: false, hasUnstaged: true, undetermined: true };
-        }
-      }
-    }
-
-    function hasStaged(): boolean {
-      return getGitStatusState().hasStaged;
-    }
-
-    function hasUnstagedChanges(): boolean {
-      return getGitStatusState().hasUnstaged;
-    }
-
-    // Função para verificar e perguntar sobre git add -A
-    async function checkAndAskForAdd(): Promise<boolean | "push_success"> {
-      const autoAdd = cfg?.autoAdd === true;
-      const autoPush = cfg?.autoPush === true;
-
-      // Se não há arquivos staged e não há arquivos modificados
-      if (!hasStaged() && !hasUnstagedChanges()) {
-        // Se flag --push foi informada e há commits para push, executar push direto
-        if (autoPush) {
-          try {
-            // Verificar se há commits para push
-            let ahead = "0";
-            try {
-              ahead = execFileSync("git", ["rev-list", "--count", "@{u}..HEAD"], {
-                stdio: ["ignore", "pipe", "ignore"],
-                encoding: "utf8",
-              })
-                .toString()
-                .trim();
-            } catch {
-              // Se não há upstream, verificar se há commits locais
-              try {
-                const localCommits = execFileSync("git", ["rev-list", "--count", "HEAD"], {
-                  stdio: ["ignore", "pipe", "ignore"],
-                  encoding: "utf8",
-                })
-                  .toString()
-                  .trim();
-                ahead = localCommits;
-              } catch {
-                ahead = "0";
-              }
-            }
-
-            if (parseInt(ahead) > 0) {
-              console.log(
-                c.cyan(
-                  t(lang, "commit.git.nothingToCommit") ||
-                    "Nothing to commit, but there are unpushed commits."
-                )
-              );
-
-              const stopPushSpinner = showSpinner(
-                t(lang, "commit.pushing") || "Pushing to remote..."
-              );
-              try {
-                const useProgress = cfg?.pushProgress !== false;
-                const pushArgs = ["push", ...(useProgress ? ["--progress"] : [])];
-                const pushOut = execFileSync("git", pushArgs, {
-                  stdio: ["ignore", "pipe", useProgress ? "inherit" : "pipe"],
-                  encoding: "utf8",
-                });
-                stopPushSpinner();
-                if (pushOut) process.stdout.write(pushOut);
-                console.log(
-                  c.green(t(lang, "commit.git.pushed") || "Successfully pushed to remote.")
-                );
-                return "push_success"; // Retorna string para indicar sucesso do push
-              } catch {
-                stopPushSpinner();
-                // Tentar configurar upstream se necessário
-                try {
-                  const branch = execFileSync("git", ["rev-parse", "--abbrev-ref", "HEAD"], {
-                    stdio: ["ignore", "pipe", "ignore"],
-                    encoding: "utf8",
-                  })
-                    .toString()
-                    .trim();
-
-                  let remote = "origin";
-                  try {
-                    const remotes = execFileSync("git", ["remote"], {
-                      stdio: ["ignore", "pipe", "ignore"],
-                      encoding: "utf8",
-                    })
-                      .toString()
-                      .trim()
-                      .split("\n")
-                      .filter(Boolean);
-                    if (remotes.length > 0) remote = remotes[0];
-                  } catch {}
-
-                  if (!branch || branch === "HEAD") {
-                    console.error(c.red("Current branch is detached; cannot push."));
-                    return false;
-                  }
-
-                  const useProgress = cfg?.pushProgress !== false;
-                  const pushUpArgs = [
-                    "push",
-                    ...(useProgress ? ["--progress"] : []),
-                    "-u",
-                    remote,
-                    branch,
-                  ];
-                  const pushUpOut = runWithSpinner("Setting upstream and pushing...", () =>
-                    execFileSync("git", pushUpArgs, {
-                      stdio: ["ignore", "pipe", useProgress ? "inherit" : "pipe"],
-                      encoding: "utf8",
-                    })
-                  );
-                  if (pushUpOut) process.stdout.write(pushUpOut);
-                  console.log(
-                    c.green(t(lang, "commit.git.pushed") || "Successfully pushed to remote.")
-                  );
-                  return "push_success";
-                } catch (err2: unknown) {
-                  const errOut = err2 && err2 instanceof Error ? err2.message : "";
-                  if (errOut) process.stderr.write(errOut);
-                  console.error(c.red(String(err2)));
-                  return false;
-                }
-              }
-            }
-          } catch {
-            // Se não conseguir verificar commits ahead, continuar com fluxo normal
-          }
-        }
-
-        console.error(c.red(t(lang, "commit.git.abort")));
-        return false;
-      }
-
-      // Se flag --add foi informada, sempre adicionar arquivos modificados
-      if (autoAdd && hasUnstagedChanges()) {
-        try {
-          const out = execFileSync("git", ["add", "-A"], {
-            stdio: ["ignore", "pipe", "pipe"],
-            encoding: "utf8",
-          });
-          if (out) process.stdout.write(out);
-          console.log(c.green(t(lang, "commit.git.added") || "Files added to staging area."));
-        } catch (err: unknown) {
-          const errOut = err && err instanceof Error ? err.message : "";
-          if (errOut) process.stderr.write(errOut);
-          console.error(c.red(String(err)));
-          return false;
-        }
-        return hasStaged() || autoPush;
-      }
-
-      // Se flag --push foi informada mas --add não, verificar se há arquivos modificados
-      if (autoPush && hasUnstagedChanges() && !autoAdd) {
-        const skipAddPrompt =
-          process.env.COMMITSKIP_ADD_PROMPT === "1" ||
-          process.env.CI === "true" ||
-          process.env.NODE_TEST === "1";
-
-        if (skipAddPrompt) {
-          // Quando autoPush está ativo, não abortar - apenas continuar sem adicionar arquivos
-          // pois o objetivo é fazer push dos commits existentes
-          return hasStaged() || autoPush;
-        }
-
-        const isInteractive = !!input.isTTY && !!output.isTTY;
-        if (!isInteractive) {
-          console.error(c.red(t(lang, "commit.git.abort")));
-          return false;
-        }
-
-        rl = readline.createInterface({ input, output });
-        let addAns: string;
-        try {
-          const yesNoValidator = (answer: string): boolean | string => {
-            const trimmed = answer.trim().toLowerCase();
-            if (
-              trimmed === "" ||
-              trimmed === "n" ||
-              trimmed === "no" ||
-              trimmed === "y" ||
-              trimmed === "yes"
-            ) {
-              return true;
-            }
-            return t(lang, "commit.validation.yesNo") || "Please answer with 'y' or 'n'";
-          };
-
-          addAns = await askWithValidation(
-            rl,
-            c.cyan(t(lang, "commit.git.askAdd")),
-            yesNoValidator,
-            testCtx,
-            false,
-            lang
-          );
-        } catch {
-          console.log(c.yellow(t(lang, "commit.cancelled")));
-          return false;
-        } finally {
-          rl.close();
-          try {
-            input.pause?.();
-          } catch {}
-          rl = null;
-        }
-
-        const wantsAdd = /^y(es)?$/i.test(addAns);
-        if (wantsAdd) {
-          try {
-            const out = execFileSync("git", ["add", "-A"], {
-              stdio: ["ignore", "pipe", "pipe"],
-              encoding: "utf8",
-            });
-            if (out) process.stdout.write(out);
-            console.log(c.green(t(lang, "commit.git.added") || "Files added to staging area."));
-          } catch (err: unknown) {
-            const errOut = err && err instanceof Error ? err.message : "";
-            if (errOut) process.stderr.write(errOut);
-            console.error(c.red(String(err)));
-            return false;
-          }
-        }
-      }
-
-      // Se não há arquivos staged mas há arquivos modificados (e não é autoAdd)
-      if (!hasStaged() && hasUnstagedChanges() && !autoAdd && !autoPush) {
-        const skipAddPrompt =
-          process.env.COMMITSKIP_ADD_PROMPT === "1" ||
-          process.env.CI === "true" ||
-          process.env.NODE_TEST === "1";
-
-        if (skipAddPrompt) {
-          console.error(c.red(t(lang, "commit.git.abort")));
-          return false;
-        }
-
-        const isInteractive = !!input.isTTY && !!output.isTTY;
-        if (!isInteractive) {
-          console.error(c.red(t(lang, "commit.git.abort")));
-          return false;
-        }
-
-        rl = readline.createInterface({ input, output });
-        let addAns: string;
-        try {
-          const yesNoValidator = (answer: string): boolean | string => {
-            const trimmed = answer.trim().toLowerCase();
-            if (
-              trimmed === "" ||
-              trimmed === "n" ||
-              trimmed === "no" ||
-              trimmed === "y" ||
-              trimmed === "yes"
-            ) {
-              return true;
-            }
-            return t(lang, "commit.validation.yesNo") || "Please answer with 'y' or 'n'";
-          };
-
-          addAns = await askWithValidation(
-            rl,
-            c.cyan(t(lang, "commit.git.askAdd")),
-            yesNoValidator,
-            testCtx,
-            false,
-            lang
-          );
-        } catch {
-          console.log(c.yellow(t(lang, "commit.cancelled")));
-          return false;
-        } finally {
-          rl.close();
-          try {
-            input.pause?.();
-          } catch {}
-          rl = null;
-        }
-
-        const wantsAdd = /^y(es)?$/i.test(addAns);
-        if (wantsAdd) {
-          try {
-            const out = execFileSync("git", ["add", "-A"], {
-              stdio: ["ignore", "pipe", "pipe"],
-              encoding: "utf8",
-            });
-            if (out) process.stdout.write(out);
-            console.log(c.green(t(lang, "commit.git.added") || "Files added to staging area."));
-          } catch (err: unknown) {
-            const errOut = err && err instanceof Error ? err.message : "";
-            if (errOut) process.stderr.write(errOut);
-            console.error(c.red(String(err)));
-            return false;
-          }
-        }
-      }
-
-      return hasStaged();
-    }
-
-    // Verificar arquivos staged/modificados antes de iniciar o processo de commit
-    const checkResult = await checkAndAskForAdd();
-    if (checkResult === false) {
-      return 1;
-    }
-    // Se checkResult for "push_success", significa que apenas o push foi executado
-    if (checkResult === "push_success") {
-      return 0;
-    }
-    const types = cfg?.types && cfg.types.length ? cfg.types : defaultOptions.types;
-    const typeItems = types.map((ty) => ({
-      value: ty,
-      label: `${ty}:`,
-      description: t(lang, `type.desc.${ty}`),
-    }));
-
-    let version = "";
-    try {
-      const pkgPath1 = join(__dirname, "../../../../package.json");
-      const raw1 = readFileSync(pkgPath1, "utf8");
-      const pkg1 = JSON.parse(raw1);
-      version = pkg1?.version ? ` v${pkg1.version}` : "";
-    } catch {
-      try {
-        const pkgPath2 = require.resolve("@codemastersolutions/commitzero/package.json");
-        const raw2 = readFileSync(pkgPath2, "utf8");
-        const pkg2 = JSON.parse(raw2);
-        version = pkg2?.version ? ` v${pkg2.version}` : "";
-      } catch {
-        const envVersion = process.env.npm_package_version;
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        if (envVersion) version = ` v${envVersion}`;
-      }
-    }
-    let type: string;
-    try {
-      const selectedType = await select(
-        c.bold(t(lang, "commit.select.type")),
-        typeItems,
-        undefined,
-        {
-          useAltScreen: cfg?.uiAltScreen,
-        }
-      );
-      if (!selectedType) {
-        throw new Error("cancelled");
-      }
-      type = selectedType;
-    } catch {
-      console.log(c.yellow(t(lang, "commit.cancelled")));
-      return 130;
-    }
-
-    // Adicionar linha em branco antes da confirmação do commit type
-    console.log();
-    console.log(c.green(c.bold(t(lang, "commit.chosen.type", { type }))));
-
-    // Adicionar linha em branco antes da pergunta do Scope
-    console.log();
-
-    rl = readline.createInterface({ input, output });
-    let scope: string = "";
-    let subject: string;
-    let body: string;
-    let breakingAns: string;
-    let breakingDetails: string = "";
-    try {
-      const _scopeValidator = (answer: string): boolean | string => {
-        const s = answer.trim();
-        if (s === "") return true; // escopo opcional
-        // aceita letras (Unicode, incluindo acentuação), números, hífen, espaço e caracteres especiais seguros
-        const patternOk = /^[\p{L}\p{N}\p{M}\p{P}\p{S}\- .]+$/u.test(s);
-        if (!patternOk) return t(lang, "rules.scopePattern");
-        if (s !== s.toLowerCase()) return t(lang, "rules.scopeLower");
-        return true;
-      };
-
-      // Verificar se o escopo é obrigatório baseado na configuração
-      const isScopeRequired = cfg?.requireScope || false;
-
-      // Loop para pedir scope até ser válido
-      let scopeValid = false;
-      while (!scopeValid) {
-        scope = await askWithCharacterCount(
-          rl,
-          c.cyan(t(lang, "commit.prompt.scope")),
-          50, // Limite razoável para scope
-          testCtx,
-          isScopeRequired,
-          lang,
-          true
-        );
-
-        // Validar o scope após a entrada
-        if (scope.trim()) {
-          const s = scope.trim();
-          // aceita letras (Unicode, incluindo acentuação), números, hífen, espaço e caracteres especiais seguros
-          const patternOk = /^[\p{L}\p{N}\p{M}\p{P}\p{S}\- .]+$/u.test(s);
-          if (!patternOk) {
-            console.log(
-              c.red(t(lang, "rules.scopePattern") || "Scope contém caracteres inválidos.")
-            );
-            continue;
-          }
-          if (s !== s.toLowerCase()) {
-            console.log(c.red(t(lang, "rules.scopeLower") || "Scope deve estar em minúsculas."));
-            continue;
-          }
-        }
-        scopeValid = true;
-      }
-
-      // Garantir apenas uma linha em branco entre Scope e Subject
-      {
-        const forceNonInteractive =
-          process.env.COMMITSKIP_INPUT_PROMPT === "1" ||
-          process.env.CI === "true" ||
-          process.env.NODE_TEST === "1";
-        const isInteractive = !!process.stdin.isTTY && !forceNonInteractive;
-        if (!isInteractive) {
-          console.log();
-        }
-      }
-
-      subject = await askWithCharacterCount(
-        rl,
-        c.cyan(t(lang, "commit.prompt.subject")),
-        cfg?.maxSubjectLength || 72,
-        testCtx,
-        true,
-        lang,
-        true
-      );
-      body = await askWithCharacterCount(
-        rl,
-        c.cyan(t(lang, "commit.prompt.body")),
-        500,
-        testCtx,
-        false,
-        lang,
-        true
-      );
-      // Validador para respostas y/N
-      const yesNoValidator = (answer: string): boolean | string => {
-        const trimmed = answer.trim().toLowerCase();
-        if (
-          trimmed === "" ||
-          trimmed === "n" ||
-          trimmed === "no" ||
-          trimmed === "y" ||
-          trimmed === "yes"
-        ) {
-          return true;
-        }
-        return t(lang, "commit.validation.yesNo") || "Please answer with 'y' or 'n'";
-      };
-
-      breakingAns = await askWithValidation(
-        rl,
-        c.cyan(t(lang, "commit.prompt.breaking")),
-        yesNoValidator,
-        testCtx,
-        false,
-        lang
-      );
-      const isBreakingTmp = /^y(es)?$/i.test(breakingAns);
-      if (isBreakingTmp) {
-        breakingDetails = await askWithCharacterCount(
-          rl,
-          c.cyan(t(lang, "commit.prompt.breakingDetails")),
-          200,
-          testCtx,
-          false,
-          lang,
-          true
-        );
-      }
-    } catch {
-      console.log(c.yellow(t(lang, "commit.cancelled")));
-      return 130;
-    } finally {
-      if (rl) {
-        rl.close();
-        try {
-          input.pause?.();
-        } catch {}
-        rl = null;
-      }
-    }
-    const isBreaking = /^y(es)?$/i.test(breakingAns);
-    const footers = isBreaking ? [{ key: "BREAKING CHANGE", value: breakingDetails }] : [];
-
-    const commit: ParsedCommit = {
-      type,
-      scope: scope || undefined,
-      subject,
-      body: body || undefined,
-      isBreaking,
-      footers,
-      meta: {
-        header: `${type}${scope ? `(${scope})` : ""}${
-          isBreaking && !subject.includes("!") ? "!" : ""
-        }: ${subject}`,
-        hasBlankAfterHeader: body ? true : false,
-        hasBlankBeforeFooter: footers.length > 0,
-      },
-    };
-
-    const result = lintCommit(commit, {
-      ...defaultOptions,
-      ...cfg,
-      language: lang,
-    });
-    if (!result.valid) {
-      console.error(
-        c.red(t(lang, "cli.invalid")) + "\n" + result.errors.map((e) => c.red(`- ${e}`)).join("\n")
-      );
-      return 1;
-    }
-
-    if (result.warnings.length) {
-      console.warn(
-        result.warnings.map((w) => c.yellow(t(lang, "cli.warning", { msg: w }))).join("\n")
-      );
-    }
-
-    const msg = formatMessage(commit);
-    writeFileSync(".git/COMMIT_EDITMSG", msg, "utf8");
-    const createdHdr = t(lang, "commit.created", { msg: "" }).trimEnd();
-    console.log("\n" + c.green(createdHdr));
-    console.log("\n" + msg + "\n");
-
-    try {
-      const commitOut = runWithSpinner(
-        t(lang, "commit.committing") || "Committing changes...",
-        () =>
-          execFileSync("git", ["commit", "-F", ".git/COMMIT_EDITMSG"], {
-            stdio: ["ignore", "pipe", "pipe"],
-            encoding: "utf8",
-            env: {
-              ...process.env,
-              COMMITZERO: "1",
-              COMMITZERO_RUN: "1",
-              ...(cfg?.preCommitTimeout !== undefined
-                ? { COMMITZERO_PRE_COMMIT_TIMEOUT: String(cfg.preCommitTimeout) }
-                : {}),
-            },
-          })
-      );
-      console.log(""); // Linha em branco após o spinner
-      if (commitOut) process.stdout.write(commitOut);
-
-      if (cfg?.autoPush) {
-        const stopPushSpinner = showSpinner(t(lang, "commit.pushing") || "Pushing to remote...");
-        try {
-          const useProgress = cfg?.pushProgress !== false;
-          const pushArgs = ["push", ...(useProgress ? ["--progress"] : [])];
-          const pushOut = execFileSync("git", pushArgs, {
-            stdio: ["ignore", "pipe", useProgress ? "inherit" : "pipe"],
-            encoding: "utf8",
-          });
-          stopPushSpinner();
-          if (pushOut) process.stdout.write(pushOut);
-        } catch {
-          stopPushSpinner();
-          // Attempt to set upstream if missing and push again
-          try {
-            const branch = execFileSync("git", ["rev-parse", "--abbrev-ref", "HEAD"], {
-              stdio: ["ignore", "pipe", "ignore"],
-              encoding: "utf8",
-            })
-              .toString()
-              .trim();
-            let remote = "origin";
-            try {
-              const remotes = execFileSync("git", ["remote"], {
-                stdio: ["ignore", "pipe", "ignore"],
-                encoding: "utf8",
-              })
-                .toString()
-                .trim()
-                .split("\n")
-                .filter(Boolean);
-              if (remotes.length > 0) remote = remotes[0];
-            } catch {}
-            if (!branch || branch === "HEAD") {
-              console.error(c.red("Current branch is detached; cannot push."));
-              return 1;
-            }
-            const useProgress = cfg?.pushProgress !== false;
-            const pushUpArgs = [
-              "push",
-              ...(useProgress ? ["--progress"] : []),
-              "-u",
-              remote,
-              branch,
-            ];
-            const pushUpOut = runWithSpinner("Setting upstream and pushing...", () =>
-              execFileSync("git", pushUpArgs, {
-                stdio: ["ignore", "pipe", useProgress ? "inherit" : "pipe"],
-                encoding: "utf8",
-              })
-            );
-            if (pushUpOut) process.stdout.write(pushUpOut);
-          } catch (err2: unknown) {
-            const errOut = err2 && err2 instanceof Error ? err2.message : "";
-            if (errOut) process.stderr.write(errOut);
-            console.error(c.red(String(err2)));
-            return 1;
-          }
-        }
-      }
-      return 0;
-    } catch (err: unknown) {
-      const errOut = err && err instanceof Error ? err.message : "";
-      if (errOut) process.stderr.write(errOut);
-      console.error(c.red(String(err)));
-      return 1;
-    }
-  } finally {
-    rl?.close();
-    try {
-      input.pause?.();
-    } catch {}
+  const parts = await promptCommitPartsSafely(lang, cfg, testCtx);
+  if (!parts) {
+    console.log(c.yellow(t(lang, "commit.cancelled")));
+    return 130;
   }
+
+  const commit = buildParsedCommit(type, parts);
+  const invalidCode = validateCommitOrExit(lang, cfg, commit);
+  if (invalidCode !== null) return invalidCode;
+
+  const msg = formatMessage(commit);
+  writeAndPrintCommitMessage(lang, msg);
+  return commitAndPush(lang, cfg);
 }

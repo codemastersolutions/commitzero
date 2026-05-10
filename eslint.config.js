@@ -47,6 +47,13 @@ export default [
     },
   },
   {
-    ignores: ["dist/**", "node_modules/**", "tmp/**", "docs/**"],
+    ignores: [
+      ".scannerwork/**",
+      ".sonar/**",
+      "dist/**",
+      "node_modules/**",
+      "tmp/**",
+      "docs/**",
+    ],
   },
 ];

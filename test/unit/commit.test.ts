@@ -1,7 +1,6 @@
 /* eslint-disable no-useless-escape */
 import assert from "node:assert";
 import { chmodSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync, rmSync } from "node:fs";
-import { createRequire } from "node:module";
 import os from "node:os";
 import { join } from "node:path";
 import test from "node:test";
@@ -21,16 +20,17 @@ if [ \"$cmd\" = \"add\" ]; then\n  exit 0\nfi\nif [ \"$cmd\" = \"commit\" ]; the
 echo \"Unknown command: $@\" 1>&2\nexit 1\n`;
   writeFileSync(gitPath, script, "utf8");
   chmodSync(gitPath, 0o755);
-  const prevPath = process.env.PATH || "";
   const prevMode = process.env.GIT_STUB_MODE;
-  process.env.PATH = `${tmp}:${prevPath}`;
+  const prevGitBin = process.env.COMMITZERO_GIT_BIN;
   process.env.GIT_STUB_MODE = mode;
+  process.env.COMMITZERO_GIT_BIN = gitPath;
   try {
     return await fn();
   } finally {
-    process.env.PATH = prevPath;
     if (prevMode === undefined) delete (process.env as any).GIT_STUB_MODE;
     else process.env.GIT_STUB_MODE = prevMode as string;
+    if (prevGitBin === undefined) delete (process.env as any).COMMITZERO_GIT_BIN;
+    else process.env.COMMITZERO_GIT_BIN = prevGitBin as string;
     try {
       rmSync(tmp, { recursive: true, force: true });
     } catch {}
@@ -38,8 +38,7 @@ echo \"Unknown command: $@\" 1>&2\nexit 1\n`;
 }
 
 async function loadInteractiveCommit() {
-  const require = createRequire(import.meta.url);
-  const mod = require("../../dist/cjs/cli/commands/commit.js");
+  const mod = await import("../../dist/esm/cli/commands/commit.js");
   return mod.interactiveCommit as (lang: string, cfg?: any) => Promise<number>;
 }
 

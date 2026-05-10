@@ -3,5 +3,6 @@
   "compilerOptions": {
     "outDir": "./dist/cjs",
     "module": "CommonJS"
-  }
+  },
+  "exclude": ["src/cli/index.ts"]
 }
