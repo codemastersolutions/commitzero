@@ -574,10 +574,17 @@ function getAddScenario(params: {
   unstaged: boolean;
   autoAdd: boolean;
   autoPush: boolean;
-}): "NO_CHANGES" | "AUTO_ADD" | "AUTO_PUSH_PROMPT" | "PROMPT_ADD_ABORT" | "DEFAULT" {
+}):
+  | "NO_CHANGES"
+  | "AUTO_ADD"
+  | "AUTO_PUSH_PROMPT"
+  | "PROMPT_ADD_ABORT"
+  | "PROMPT_ADD_CONTINUE"
+  | "DEFAULT" {
   const { staged, unstaged, autoAdd, autoPush } = params;
   if (!staged && !unstaged) return "NO_CHANGES";
   if (autoAdd && unstaged) return "AUTO_ADD";
+  if (staged && unstaged && !autoAdd) return "PROMPT_ADD_CONTINUE";
   if (autoPush && unstaged && !autoAdd) return "AUTO_PUSH_PROMPT";
   if (!staged && unstaged && !autoAdd && !autoPush) return "PROMPT_ADD_ABORT";
   return "DEFAULT";
@@ -602,6 +609,16 @@ function handleAutoAddScenario(lang: Lang, autoPush: boolean): boolean {
 }
 
 async function handleAutoPushPromptScenario(
+  lang: Lang,
+  cfg: InteractiveCommitCfg | undefined,
+  testCtx: TestAnswerCtx
+): Promise<boolean> {
+  const wantsAdd = await promptAddIfNeeded(lang, testCtx, "continue");
+  if (wantsAdd === true && !gitAddAll(lang)) return false;
+  return hasStaged() || !!cfg?.autoPush;
+}
+
+async function handlePromptAddContinueScenario(
   lang: Lang,
   cfg: InteractiveCommitCfg | undefined,
   testCtx: TestAnswerCtx
@@ -639,6 +656,8 @@ async function checkAndAskForAdd(
       return handleAutoAddScenario(lang, autoPush);
     case "AUTO_PUSH_PROMPT":
       return handleAutoPushPromptScenario(lang, cfg, testCtx);
+    case "PROMPT_ADD_CONTINUE":
+      return handlePromptAddContinueScenario(lang, cfg, testCtx);
     case "PROMPT_ADD_ABORT":
       return handlePromptAddAbortScenario(lang, testCtx);
     default:
