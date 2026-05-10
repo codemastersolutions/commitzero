@@ -22,6 +22,26 @@ function resolveFromEnvVar(varName: string): string | null {
   return isExecutablePath(trimmed) ? trimmed : null;
 }
 
+function resolveFromPath(name: string): string | null {
+  const rawPath = process.env.PATH ?? "";
+  const entries = rawPath
+    .split(process.platform === "win32" ? ";" : ":")
+    .map((p) => p.trim())
+    .filter((p) => p.length > 0);
+
+  const candidates =
+    process.platform === "win32" ? [name, `${name}.cmd`, `${name}.exe`, `${name}.bat`] : [name];
+
+  for (const dir of entries) {
+    if (!isAbsolute(dir)) continue;
+    for (const base of candidates) {
+      const p = join(dir, base);
+      if (isExecutablePath(p)) return p;
+    }
+  }
+  return null;
+}
+
 export function resolveGitBin(): string {
   const fromEnv = resolveFromEnvVar("COMMITZERO_GIT_BIN");
   if (fromEnv) return fromEnv;
@@ -96,6 +116,9 @@ export function resolvePnpmBin(): string {
   for (const c of candidates) {
     if (isExecutablePath(c)) return c;
   }
+
+  const fromPath = resolveFromPath("pnpm");
+  if (fromPath) return fromPath;
 
   throw new Error(
     "pnpm executable not found. Set COMMITZERO_PNPM_BIN to an absolute path to your pnpm binary."
