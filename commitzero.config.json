@@ -16,8 +16,15 @@
   "requireScope": false,
   "maxSubjectLength": 72,
   "allowBreaking": true,
-  "footerKeywords": ["BREAKING CHANGE", "Closes", "Refs"],
-  "preCommitCommands": [],
+  "footerKeywords": [
+    "BREAKING CHANGE",
+    "Closes",
+    "Refs"
+  ],
+  "preCommitCommands": [
+    "pnpm lint",
+    "npm run test"
+  ],
   "preCommitTimeout": "3m",
   "versionCheckEnabled": true,
   "versionCheckPeriod": "daily",

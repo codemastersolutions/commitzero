@@ -13,7 +13,7 @@ import { cleanupHooks } from "../hooks/cleanup.js";
 import { getCurrentHooksPath, installHooks, uninstallHooks } from "../hooks/install.js";
 import { updateScripts as ensureScripts } from "../hooks/postinstall.js";
 import { DEFAULT_LANG, t } from "../i18n/index.js";
-import { resolveGitBin, resolveNpmBin } from "../utils/binaries.js";
+import { resolveGitBin, resolveNpmBin, resolvePnpmBin } from "../utils/binaries.js";
 import { formatBytes, parseSizeToBytes } from "../utils/size.js";
 import { formatDurationMs, parseTimeToMs } from "../utils/time.js";
 import { checkForUpdate } from "../version/check.js";
@@ -30,6 +30,10 @@ function getGitBin(): string {
 
 function getNpmBin(): string {
   return resolveNpmBin();
+}
+
+function getPnpmBin(): string {
+  return resolvePnpmBin();
 }
 
 function isAllowedNonInteractiveGitCommit(): boolean {
@@ -477,30 +481,86 @@ function updatePreCommitCommands(
 ): void {
   const jsonPath = validatePreCommitConfigFile(lang);
   if (!jsonPath) return;
-  const current = loadConfig(process.cwd());
-  const arr: string[] = Array.isArray(current.preCommitCommands)
-    ? [...current.preCommitCommands]
-    : [];
+  const cwd = process.cwd();
+  const customJsonPath = join(cwd, "commitzero.config.custom.json");
+  const customJsPath = join(cwd, "commitzero.config.custom.js");
+
+  if (!existsSync(customJsonPath) && existsSync(customJsPath)) {
+    console.error(t(lang, "cli.preCommitJsConfigUnsupported"));
+    exit(2);
+    return;
+  }
+
+  const readJson = (p: string): Record<string, unknown> => {
+    try {
+      if (!existsSync(p)) return {};
+      const raw = readFileSync(p, "utf8");
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === "object") return parsed as Record<string, unknown>;
+      return {};
+    } catch {
+      return {};
+    }
+  };
+
+  const targets = [jsonPath, ...(existsSync(customJsonPath) ? [customJsonPath] : [])];
+  const currentByPath = new Map<string, Record<string, unknown>>();
+  const commandsByPath = new Map<string, string[]>();
+
+  const extractCommands = (cfg: Record<string, unknown>): string[] => {
+    const raw = (cfg as { preCommitCommands?: unknown }).preCommitCommands;
+    if (!Array.isArray(raw)) return [];
+    return raw.filter((v): v is string => typeof v === "string" && v.trim().length > 0);
+  };
+
+  for (const path of targets) {
+    const current = readJson(path);
+    currentByPath.set(path, current);
+    commandsByPath.set(path, extractCommands(current));
+  }
+
+  const merged: string[] = [];
+  const pushUnique = (cmd: string) => {
+    if (!merged.includes(cmd)) merged.push(cmd);
+  };
+
+  for (const path of targets) {
+    for (const cmd of commandsByPath.get(path) ?? []) pushUnique(cmd);
+  }
+
+  const hadCmd = merged.includes(cmdStr);
   if (sub === "add") {
-    if (arr.includes(cmdStr)) {
-      console.log(t(lang, "cli.preCommitAlreadyExists", { cmd: cmdStr }));
+    if (!hadCmd) merged.push(cmdStr);
+  } else {
+    if (!hadCmd) {
+      console.log(t(lang, "cli.preCommitNotFound", { cmd: cmdStr }));
+      exit(1);
       return;
     }
-    arr.push(cmdStr);
-    const nextCfg = { ...current, preCommitCommands: arr };
-    writeFileSync(jsonPath, JSON.stringify(nextCfg, null, 2) + "\n", "utf8");
+    const idx = merged.indexOf(cmdStr);
+    if (idx !== -1) merged.splice(idx, 1);
+  }
+
+  let anyWrite = false;
+  for (const path of targets) {
+    const prev = commandsByPath.get(path) ?? [];
+    const isSame = prev.length === merged.length && prev.every((cmd, idx) => cmd === merged[idx]);
+    if (isSame) continue;
+    const nextCfg = { ...currentByPath.get(path), preCommitCommands: merged };
+    writeFileSync(path, JSON.stringify(nextCfg, null, 2) + "\n", "utf8");
+    anyWrite = true;
+  }
+
+  if (!anyWrite) {
+    console.log(t(lang, "cli.preCommitAlreadyExists", { cmd: cmdStr }));
+    return;
+  }
+
+  if (sub === "add") {
     console.log(t(lang, "cli.preCommitAdded", { cmd: cmdStr }));
     return;
   }
-  const idx = arr.indexOf(cmdStr);
-  if (idx === -1) {
-    console.log(t(lang, "cli.preCommitNotFound", { cmd: cmdStr }));
-    exit(1);
-    return;
-  }
-  arr.splice(idx, 1);
-  const nextCfg = { ...current, preCommitCommands: arr };
-  writeFileSync(jsonPath, JSON.stringify(nextCfg, null, 2) + "\n", "utf8");
+
   console.log(t(lang, "cli.preCommitRemoved", { cmd: cmdStr }));
 }
 
@@ -689,14 +749,20 @@ function createSafeChildEnv(): NodeJS.ProcessEnv {
     const v = process.env[key];
     if (typeof v === "string") env[key] = v;
   }
-  env.PATH = SAFE_CHILD_PATH;
-  if (process.platform === "win32") env.Path = SAFE_CHILD_PATH;
+  const nodeBinDir = dirname(process.execPath);
+  const mergedPath =
+    process.platform === "win32"
+      ? `${nodeBinDir};${SAFE_CHILD_PATH}`
+      : `${nodeBinDir}:${SAFE_CHILD_PATH}`;
+  env.PATH = mergedPath;
+  if (process.platform === "win32") env.Path = mergedPath;
   return env;
 }
 
 function resolveAllowedAliasExecutable(lower: string): string | null {
   if (lower === "node" || lower === "node.exe") return process.execPath;
   if (lower === "npm" || lower === "npm.exe" || lower === "npm.cmd") return getNpmBin();
+  if (lower === "pnpm" || lower === "pnpm.exe" || lower === "pnpm.cmd") return getPnpmBin();
   if (lower === "git" || lower === "git.exe") return getGitBin();
   return null;
 }

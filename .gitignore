@@ -2,7 +2,7 @@ node_modules
 dist
 tmp*
 .pnpm-store
-commitzero.config.custom.json
 .scannerwork
 sonar
 coverage
+commitzero.config.custom.json

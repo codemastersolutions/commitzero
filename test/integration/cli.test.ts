@@ -485,6 +485,41 @@ test("init creates commitzero.config.json with defaults", () => {
   }
 });
 
+test("init --custom creates custom config and adds it to .gitignore when missing", () => {
+  const tmp = join(process.cwd(), "tmp-wd-init-custom-add");
+  mkdirSync(tmp, { recursive: true });
+  try {
+    const out1 = execFileSync(NODE, [CLI, "init", "--custom"], { encoding: "utf8", cwd: tmp });
+    assert.match(out1, /custom/i);
+
+    const cfgPath = join(tmp, "commitzero.config.custom.json");
+    assert.ok(existsSync(cfgPath));
+
+    const gitignorePath = join(tmp, ".gitignore");
+    assert.ok(existsSync(gitignorePath));
+    const lines = readFileSync(gitignorePath, "utf8").split(/\r?\n/);
+    const occurrences = lines.filter((l) => l.trim() === "commitzero.config.custom.json").length;
+    assert.strictEqual(occurrences, 1);
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test("init --custom does not duplicate .gitignore entry when it already exists (whitespace tolerant)", () => {
+  const tmp = join(process.cwd(), "tmp-wd-init-custom-no-dup");
+  mkdirSync(tmp, { recursive: true });
+  try {
+    writeFileSync(join(tmp, ".gitignore"), "node_modules\ncommitzero.config.custom.json   \n", "utf8");
+    execFileSync(NODE, [CLI, "init", "--custom"], { encoding: "utf8", cwd: tmp });
+
+    const lines = readFileSync(join(tmp, ".gitignore"), "utf8").split(/\r?\n/);
+    const occurrences = lines.filter((l) => l.trim() === "commitzero.config.custom.json").length;
+    assert.strictEqual(occurrences, 1);
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
 test("lint invalid with requireScope prints scoped example", () => {
   const tmp = join(process.cwd(), "tmp-cli-lint-require-scope");
   mkdirSync(tmp, { recursive: true });

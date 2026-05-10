@@ -74,3 +74,30 @@ export function resolveNpmBin(): string {
     "npm executable not found. Set COMMITZERO_NPM_BIN to an absolute path to your npm binary."
   );
 }
+
+export function resolvePnpmBin(): string {
+  const fromEnv = resolveFromEnvVar("COMMITZERO_PNPM_BIN");
+  if (fromEnv) return fromEnv;
+
+  const nodeBinDir = dirname(process.execPath);
+  const fromNodeDir =
+    process.platform === "win32" ? join(nodeBinDir, "pnpm.cmd") : join(nodeBinDir, "pnpm");
+  if (isExecutablePath(fromNodeDir)) return fromNodeDir;
+
+  const candidates: string[] =
+    process.platform === "win32"
+      ? [
+          join(nodeBinDir, "pnpm.cmd"),
+          join(nodeBinDir, "pnpm.exe"),
+          join(process.env.ProgramFiles ?? String.raw`C:\Program Files`, "nodejs", "pnpm.cmd"),
+        ]
+      : ["/usr/bin/pnpm", "/bin/pnpm", "/usr/local/bin/pnpm", "/opt/homebrew/bin/pnpm"];
+
+  for (const c of candidates) {
+    if (isExecutablePath(c)) return c;
+  }
+
+  throw new Error(
+    "pnpm executable not found. Set COMMITZERO_PNPM_BIN to an absolute path to your pnpm binary."
+  );
+}

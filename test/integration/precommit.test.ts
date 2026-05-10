@@ -98,6 +98,47 @@ test("pre-commit add, duplicate, remove, not found", () => {
   }
 });
 
+test("pre-commit add updates both base and custom configs without overwriting existing commands", () => {
+  const tmp = join(process.cwd(), "tmp-precommit-manage-custom");
+  mkdirSync(tmp, { recursive: true });
+  try {
+    const basePath = join(tmp, "commitzero.config.json");
+    const customPath = join(tmp, "commitzero.config.custom.json");
+    writeFileSync(basePath, JSON.stringify({ preCommitCommands: ["echo base"] }, null, 2) + "\n", "utf8");
+    writeFileSync(
+      customPath,
+      JSON.stringify({ preCommitCommands: ["echo custom"] }, null, 2) + "\n",
+      "utf8"
+    );
+
+    const addOut = execFileSync(NODE, [CLI, "pre-commit", "add", "echo added"], {
+      encoding: "utf8",
+      cwd: tmp,
+    });
+    assert.match(
+      addOut,
+      /Added pre-commit command|Comando de pre-commit adicionado|Comando de pre-commit agregado/
+    );
+
+    const baseCfg = JSON.parse(readFileSync(basePath, "utf8"));
+    const customCfg = JSON.parse(readFileSync(customPath, "utf8"));
+    assert.deepStrictEqual(baseCfg.preCommitCommands, ["echo base", "echo custom", "echo added"]);
+    assert.deepStrictEqual(customCfg.preCommitCommands, ["echo base", "echo custom", "echo added"]);
+
+    const addExistingOut = execFileSync(NODE, [CLI, "pre-commit", "add", "echo base"], {
+      encoding: "utf8",
+      cwd: tmp,
+    });
+    assert.match(addExistingOut, /already present|já presente|ya presente/);
+    const baseCfg2 = JSON.parse(readFileSync(basePath, "utf8"));
+    const customCfg2 = JSON.parse(readFileSync(customPath, "utf8"));
+    assert.deepStrictEqual(baseCfg2.preCommitCommands, ["echo base", "echo custom", "echo added"]);
+    assert.deepStrictEqual(customCfg2.preCommitCommands, ["echo base", "echo custom", "echo added"]);
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
 test("pre-commit run success then failure stops sequence", () => {
   const tmp = join(process.cwd(), "tmp-precommit-run");
   mkdirSync(tmp, { recursive: true });

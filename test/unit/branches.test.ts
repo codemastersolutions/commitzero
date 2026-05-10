@@ -7,7 +7,7 @@ import test from "node:test";
 import { c } from "../../dist/esm/cli/colors.js";
 import { updateScripts } from "../../dist/esm/hooks/postinstall.js";
 import { DEFAULT_LANG, t } from "../../dist/esm/i18n/index.js";
-import { resolveGitBin, resolveNpmBin } from "../../dist/esm/utils/binaries.js";
+import { resolveGitBin, resolveNpmBin, resolvePnpmBin } from "../../dist/esm/utils/binaries.js";
 import { formatBytes, parseSizeToBytes } from "../../dist/esm/utils/size.js";
 import { formatDurationMs, parseTimeToMs } from "../../dist/esm/utils/time.js";
 
@@ -120,6 +120,20 @@ test("resolveNpmBin respects COMMITZERO_NPM_BIN when it is a valid executable pa
   }
 });
 
+test("resolvePnpmBin respects COMMITZERO_PNPM_BIN when it is a valid executable path", () => {
+  const tmp = mkdtempSync(join(os.tmpdir(), "commitzero-bin-pnpm-"));
+  try {
+    const bin = join(tmp, "pnpm");
+    writeFileSync(bin, "#!/usr/bin/env bash\necho ok\n", "utf8");
+    chmodSync(bin, 0o755);
+    withEnvVar("COMMITZERO_PNPM_BIN", bin, () => {
+      assert.strictEqual(resolvePnpmBin(), bin);
+    });
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
 test("resolveGitBin and resolveNpmBin ignore invalid env values", () => {
   withEnvVar("COMMITZERO_GIT_BIN", "   ", () => {
     assert.ok(resolveGitBin());
@@ -139,6 +153,16 @@ test("resolveGitBin and resolveNpmBin ignore invalid env values", () => {
   });
   withEnvVar("COMMITZERO_NPM_BIN", "/tmp/commitzero-missing-npm-bin", () => {
     assert.ok(resolveNpmBin());
+  });
+
+  withEnvVar("COMMITZERO_PNPM_BIN", "   ", () => {
+    assert.ok(resolvePnpmBin());
+  });
+  withEnvVar("COMMITZERO_PNPM_BIN", "pnpm", () => {
+    assert.ok(resolvePnpmBin());
+  });
+  withEnvVar("COMMITZERO_PNPM_BIN", "/tmp/commitzero-missing-pnpm-bin", () => {
+    assert.ok(resolvePnpmBin());
   });
 });
 

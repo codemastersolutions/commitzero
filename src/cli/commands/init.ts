@@ -47,8 +47,19 @@ function addToGitignore(fileName: string) {
   if (existsSync(gitignorePath)) {
     content = readFileSync(gitignorePath, "utf8");
   }
-  const lines = content.split(/\r?\n/);
-  if (!lines.includes(fileName)) {
+  const normalizedLines = new Set(
+    content
+      .split(/\r?\n/)
+      .map((l) => l.trim())
+      .filter((l) => l.length > 0 && !l.startsWith("#"))
+  );
+  const alreadyIgnored =
+    normalizedLines.has(fileName) ||
+    normalizedLines.has(`/${fileName}`) ||
+    normalizedLines.has(`./${fileName}`) ||
+    normalizedLines.has(`**/${fileName}`);
+
+  if (!alreadyIgnored) {
     if (content && !content.endsWith("\n")) {
       content += "\n";
     }
@@ -217,8 +228,8 @@ function buildInitContext(custom: boolean, lang: Lang) {
   const existed = existsSync(configPath);
 
   const promptLang = custom
-    ? readLanguageFromJsonConfig(normalConfigPath) ?? DEFAULT_LANG
-    : readLanguageFromJsonConfig(configPath) ?? lang ?? DEFAULT_LANG;
+    ? (readLanguageFromJsonConfig(normalConfigPath) ?? DEFAULT_LANG)
+    : (readLanguageFromJsonConfig(configPath) ?? lang ?? DEFAULT_LANG);
 
   let defaultsLang: Lang;
   if (custom || existed) defaultsLang = DEFAULT_LANG;
@@ -241,7 +252,12 @@ function buildInitContext(custom: boolean, lang: Lang) {
   };
 }
 
-function printInitResult(existed: boolean, promptLang: Lang, createdKey: string, overwrittenKey: string) {
+function printInitResult(
+  existed: boolean,
+  promptLang: Lang,
+  createdKey: string,
+  overwrittenKey: string
+) {
   if (existed) {
     console.log(c.green(t(promptLang, overwrittenKey)));
     return;
