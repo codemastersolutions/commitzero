@@ -48,6 +48,7 @@ npx commitzero --help
   - Push after commit: `commitzero commit -p` (disable progress with `--progress-off`)
   - Use main buffer instead of alternate screen: `commitzero commit --no-alt-screen`
   - Set pre-commit timeout: `commitzero commit -t 2m` (or `--timeout 120s`)
+  - If there are both staged and unstaged changes, CommitZero asks whether to stage the remaining changes (unless `-a/--add` is used)
 
 ## CLI Usage
 
@@ -180,7 +181,7 @@ yarn commitzero lint -m $'feat(core): change\n\nBody text\n\nRefs: 123'
   - Defines rules, language, hooks, and pre-commit commands used by the CLI.
 - `commitzero.config.custom.json|js` (optional, local only):
   - Custom (local) configuration that takes priority over the regular config file and default options.
-  - Automatically added to `.gitignore` when created with `commitzero init --custom` to keep it local.
+  - When created with `commitzero init --custom`, CommitZero ensures it is present in `.gitignore` (without duplicating entries).
 
 ### Full example
 
@@ -223,7 +224,7 @@ yarn commitzero lint -m $'feat(core): change\n\nBody text\n\nRefs: 123'
 - `maxFileSize`: Maximum size allowed for staged files. Accepts a number (bytes) or size string (`"5MB"`, `"500KB"`). Default: `"2MB"`.
 - `allowBreaking`: When `false`, disallows `feat!` and requires `BREAKING CHANGE` footer when breaking changes are present.
 - `footerKeywords`: Keywords recognized as commit footers (e.g., references, breaking changes).
-- `preCommitCommands`: Array of shell commands to run before committing.
+- `preCommitCommands`: Array of commands (executed without a shell) to run before committing. Use `npm`/`pnpm` scripts for anything that would normally require a shell (pipes, `&&`, redirects).
 - `preCommitTimeout`: Timeout for each pre-commit command. Accepts a number (ms) or duration string (`"90s"`, `"2m"`, `"1500ms"`). Default: `"3m"`.
 - `versionCheckEnabled`: Enables self-check for new versions on first CLI run of the day. Default: `true`.
 - `versionCheckPeriod`: Periodicity for version checks. Accepted values: `daily`, `weekly`, `monthly`. Default: `daily`.
@@ -235,6 +236,9 @@ yarn commitzero lint -m $'feat(core): change\n\nBody text\n\nRefs: 123'
 - `COMMITZERO_LANG`: Override language (`en`, `pt`, `es`).
 - `NO_ALT_SCREEN=1`: Disable alternate screen for interactive prompts.
 - `COMMITZERO_PRE_COMMIT_TIMEOUT`: Timeout for pre-commit commands. E.g., `"2m"`, `"120s"`, `"5000ms"`. Takes precedence over config.
+- `COMMITZERO_GIT_BIN`: Absolute path to `git` (used by hooks/CLI when auto-detect fails).
+- `COMMITZERO_NPM_BIN`: Absolute path to `npm` (used by the pre-commit runner when auto-detect fails).
+- `COMMITZERO_PNPM_BIN`: Absolute path to `pnpm` (used by the pre-commit runner when `pnpm` is not found via common paths/PATH).
 
 ### Hooks path
 
@@ -249,6 +253,8 @@ yarn commitzero lint -m $'feat(core): change\n\nBody text\n\nRefs: 123'
 ```sh
 commitzero pre-commit add "npm run lint"
 # or
+commitzero pre-commit add "pnpm lint"
+# or
 npm run commitzero pre-commit add "npm run lint"
 # or
 pnpm commitzero pre-commit add "npm run lint"
@@ -261,6 +267,8 @@ yarn commitzero pre-commit add "npm run lint"
 ```sh
 commitzero pre-commit remove "npm run lint"
 # or
+commitzero pre-commit remove "pnpm lint"
+# or
 npm run commitzero pre-commit remove "npm run lint"
 # or
 pnpm commitzero pre-commit remove "npm run lint"
@@ -269,6 +277,8 @@ yarn commitzero pre-commit remove "npm run lint"
 ```
 
 Tip: keep `preCommitCommands` as an empty array if you don't need pre-commit checks.
+
+Note: when `commitzero.config.custom.json` exists, `pre-commit add/remove` updates both JSON config files and keeps `preCommitCommands` in sync.
 
 ## Compatibility
 
